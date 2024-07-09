@@ -1,0 +1,20 @@
+syntax = "proto3";
+package dave_gazebo_world_plugins_msgs.msgs;
+import "vector3d.proto";  // Ensure vector3d.proto is compatible with proto3
+
+message StratifiedCurrentVelocity {
+  repeated gazebo.msgs.Vector3d velocity = 1;
+  repeated double depth = 2;
+}
+
+
+// syntax = "proto2";
+// package dave_gazebo_world_plugins_msgs.msgs;
+// import "vector3d.proto";
+// import "any.proto";
+
+// message StratifiedCurrentVelocity
+// {
+//   repeated gazebo.msgs.Vector3d   velocity  = 1;
+//   repeated double                 depth     = 2;
+// }
