@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?><package format="3">
+  <name>dave_gz_model_plugins</name>
+  <version>3.1.1</version>
+  <description>The dave_gz_model_plugins package (gz model plugin definitions)</description>
+  <author email="gaurav.og.9920@gmail.com">Gaurav Kumar and woensug</author>
+  <maintainer email="gaurav.og.9920@gmail.com">Gaurav Kumar and woensug</maintainer>
+  <license>Apache 2.0</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>protobuf-dev</buildtool_depend>
+  <build_depend>gz_ros</build_depend>
+  <build_depend>rclcpp</build_depend>
+  <build_depend>protobuf</build_depend>
+  <build_depend>message_generation</build_depend>
+  <build_export_depend>gz_ros</build_export_depend>
+  <build_export_depend>protobuf</build_export_depend>
+  <build_export_depend>message_generation</build_export_depend>
+  <exec_depend>gz_ros</exec_depend>
+  <exec_depend>rclcpp</exec_depend>
+  <exec_depend>protobuf</exec_depend>
+  <exec_depend>message_runtime</exec_depend>
+  <!-- temporal -->
+  <depend>gz_dev</depend>
+  <depend>gz_msgs</depend>
+  <depend>dave_gz_world_plugins</depend>
+  <depend>dave_gz_ros_plugins</depend>
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

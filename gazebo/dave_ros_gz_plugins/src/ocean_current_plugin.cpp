@@ -1,49 +1,22 @@
-#include <memory>
 #include <ocean_current_plugin.hh>
 #include <vector>
 
-#include <dave_ros_gz_plugins/GetCurrentModel.h>
-#include <dave_ros_gz_plugins/GetOriginSphericalCoord.h>
-#include <dave_ros_gz_plugins/SetCurrentDirection.h>
-#include <dave_ros_gz_plugins/SetCurrentModel.h>
-#include <dave_ros_gz_plugins/SetCurrentVelocity.h>
-#include <dave_ros_gz_plugins/SetOriginSphericalCoord.h>
-#include <dave_ros_gz_plugins/SetStratifiedCurrentDirection.h>
-#include <dave_ros_gz_plugins/SetStratifiedCurrentVelocity.h>
-#include <dave_ros_gz_plugins/StratifiedCurrentDatabase.h>
-#include <dave_ros_gz_plugins/StratifiedCurrentVelocity.h>
-#include <geometry_msgs/TwistStamped.h>
-#include <geometry_msgs/Vector3.h>
-#include <ros/package.h>
-#include <ros/ros.h>
-#include <ament_index_cpp/get_package_share_directory.hpp>
-
 #include <boost/shared_ptr.hpp>
-#include <gazebo/common/Plugin.hh>
-#include <gazebo/physics/World.hh>
+#include <gz/common/Plugin.hh>
+#include <gz/physics/World.hh>
 
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <chrono>
-#include <gazebo/common/Plugin.hh>
-#include <gazebo/common/Time.hh>
 #include <geometry_msgs/msg/twist_stamped.hpp>
+#include <gz/common/Plugin.hh>
+#include <gz/common/Time.hh>
 #include <rclcpp/rclcpp.hpp>
-#include <string>
 
-#include <gazebo/physics/PhysicsEngine.hh>
+#include <gz/physics/PhysicsEngine.hh>
 #include <std_msgs/msg/string.hpp>
 
 #include <algorithm>
 #include <functional>
-
-// #include "dave_ros_gz_plugins/msg/StratifiedCurrentVelocity.hpp"
-// #include "dave_ros_gz_plugins/msg/StratifiedCurrentDatabase.hpp"
-// #include "dave_ros_gz_plugins/srv/SetCurrentModel.hpp"
-// #include "dave_ros_gz_plugins/srv/GetCurrentModel.hpp"
-// #include "dave_ros_gz_plugins/srv/SetCurrentVelocity.hpp"
-// #include "dave_ros_gz_plugins/srv/SetStratifiedCurrentVelocity.hpp"
-// #include "dave_ros_gz_plugins/srv/SetCurrentAngle.hpp"
-// #include "dave_ros_gz_plugins/srv/SetStratifiedCurrentAngle.hpp"
 
 // Things to consider/decide for now -
 // 1. Is consistency being maintained while the use of "gzerr" and "RCLCPP_ERROR" for error logging
@@ -67,27 +40,24 @@ public:
 private:
   rclcpp::Node::SharedPtr rosNode;  // This is a smart pointer to a ROS 2 node, facilitating
                                     // communication with other ROS nodes.
-  rclcpp::TimerBase::SharedPtr rosPublishTimer;
-  gz::common::Time rosPublishPeriod;
-  gz::common::Time lastRosPublishTime;
   std::string db_path;
 };
 
 /////////////////////////////////////////////////
 UnderwaterCurrentROSPlugin::UnderwaterCurrentROSPlugin()
 {
-  this->rosPublishPeriod = gz::common::Time(0.05);
-  this->lastRosPublishTime = gz::common::Time(0.0);
-  this->db_path =
-    ament_index_cpp::get_package_share_directory("dave_worlds");  // might need to be (updated)
+  // this->rosPublishPeriod = gz::common::Time(0.05);
+  // this->lastRosPublishTime = gz::common::Time(0.0);
+  this->db_path = ament_index_cpp::get_package_share_directory("dave_worlds");
 
   // Initialize the ROS 2 node
   this->rosNode = std::make_shared<rclcpp::Node>("underwater_current_ros_plugin");
+  std::chrono::steady_clock::duration lastUpdate{0};
 
-  // Setting up a timer in ROS 2
-  this->rosPublishTimer = this->rosNode->create_wall_timer(
-    std::chrono::milliseconds(static_cast<int>(this->rosPublishPeriod.Double() * 1000)),
-    [this]() { this->PublishCurrentInfo(); });
+  // Setting up a timer in ROS 2 Do we need this ? (to be (updated))
+  // this->rosPublishTimer = this->rosNode->create_wall_timer(
+  //   std::chrono::milliseconds(static_cast<int>(this->rosPublishPeriod.Double() * 1000)),
+  //   [this]() { this->PublishCurrentInfo(); });
 }
 
 /////////////////////////////////////////////////
@@ -98,25 +68,31 @@ UnderwaterCurrentROSPlugin::~UnderwaterCurrentROSPlugin()
 }
 
 /////////////////////////////////////////////////
-void UnderwaterCurrentROSPlugin::Load(gz::sim::WorldPtr _world, sdf::ElementPtr _sdf)
-{  // make sure this is closed
+void UnderwaterCurrentPlugin::Configure(
+  const gz::sim::Entity & _entity, const std::shared_ptr<const sdf::Element> & _sdf,
+  gz::sim::EntityComponentManager & _ecm, gz::sim::EventManager & _eventMgr)
+{
+  this->dataPtr->_world = _entity;
+  this->dataPtr->entity = _entity;
+  this->dataPtr->model = gz::sim::Model(_entity);
+  this->dataPtr->modelName = this->dataPtr->model.Name(_ecm);
+  this->dataPtr->sdf = _sdf;
+  std::chrono::steady_clock::duration lastUpdate{0};
+  // auto lastUpdate = gz::sim::simTime;
   try
   {
-    UnderwaterCurrentPlugin::Load(_world, _sdf);
     this->stratifiedCurrentVelocityDatabaseTopic =
       this->stratifiedCurrentVelocityTopic + "_database";
   }
-  catch (const gz::common::Exception & e)  // this is a gazebo error hence -gzerr, check for "_e" or
-                                           // "e" (to be (updated))
-                                           // findings- we can use both "_e" and "e" but "e" is now
-                                           // the conventional way to display errors in C++. further
-                                           // writing "&e" or "& e" is a personal preference.
+  catch (const gz::common::Exception & e)
+  // we can use both "_e" and "e" but "e" is now
+  // the conventional way to display errors in C++.
   {
     gzerr << "Error loading plugin: " << e.what() << '\n';
     return;
   }
 
-  if (!rclcpp::ok())  // this is a ROS 2 error hence -RCLCPP_ERROR to be (considered) (updated)
+  if (!rclcpp::ok())
   {
     gzerr << "ROS 2 has not been properly initialized. Please make sure you have initialized your "
              "ROS 2 environment.\n";
@@ -124,6 +100,8 @@ void UnderwaterCurrentROSPlugin::Load(gz::sim::WorldPtr _world, sdf::ElementPtr 
   }
 
   this->ns = _sdf->HasElement("namespace") ? _sdf->Get<std::string>("namespace") : "";
+
+  // Initialising ROS 2 node
   this->rosNode = std::make_shared<rclcpp::Node>("underwater_current_ros_plugin", this->ns);
 
   // Create and advertise Messages
@@ -149,26 +127,12 @@ void UnderwaterCurrentROSPlugin::Load(gz::sim::WorldPtr _world, sdf::ElementPtr 
 
   // check for the number of arg being passed to the function
 
-  // Advertise the service to update the current velocity model
-  this->worldServices["set_current_velocity_model"] =
-    this->rosNode->create_service<dave_ros_gz_plugins::srv::SetCurrentModel>(
-      "set_current_velocity_model", std::bind(
-                                      &UnderwaterCurrentROSPlugin::UpdateCurrentVelocityModel, this,
-                                      std::placeholders::_1, std::placeholders::_2));
-
   // Advertise the service to get the current velocity model
   this->worldServices["get_current_velocity_model"] =
     this->rosNode->create_service<dave_ros_gz_plugins::srv::GetCurrentModel>(
       "get_current_velocity_model", std::bind(
                                       &UnderwaterCurrentROSPlugin::GetCurrentVelocityModel, this,
                                       std::placeholders::_1, std::placeholders::_2));
-
-  // Advertise the service to update the current horizontal angle model
-  this->worldServices["set_current_horz_angle_model"] =
-    this->rosNode->create_service<dave_ros_gz_plugins::srv::SetCurrentModel>(
-      "set_current_horz_angle_model", std::bind(
-                                        &UnderwaterCurrentROSPlugin::UpdateCurrentHorzAngleModel,
-                                        this, std::placeholders::_1, std::placeholders::_2));
 
   // Advertise the service to get the current horizontal angle model
   this->worldServices["get_current_horz_angle_model"] =
@@ -177,13 +141,6 @@ void UnderwaterCurrentROSPlugin::Load(gz::sim::WorldPtr _world, sdf::ElementPtr 
                                         &UnderwaterCurrentROSPlugin::GetCurrentHorzAngleModel, this,
                                         std::placeholders::_1, std::placeholders::_2));
 
-  // Advertise the service to update the current vertical angle model
-  this->worldServices["set_current_vert_angle_model"] =
-    this->rosNode->create_service<dave_ros_gz_plugins::srv::SetCurrentModel>(
-      "set_current_vert_angle_model", std::bind(
-                                        &UnderwaterCurrentROSPlugin::UpdateCurrentVertAngleModel,
-                                        this, std::placeholders::_1, std::placeholders::_2));
-
   // Advertise the service to get the current vertical angle model
   this->worldServices["get_current_vert_angle_model"] =
     this->rosNode->create_service<dave_ros_gz_plugins::srv::GetCurrentModel>(
@@ -191,60 +148,42 @@ void UnderwaterCurrentROSPlugin::Load(gz::sim::WorldPtr _world, sdf::ElementPtr 
                                         &UnderwaterCurrentROSPlugin::GetCurrentHorzAngleModel, this,
                                         std::placeholders::_1, std::placeholders::_2));
 
-  // Advertise the service to update the current velocity mean value
-  this->worldServices["set_current_velocity"] =
-    this->rosNode->create_service<dave_ros_gz_plugins::srv::SetCurrentVelocity>(
-      "set_current_velocity", std::bind(
-                                &UnderwaterCurrentROSPlugin::UpdateCurrentVelocity, this,
-                                std::placeholders::_1, std::placeholders::_2));
-
-  // Advertise the service to update the stratified current velocity
-  this->worldServices["set_stratified_current_velocity"] =
-    this->rosNode->create_service<dave_ros_gz_plugins::srv::SetStratifiedCurrentVelocity>(
-      "set_stratified_current_velocity", std::bind(
-                                           &UnderwaterCurrentROSPlugin::UpdateStratCurrentVelocity,
-                                           this, std::placeholders::_1, std::placeholders::_2));
-
-  // Advertise the service to update the current horizontal angle
-  this->worldServices["set_current_horz_angle"] =
-    this->rosNode->create_service<dave_ros_gz_plugins::srv::SetCurrentAngle>(
-      "set_current_horz_angle", std::bind(
-                                  &UnderwaterCurrentROSPlugin::UpdateHorzAngle, this,
-                                  std::placeholders::_1, std::placeholders::_2));
-
-  // Advertise the service to update the stratified current horizontal angle
-  this->worldServices["set_stratified_current_horz_angle"] =
-    this->rosNode->create_service<dave_ros_gz_plugins::srv::SetStratifiedCurrentAngle>(
-      "set_stratified_current_horz_angle", std::bind(
-                                             &UnderwaterCurrentROSPlugin::UpdateStratHorzAngle,
-                                             this, std::placeholders::_1, std::placeholders::_2));
-  // Advertise the service to update the current vertical angle
-  this->worldServices["set_current_vert_angle"] =
-    this->rosNode->create_service<dave_ros_gz_plugins::srv::SetCurrentAngle>(
-      "set_current_vert_angle", std::bind(
-                                  &UnderwaterCurrentROSPlugin::UpdateVertAngle, this,
-                                  std::placeholders::_1, std::placeholders::_2));
-
-  // Advertise the service to update the stratified current vertical angle
-  this->worldServices["set_stratified_current_vert_angle"] =
-    this->rosNode->create_service<dave_ros_gz_plugins::srv::SetStratifiedCurrentAngle>(
-      "set_stratified_current_vert_angle", std::bind(
-                                             &UnderwaterCurrentROSPlugin::UpdateStratVertAngle,
-                                             this, std::placeholders::_1, std::placeholders::_2));
-
   // Connect to the Gazebo Harmonic update event
-  this->rosPublishConnection = _world->OnUpdateBegin([this](const gz::sim::UpdateInfo & info)
-                                                     { this->OnUpdateCurrentVel(info); });
+  // this->rosPublishConnection = _world->OnUpdateBegin([this](const gz::sim::UpdateInfo & info)
+  //                                                    { this->OnUpdateCurrentVel(info); });
 }
 
 /////////////////////////////////////////////////
-void UnderwaterCurrentROSPlugin::OnUpdateCurrentVel()
+void gz::sim::systems::dave_simulator_ros::UnderwaterCurrentROSPlugin::PreUpdate(
+  const gz::sim::UpdateInfo & _info, gz::sim::EntityComponentManager & _ecm)
 {
-  if (this->lastUpdate - this->lastRosPublishTime >= this->rosPublishPeriod)
-  {
-    // Update the time tracking for publication
-    this->lastRosPublishTime = this->lastUpdate;
+  // Advertise the service to get the current velocity model
+  this->worldServices["get_current_velocity_model"] =
+    this->rosNode->create_service<dave_ros_gz_plugins::srv::GetCurrentModel>(
+      "get_current_velocity_model", std::bind(
+                                      &UnderwaterCurrentROSPlugin::GetCurrentVelocityModel, this,
+                                      std::placeholders::_1, std::placeholders::_2));
 
+  // Advertise the service to get the current horizontal angle model
+  this->worldServices["get_current_horz_angle_model"] =
+    this->rosNode->create_service<dave_ros_gz_plugins::srv::GetCurrentModel>(
+      "get_current_horz_angle_model", std::bind(
+                                        &UnderwaterCurrentROSPlugin::GetCurrentHorzAngleModel, this,
+                                        std::placeholders::_1, std::placeholders::_2));
+
+  // Advertise the service to get the current vertical angle model
+  this->worldServices["get_current_vert_angle_model"] =
+    this->rosNode->create_service<dave_ros_gz_plugins::srv::GetCurrentModel>(
+      "get_current_vert_angle_model", std::bind(
+                                        &UnderwaterCurrentROSPlugin::GetCurrentHorzAngleModel, this,
+                                        std::placeholders::_1, std::placeholders::_2));
+}
+/////////////////////////////////////////////////
+void UnderwaterCurrentROSPlugin::Update(
+  const gz::sim::UpdateInfo & _info, const gz::sim::EntityComponentManager & _ecm)
+{
+  if (_info.simTime > this->lastUpdate)
+  {
     // Generate and publish current velocity according to the vehicle depth
     geometry_msgs::msg::TwistStamped flowVelMsg;
     flowVelMsg.header.stamp = this->rosNode->get_clock()->now();
@@ -263,7 +202,7 @@ void UnderwaterCurrentROSPlugin::OnUpdateCurrentVel()
     stratCurrentVelocityMsg.header.frame_id = "world";
 
     // Updating for stratified behaviour of Ocean Currents
-    // What is the .size value over here, to be (updated)(checked)
+    // What is the .size value over here, to be (checked)
     for (size_t i = 0; i < this->currentStratifiedVelocity.size(); i++)
     {
       geometry_msgs::msg::Vector3 velocity;
@@ -273,7 +212,7 @@ void UnderwaterCurrentROSPlugin::OnUpdateCurrentVel()
       stratCurrentVelocityMsg.velocities.push_back(velocity);
       stratCurrentVelocityMsg.depths.push_back(this->currentStratifiedVelocity[i].W());
     }
-    // updated till here
+
     this->stratifiedCurrentVelocityPub->publish(stratCurrentVelocityMsg);
 
     // Generate and publish stratified current database
@@ -331,8 +270,75 @@ void UnderwaterCurrentROSPlugin::OnUpdateCurrentVel()
     this->stratifiedCurrentDatabasePub->publish(currentDatabaseMsg);
   }
 }
-// updated till here
+/////////////////////////////////////////////////
+void gz::sim::systems::dave_simulator_ros::UnderwaterCurrentROSPlugin::PostUpdate(
+  const gz::sim::UpdateInfo & _info, const gz::sim::EntityComponentManager & _ecm)
+{
+  // Advertise the service to update the current velocity model
+  this->worldServices["set_current_velocity_model"] =
+    this->rosNode->create_service<dave_ros_gz_plugins::srv::SetCurrentModel>(
+      "set_current_velocity_model", std::bind(
+                                      &UnderwaterCurrentROSPlugin::UpdateCurrentVelocityModel, this,
+                                      std::placeholders::_1, std::placeholders::_2));
 
+  // Advertise the service to update the current horizontal angle model
+  this->worldServices["set_current_horz_angle_model"] =
+    this->rosNode->create_service<dave_ros_gz_plugins::srv::SetCurrentModel>(
+      "set_current_horz_angle_model", std::bind(
+                                        &UnderwaterCurrentROSPlugin::UpdateCurrentHorzAngleModel,
+                                        this, std::placeholders::_1, std::placeholders::_2));
+
+  // Advertise the service to update the current vertical angle model
+  this->worldServices["set_current_vert_angle_model"] =
+    this->rosNode->create_service<dave_ros_gz_plugins::srv::SetCurrentModel>(
+      "set_current_vert_angle_model", std::bind(
+                                        &UnderwaterCurrentROSPlugin::UpdateCurrentVertAngleModel,
+                                        this, std::placeholders::_1, std::placeholders::_2));
+
+  // Advertise the service to update the current velocity mean value
+  this->worldServices["set_current_velocity"] =
+    this->rosNode->create_service<dave_ros_gz_plugins::srv::SetCurrentVelocity>(
+      "set_current_velocity", std::bind(
+                                &UnderwaterCurrentROSPlugin::UpdateCurrentVelocity, this,
+                                std::placeholders::_1, std::placeholders::_2));
+
+  // Advertise the service to update the stratified current velocity
+  this->worldServices["set_stratified_current_velocity"] =
+    this->rosNode->create_service<dave_ros_gz_plugins::srv::SetStratifiedCurrentVelocity>(
+      "set_stratified_current_velocity", std::bind(
+                                           &UnderwaterCurrentROSPlugin::UpdateStratCurrentVelocity,
+                                           this, std::placeholders::_1, std::placeholders::_2));
+
+  // Advertise the service to update the current horizontal angle
+  this->worldServices["set_current_horz_angle"] =
+    this->rosNode->create_service<dave_ros_gz_plugins::srv::SetCurrentAngle>(
+      "set_current_horz_angle", std::bind(
+                                  &UnderwaterCurrentROSPlugin::UpdateHorzAngle, this,
+                                  std::placeholders::_1, std::placeholders::_2));
+  // Advertise the service to update the stratified current horizontal angle
+  this->worldServices["set_stratified_current_horz_angle"] =
+    this->rosNode->create_service<dave_ros_gz_plugins::srv::SetStratifiedCurrentAngle>(
+      "set_stratified_current_horz_angle", std::bind(
+                                             &UnderwaterCurrentROSPlugin::UpdateStratHorzAngle,
+                                             this, std::placeholders::_1, std::placeholders::_2));
+
+  // Advertise the service to update the current vertical angle
+  this->worldServices["set_current_vert_angle"] =
+    this->rosNode->create_service<dave_ros_gz_plugins::srv::SetCurrentAngle>(
+      "set_current_vert_angle", std::bind(
+                                  &UnderwaterCurrentROSPlugin::UpdateVertAngle, this,
+                                  std::placeholders::_1, std::placeholders::_2));
+
+  // Advertise the service to update the stratified current vertical angle
+  this->worldServices["set_stratified_current_vert_angle"] =
+    this->rosNode->create_service<dave_ros_gz_plugins::srv::SetStratifiedCurrentAngle>(
+      "set_stratified_current_vert_angle", std::bind(
+                                             &UnderwaterCurrentROSPlugin::UpdateStratVertAngle,
+                                             this, std::placeholders::_1, std::placeholders::_2));
+
+  // Update the time tracking for publication
+  this->lastUpdate = _info.simTime;
+}
 /////////////////////////////////////////////////
 bool UnderwaterCurrentROSPlugin::UpdateHorzAngle(
   const std::shared_ptr<dave_ros_gz_plugins::srv::SetCurrentDirection::Request> _req,
@@ -365,7 +371,7 @@ bool UnderwaterCurrentROSPlugin::UpdateStratHorzAngle(
   }
   return true;
 }
-// -updated till here td
+
 /////////////////////////////////////////////////
 bool UnderwaterCurrentROSPlugin::UpdateVertAngle(
   const std::shared_ptr<dave_ros_gz_plugins::srv::SetCurrentDirection::Request> _req,
@@ -399,17 +405,16 @@ bool UnderwaterCurrentROSPlugin::UpdateCurrentVelocity(
     this->currentHorzAngleModel.SetMean(_req->horizontal_angle) &&
     this->currentVertAngleModel.SetMean(_req->vertical_angle))
   {
-    RCLCPP_INFO(
-      this->rosNode->get_logger(),
-      "Current velocity [m/s] = %f\nCurrent horizontal angle [rad] = %f\nCurrent vertical angle "
-      "[rad] = %f\n\tWARNING: Current velocity calculated in the ENU frame",
-      _req->velocity, _req->horizontal_angle, _req->vertical_angle);
-    _res->success = true;
+    gzmsg << "Current velocity [m/s] = " << _req.velocity << std::endl
+          << "Current horizontal angle [rad] = " << _req.horizontal_angle << std::endl
+          << "Current vertical angle [rad] = " << _req.vertical_angle << std::endl
+          << "\tWARNING: Current velocity calculated in the ENU frame" << std::endl;
+    _res.success = true;
   }
   else
   {
-    RCLCPP_ERROR(this->rosNode->get_logger(), "Error while updating the current velocity");
-    _res->success = false;
+    gzmsg << "Error while updating the current velocity" << std::endl;
+    _res.success = false;
   }
   return true;
 }
@@ -432,17 +437,16 @@ bool UnderwaterCurrentROSPlugin::UpdateStratCurrentVelocity(
     // Update the database values as well
     this->stratifiedDatabase[_req->layer].X() = cos(_req->horizontal_angle) * _req->velocity;
     this->stratifiedDatabase[_req->layer].Y() = sin(_req->horizontal_angle) * _req->velocity;
-    RCLCPP_INFO(
-      this->rosNode->get_logger(),
-      "Layer %d current velocity [m/s] = %f\n  Horizontal angle [rad] = %f\n  Vertical angle [rad] "
-      "= %f\n\tWARNING: Current velocity calculated in the ENU frame",
-      _req->layer, _req->velocity, _req->horizontal_angle, _req->vertical_angle);
-    _res->success = true;
+    gzmsg << "Layer " << _req.layer << " current velocity [m/s] = " << _req.velocity << std::endl
+          << "  Horizontal angle [rad] = " << _req.horizontal_angle << std::endl
+          << "  Vertical angle [rad] = " << _req.vertical_angle << std::endl
+          << "\tWARNING: Current velocity calculated in the ENU frame" << std::endl;
+    _res.success = true;
   }
   else
   {
-    RCLCPP_ERROR(this->rosNode->get_logger(), "Error while updating the current velocity");
-    _res->success = false;
+    gzmsg << "Error while updating the current velocity" << std::endl;
+    _res.success = false;
   }
   return true;
 }
@@ -497,30 +501,17 @@ bool UnderwaterCurrentROSPlugin::UpdateCurrentVelocityModel(
 
   for (int i = 0; i < this->stratifiedCurrentModels.size(); i++)
   {
-    gz::GaussMarkovProcess & model = this->stratifiedCurrentModels[i][0];
+    gz::GaussMarkovProcess & model = this->stratifiedCurrentModels[i][0];  //(updated)
     model.SetModel(
       model.mean, std::max(0.0, _req->min), std::max(0.0, _req->max), _req->mu, _req->noise);
   }
 
-  RCLCPP_INFO(
-    this->rosNode->get_logger(),
-    "Current velocity model updated\n\tWARNING: Current velocity calculated in the ENU frame");
-
-  // Assuming currentVelModel.Print() prints model details, you would instead log these details
-  // For instance, you could log mean, min, max etc.
-  // Example of logging additional model details:
-  RCLCPP_INFO(
-    this->rosNode->get_logger(), "Model details: Mean: %f, Min: %f, Max: %f",
-    this->currentVelModel.mean, this->currentVelModel.min, this->currentVelModel.max);
+  gzmsg << "Current velocity model updated" << std::endl
+        << "\tWARNING: Current velocity calculated in the ENU frame" << std::endl;
+  this->currentVelModel.Print();
 
   return true;
-
-  // gzmsg << "Current velocity model updated" << std::endl
-  //       << "\tWARNING: Current velocity calculated in the ENU frame" << std::endl;
-  // this->currentVelModel.Print();
-  // return true;
 }
-// -updated till here td
 /////////////////////////////////////////////////
 bool UnderwaterCurrentROSPlugin::UpdateCurrentHorzAngleModel(
   const std::shared_ptr<dave_ros_gz_plugins::srv::SetCurrentModel::Request> _req,
@@ -536,17 +527,9 @@ bool UnderwaterCurrentROSPlugin::UpdateCurrentHorzAngleModel(
       model.mean, std::max(-M_PI, _req->min), std::min(M_PI, _req->max), _req->mu, _req->noise);
   }
 
-  RCLCPP_INFO(
-    this->rosNode->get_logger(),
-    "Horizontal angle model updated\n\tWARNING: Current velocity calculated in the ENU frame");
-
-  // Assuming currentHorzAngleModel.Print() prints model details, you would instead log these
-  // details Example of logging additional model details:
-  RCLCPP_INFO(
-    this->rosNode->get_logger(), "Model details: Mean: %f, Min: %f, Max: %f",
-    this->currentHorzAngleModel.mean, this->currentHorzAngleModel.min,
-    this->currentHorzAngleModel.max);
-
+  gzmsg << "Horizontal angle model updated" << std::endl
+        << "\tWARNING: Current velocity calculated in the ENU frame" << std::endl;
+  this->currentHorzAngleModel.Print();
   return true;
 
   // gzmsg << "Horizontal angle model updated" << std::endl
@@ -562,21 +545,10 @@ bool UnderwaterCurrentROSPlugin::UpdateCurrentVertAngleModel(
   _res->success =
     this->currentVertAngleModel.SetModel(_req->mean, _req->min, _req->max, _req->mu, _req->noise);
 
-  RCLCPP_INFO(
-    this->rosNode->get_logger(),
-    "Vertical angle model updated\n\tWARNING: Current velocity calculated in the ENU frame");
-
-  // Assuming currentVertAngleModel.Print() prints model details, you would instead log these
-  // details Example of logging additional model details:
-  RCLCPP_INFO(
-    this->rosNode->get_logger(), "Model details: Mean: %f, Min: %f, Max: %f, Mu: %f, Noise: %f",
-    this->currentVertAngleModel.mean, this->currentVertAngleModel.min,
-    this->currentVertAngleModel.max, this->currentVertAngleModel.mu,
-    this->currentVertAngleModel.noiseAmp);
+  gzmsg << "Vertical angle model updated" << std::endl
+        << "\tWARNING: Current velocity calculated in the ENU frame" << std::endl;
+  this->currentVertAngleModel.Print();
   return true;
-  // gzmsg << "Vertical angle model updated" << std::endl
-  //       << "\tWARNING: Current velocity calculated in the ENU frame" << std::endl;
-  // this->currentVertAngleModel.Print();
 }
 
 /////////////////////////////////////////////////

@@ -20,24 +20,22 @@
 #ifndef OCEAN_CURRENT_PLUGIN_H_
 #define OCEAN_CURRENT_PLUGIN_H_
 
-// #include <dave_gz_ros_plugins/GetCurrentModel.h>
-// #include <dave_gz_ros_plugins/GetOriginSphericalCoord.h>
-// #include <dave_gz_ros_plugins/SetCurrentDirection.h>
-// #include <dave_gz_ros_plugins/SetCurrentModel.h>
-// #include <dave_gz_ros_plugins/SetCurrentVelocity.h>
-// #include <dave_gz_ros_plugins/SetOriginSphericalCoord.h>
-// #include <dave_gz_ros_plugins/SetStratifiedCurrentDirection.h>
-// #include <dave_gz_ros_plugins/SetStratifiedCurrentVelocity.h>
-// #include <dave_gz_ros_plugins/StratifiedCurrentDatabase.h>
-// #include <dave_gz_ros_plugins/StratifiedCurrentVelocity.h>
-// #include <dave_gz_world_plugins/ocean_current_world_plugin.h>
-// #include <geometry_msgs/TwistStamped.h>
-// #include <geometry_msgs/Vector3.h>
-// #include <ros/package.h>
-// #include <ros/ros.h>
+#include <ament_index_cpp/get_package_share_directory.hpp>
+#include <dave_ros_gz_plugins/GetCurrentModel.hh>
+#include <dave_ros_gz_plugins/GetOriginSphericalCoord.hh>
+#include <dave_ros_gz_plugins/SetCurrentDirection.hh>
+#include <dave_ros_gz_plugins/SetCurrentModel.hh>
+#include <dave_ros_gz_plugins/SetCurrentVelocity.hh>
+#include <dave_ros_gz_plugins/SetOriginSphericalCoord.hh>
+#include <dave_ros_gz_plugins/SetStratifiedCurrentDirection.hh>
+#include <dave_ros_gz_plugins/SetStratifiedCurrentVelocity.hh>
+#include <dave_ros_gz_plugins/StratifiedCurrentDatabase.hh>
+#include <dave_ros_gz_plugins/StratifiedCurrentVelocity.hh>
+#include <geometry_msgs/TwistStamped.hh>
+#include <geometry_msgs/Vector3.hh>
 
 #include <gz/sim/System.hh>
-#include <gz/utilis/ImplPtr.hh>
+#include <gz/utilise/ImplPtr.hh>
 
 #include <boost/shared_ptr.hpp>
 #include <gz/common/Plugin.hh>
@@ -54,8 +52,6 @@
 namespace gz
 {
 namespace sim
-{
-inline namespace GZ_SIM_VERSION_NAMESPACE  // can remove this line if gazebo.
 {
 namespace systems
 {
@@ -91,7 +87,6 @@ public:
 }
 }  // namespace dave_simulator_ros
 }  // namespace systems
-}  // namespace GZ_SIM_VERSION_NAMESPACE
 }  // namespace sim
 }  // namespace gz
 
@@ -99,9 +94,5 @@ public:
 GZ_ADD_PLUGIN(
   UnderwaterCurrentROSPlugin, gz::sim::System, UnderwaterCurrentROSPlugin::ISystemConfigure,
   UnderwaterCurrentROSPlugin::ISystemPostUpdate)
-
-// Add plugin alias so that we can refer to the plugin without the version
-// namespace
-GZ_ADD_PLUGIN_ALIAS(UnderwaterCurrentROSPlugin, "gz::sim::systems::UnderwaterCurrentROSPlugin")
 
 #endif  // OCEAN_CURRENT_PLUGIN_H_
