@@ -77,6 +77,7 @@ public:
   void TransientCurrentPlugin::Gauss_Markov_process_initialize(
     const gz::sim::UpdateInfo & _info, gz::sim::EntityComponentManager & _ecm);
 
+  /// \brief Convey model state from gazebo topic to outside
   TransientCurrentPlugin::UpdateDatabase(
     const dave_ros_gz_plugins::StratifiedCurrentDatabase::ConstPtr & _msg)
 
