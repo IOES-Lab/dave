@@ -12,7 +12,14 @@ find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(gz-cmake3 REQUIRED)
-find_package(gz-msgs10 REQUIRED)
+find_package(gz-msgs10 REQUIRED) # new to proto
+
+
+# Define a variable 'GZ_MSGS_VER' holding the version number
+set(GZ_MSGS_VER ${gz-msgs10_VERSION_MAJOR})
+
+# Define a variable 'MSGS_PROTOS' listing the .proto files
+set(MSGS_PROTOS ${CMAKE_CURRENT_SOURCE_DIR}/proto/pressure_sensor_msgs/msgs/SensorPressure.proto)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/UsblCommand.msg"
@@ -75,5 +82,26 @@ gz_msgs_generate_messages(
 ament_export_dependencies(rosidl_default_runtime)
 # Install CMake package configuration
 ament_export_include_directories(include)
+
+# Example of custom messages that depend on gz.msgs
+set(MSGS_PROTOS
+  ${CMAKE_CURRENT_SOURCE_DIR}/proto/pressure_sensor_msgs/msgs/SensorPressure.proto)
+gz_msgs_generate_messages(
+  # The cmake target to be generated for libraries/executables to link
+  TARGET pressure_sensor_msgs_gen
+  # The protobuf package to generate (Typically based on the path)
+  PROTO_PACKAGE "pressure_sensor_msgs.msgs"
+  # The path to the base directory of the proto files
+  # All import paths should be relative to this (eg gz/custom_msgs/vector3d.proto)
+  MSGS_PATH ${CMAKE_CURRENT_SOURCE_DIR}/proto
+  # List of proto files to generate
+  MSGS_PROTOS ${MSGS_PROTOS}
+  # List of message targets this library imports from
+  # DEPENDENCIES gz_msgs_gen
+  # Dependency on gz-msgs
+  DEPENDENCIES gz-msgs${GZ_MSGS_VER}::gz-msgs${GZ_MSGS_VER}
+)
+
+target_link_libraries(${PROJECT_NAME} PUBLIC ${PROJECT_NAME}-msgs)
 
 ament_package()

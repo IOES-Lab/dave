@@ -8,6 +8,8 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
   <test_depend>ament_lint_auto</test_depend>
   <build_depend>dave_interfaces</build_depend>
+  <build_depend>protobuf</build_depend>
+  <exec_depend>protobuf</exec_depend>
   <exec_depend>dave_interfaces</exec_depend>
   <export>
     <build_type>ament_cmake</build_type>

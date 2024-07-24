@@ -3,6 +3,7 @@
 #include <gz/math/Vector3.hh>
 #include <gz/msgs/Utility.hh>
 #include <gz/plugin/Register.hh>
+#include <gz/sim/System.hh>
 #include <gz/sim/World.hh>
 #include <gz/sim/components/CustomSensor.hh>
 #include <gz/sim/components/Link.hh>
@@ -10,6 +11,14 @@
 #include <gz/sim/components/Pose.hh>
 #include <gz/sim/components/Sensor.hh>
 #include <gz/sim/components/World.hh>
+#include <gz/transport/Node.hh>
+#include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/fluid_pressure.hpp>
+// #include "sensor_msgs.msgs"
+#include "dave_interfaces/proto/SensorPressure.proto"
+// #include <sensor_msgs/msg/fluid_pressure.hpp>
+// #include <dave_interfaces/proto/SensorPressure.pb.h>
+#include <chrono>
 
 GZ_ADD_PLUGIN(
   dave_gz_sensor_plugins::SubseaPressureSensorPlugin, gz::sim::System,
@@ -38,19 +47,25 @@ public:
   bool estimateDepth;
   double standardPressure;
   double kPaPerM;
-  std::shared_ptr < rclcpp::Publisher<sensor_msgs::msg::FluidPressure> rosSensorOutputPub;
-  std::shared_ptr<gz::transport::Node> gazeboNode;
+  std::shared_ptr<rclcpp::Publisher<sensor_msgs::msg::FluidPressure>> rosSensorOutputPub;
+  std::shared_ptr<rclcpp::Node> gazeboNode;
   std::shared_ptr<rclcpp::Node> rosNode;
-  std::shared_ptr < gz::transport::Publisher<sensor_msgs::msgs::Pressure> gazeboSensorOutputPub;
+  std::shared_ptr<rclcpp::Publisher<pressure_sensor_msgs::msgs::Pressure>>
+    gazeboSensorOutputPub;  // Advertise<sensor_msgs::msgs::Pressure
   std::string robotNamespace;
   bool gzMsgEnabled;
   double noiseAmp;
   double noiseSigma;
-  double lastMeasurementTime;
 };
 
 SubseaPressureSensorPlugin::SubseaPressureSensorPlugin() : dataPtr(std::make_unique<PrivateData>())
 {
+  dataPtr->rosNode = std::make_shared<rclcpp::Node>("subsea_pressure_sensor");
+  dataPtr->gazeboNode = std::make_shared<gz::transport::Node>();
+  // dataPtr->sensorOutputTopic = "sensor_output_topic";  // 1 (check)
+  // dataPtr->gzMsgEnabled = true;
+  // dataPtr->noiseAmp = 0.1;
+  // dataPtr->noiseSigma = 0.01;
 }
 
 SubseaPressureSensorPlugin::~SubseaPressureSensorPlugin() {}
@@ -60,6 +75,12 @@ void SubseaPressureSensorPlugin::Configure(
   gz::sim::EntityComponentManager & _ecm, gz::sim::EventManager & /*_eventManager*/)
 {
   this->dataPtr->world = gz::sim::World(_ecm.EntityByComponents(gz::sim::components::World()));
+  // this->dataPtr->sensorOutputTopic = "sensor_output_topic";
+
+  this->dataPtr->rosNode = std::make_shared<rclcpp::Node>("subsea_pressure_sensor");  // 2 (check)
+  this->dataPtr->gazeboNode = std::make_shared<gz::transport::Node>();
+  // this->dataPtr->gazeboNode->Init();
+
   if (!this->dataPtr->world.Valid(_ecm))
   {
     gzerr << "World entity not found" << std::endl;
@@ -102,21 +123,30 @@ void SubseaPressureSensorPlugin::Configure(
     this->dataPtr->kPaPerM = 9.80638;
   }
 
+  // this->dataPtr->rosNode = std::make_shared<rclcpp::Node>("subsea_pressure_sensor");  // 3
+  // (check)
   this->dataPtr->rosSensorOutputPub =
-    this->rosNode->create_publisher<sensor_msgs::msg::FluidPressure>(
-      this->dataPtr->sensorOutputTopic, rclcpp::QoS(10).reliable());
+    this->dataPtr->rosNode->create_publisher<sensor_msgs::msg::FluidPressure>(
+      "sensor_output_topic", rclcpp::QoS(10).reliable());
 
   if (this->dataPtr->gzMsgEnabled)
   {
-    this->dataPtr->gazeboSensorOutputPub = this->gazeboNode->Advertise<sensor_msgs::msgs::Pressure>(
-      this->dataPtr->robotNamespace + "/" + this->dataPtr->sensorOutputTopic);
+    this->dataPtr->gazeboSensorOutputPub =
+      this->dataPtr->gazeboNode->create_publisher<pressure_sensor_msgs::msgs::Pressure>(
+        this->dataPtr->robotNamespace + "/" + "sensor_output_topic", 1);
   }
+  // {
+  //   this->dataPtr->gazeboSensorOutputPub =
+  //   this->gazeboNode->Advertise<sensor_msgs::msgs::Pressure>(
+  //     this->dataPtr->robotNamespace + "/" + "sensor_output_topic");
+  // } (check the issue is that the sensor output topic is not defined) hence for now the custom
+  // argument is passed. The same is done with the rosnode.
 }
 
 void SubseaPressureSensorPlugin::PreUpdate(
   const gz::sim::UpdateInfo & _info, gz::sim::EntityComponentManager & _ecm)
 {
-  this->dataPtr->PublishState();
+  // this->dataPtr->PublishState();
 
   if (!this->dataPtr->EnableMeasurement(_info))
   {
@@ -150,7 +180,7 @@ void SubseaPressureSensorPlugin::PreUpdate(
 void SubseaPressureSensorPlugin::PostUpdate(
   const gz::sim::UpdateInfo & _info, const gz::sim::EntityComponentManager & _ecm)
 {
-  this->dataPtr->PublishState();
+  // this->dataPtr->PublishState();
 
   if (!this->dataPtr->EnableMeasurement(_info))
   {
@@ -159,7 +189,7 @@ void SubseaPressureSensorPlugin::PostUpdate(
 
   if (this->dataPtr->gzMsgEnabled)
   {
-    sensor_msgs::msgs::Pressure gazeboMsg;
+    pressure_sensor_msgs::msgs::Pressure gazeboMsg;
     gazeboMsg.set_pressure(pressure);
     gazeboMsg.set_stddev(this->dataPtr->noiseSigma);
     if (this->dataPtr->estimateDepth)
@@ -177,6 +207,16 @@ void SubseaPressureSensorPlugin::PostUpdate(
   rosMsg.variance = this->dataPtr->noiseSigma * this->dataPtr->noiseSigma;
   this->dataPtr->rosSensorOutputPub->publish(rosMsg);
   this->dataPtr->lastMeasurementTime = _info.simTime;
+
+  if (!_info.paused)
+  {
+    rclcpp::spin_some(this->ros_node_);
+
+    if (_info.iterations % 1000 == 0)
+    {
+      gzmsg << "dave_ros_gz_plugins::SubseaPressureSensorPlugin::PostUpdate" << std::endl;
+    }
+  }
 }
 
 }  // namespace dave_gz_sensor_plugins

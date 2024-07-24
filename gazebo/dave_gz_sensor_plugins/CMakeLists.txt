@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.8)
 
 # Define the project name
 project(dave_gz_sensor_plugins)
+# project(my_custom_package VERSION 0.0.1)
 
 # Find required packages
 find_package(ament_cmake REQUIRED)
@@ -13,11 +14,17 @@ find_package(gz-common5 REQUIRED COMPONENTS profiler)
 find_package(gz-sim8 REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(dave_interfaces REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(gz-msgs10 REQUIRED)  # new to proto
 
 # Set version variables
 set(GZ_PLUGIN_VER ${gz-plugin2_VERSION_MAJOR})
 set(GZ_COMMON_VER ${gz-common5_VERSION_MAJOR})
 set(GZ_SIM_VER ${gz-sim8_VERSION_MAJOR})
+set(GZ_MSGS_VER ${gz-msgs10_VERSION_MAJOR})  # new to proto
+
+# DEPENDENCIES(gz-msgs${GZ_MSGS_VER}::gz-msgs${GZ_MSGS_VER}) # new to proto
+
 
 message(STATUS "Compiling against Gazebo Harmonic")
 
@@ -42,6 +49,7 @@ gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER})
 # Specify dependencies for FullSystem using ament_target_dependencies
 ament_target_dependencies(UsblTransceiver
   dave_interfaces
+  sensor_msgs
   rclcpp
   geometry_msgs
   std_msgs
@@ -57,6 +65,7 @@ ament_target_dependencies(sea_pressure_sensor
   dave_interfaces
   rclcpp
   std_msgs
+  sensor_msgs
 )
 
 # Install targets
