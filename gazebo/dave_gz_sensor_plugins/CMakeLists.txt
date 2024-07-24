@@ -23,14 +23,19 @@ message(STATUS "Compiling against Gazebo Harmonic")
 
 add_library(UsblTransceiver SHARED src/UsblTransceiver.cc)
 add_library(UsblTransponder SHARED src/UsblTransponder.cc)
+add_library(sea_pressure_sensor SHARED src/sea_pressure_sensor.cc)
 
 target_include_directories(UsblTransceiver PRIVATE include)
 target_include_directories(UsblTransponder PRIVATE include)
+target_include_directories(sea_pressure_sensor PRIVATE include)
 
 target_link_libraries(UsblTransceiver
   gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER})
 
 target_link_libraries(UsblTransponder
+gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER})
+
+target_link_libraries(sea_pressure_sensor
 gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER})
 
 
@@ -48,8 +53,14 @@ ament_target_dependencies(UsblTransponder
   std_msgs
 )
 
+ament_target_dependencies(sea_pressure_sensor
+  dave_interfaces
+  rclcpp
+  std_msgs
+)
+
 # Install targets
-install(TARGETS UsblTransceiver UsblTransponder
+install(TARGETS UsblTransceiver UsblTransponder sea_pressure_sensor
   DESTINATION lib/${PROJECT_NAME}
 )
 
