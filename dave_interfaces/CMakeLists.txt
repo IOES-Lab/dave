@@ -16,10 +16,18 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/UsblCommand.msg"
   "msg/UsblResponse.msg"
   "msg/Location.msg"
+  "msg/StratifiedCurrentVelocity.msg"
+  "msg/StratifiedCurrentDatabase.msg"
   "srv/SetOriginSphericalCoord.srv"
   "srv/GetOriginSphericalCoord.srv"
   "srv/TransformToSphericalCoord.srv"
   "srv/TransformFromSphericalCoord.srv"
+  "srv/GetCurrentModel.srv"
+  "srv/SetCurrentModel.srv"
+  "srv/SetCurrentDirection.srv"
+  "srv/setCurrentVelocity.srv"
+  "srv/SetStratifiedCurrentVelocity.srv"
+  "srv/SetStratifiedCurrentDirection.srv"
   DEPENDENCIES geometry_msgs
 )
 
