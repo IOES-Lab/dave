@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?><package format="3">
-  <name>dave_gazebo_world_plugins</name>
+  <name>dave_gazebo_world_plugin</name>
   <version>3.1.1</version>
   <description>The dave_gazebo_world_plugins package (Gazebo world plugin definitions)</description>
   <author email="gaurav.og.9920@gmail.com">Gaurav Kumar and woensug</author>
@@ -11,11 +11,13 @@
   <build_depend>gazebo_ros</build_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>protobuf</build_depend>
+  <build_depend>dave_interfaces</build_depend>
   <build_export_depend>gazebo_ros</build_export_depend>
   <build_export_depend>protobuf</build_export_depend>
   <exec_depend>gazebo_ros</exec_depend>
   <exec_depend>roscpp</exec_depend>
   <exec_depend>protobuf</exec_depend>
+  <exec_depend>dave_interfaces</exec_depend>
   <depend>gazebo_dev</depend>
   <depend>gazebo_msgs</depend>
   <export>

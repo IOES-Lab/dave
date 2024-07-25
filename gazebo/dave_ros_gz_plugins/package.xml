@@ -17,7 +17,6 @@
   <depend>ros_gz_sim</depend>
   <depend>gz_msgs</depend>
   <depend>gz_dev</depend>
-  <depend>dave_gz_world_plugins</depend>
   <build_depend>gz_ros</build_depend>
   <build_depend>protobuf</build_depend>
   <build_depend>message_generation</build_depend>

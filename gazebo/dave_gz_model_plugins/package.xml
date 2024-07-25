@@ -11,6 +11,7 @@
   <build_depend>gz_ros</build_depend>
   <build_depend>rclcpp</build_depend>
   <build_depend>protobuf</build_depend>
+  <build_depend>dave_interfaces</build_depend>
   <build_depend>message_generation</build_depend>
   <build_export_depend>gz_ros</build_export_depend>
   <build_export_depend>protobuf</build_export_depend>
@@ -19,6 +20,7 @@
   <exec_depend>rclcpp</exec_depend>
   <exec_depend>protobuf</exec_depend>
   <exec_depend>message_runtime</exec_depend>
+  <exec_depend>dave_interfaces</exec_depend>
   <!-- temporal -->
   <depend>gz_dev</depend>
   <depend>gz_msgs</depend>

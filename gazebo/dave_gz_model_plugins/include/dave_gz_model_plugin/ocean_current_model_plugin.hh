@@ -1,7 +1,6 @@
 #ifndef OCEAN_CURRENT_MODEL_PLUGIN_H_
 #define OCEAN_CURRENT_MODEL_PLUGIN_H_
 
-#include <dave_gz_ros_plugins/StratifiedCurrentDatabase.hh>
 #include <dave_gz_ros_plugins/gauss_markov_process.hh>
 // #include <dave_gz_ros_plugins/tidal_oscillation.h>
 

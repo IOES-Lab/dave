@@ -22,7 +22,7 @@ message(STATUS "Compiling against Gazebo Harmonic")
 
 # Libraries
 add_library(SphericalCoords SHARED src/SphericalCoords.cc)
-add_library(ocean_current_plugin SHARED src/ocean_current_plugin.cpp)
+add_library(ocean_current_plugin SHARED src/ocean_current_plugin.cc)
 
 # Include directories
 target_include_directories(SphericalCoords PRIVATE include)

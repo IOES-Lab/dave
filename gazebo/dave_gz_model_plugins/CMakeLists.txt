@@ -20,8 +20,8 @@ set(GZ_SIM_VER ${gz-sim8_VERSION_MAJOR})
 
 message(STATUS "Compiling against Gazebo Harmonic")
 
-add_library(dave_gz_model_plugins SHARED
-  src/ocean_current_model_plugin.cpp
+add_library(ocean_current_model_plugin SHARED
+  src/ocean_current_model_plugin.cc
 )
 
 target_include_directories(ocean_current_model_plugin PRIVATE include)

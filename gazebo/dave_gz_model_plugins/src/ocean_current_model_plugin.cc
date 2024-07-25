@@ -15,7 +15,7 @@
 
 /// \file ocean_current_model_plugin.cc
 
-#include "ocean_current_model_plugin.hh"
+#include "dave_gz_model_plugin/ocean_current_model_plugin.hh"
 #include <algorithm>
 #include <chrono>
 #include <iostream>

@@ -21,12 +21,12 @@ set(GZ_SIM_VER ${gz-sim8_VERSION_MAJOR})
 
 message(STATUS "compiling against Gazebo Harmonic")
 
-add_library(dave_gz_world_plugins SHARED
-src/ocean_current_world_plugins.cpp)
+add_library(ocean_current_world_plugin SHARED
+src/ocean_current_world_plugin.cc)
 
-target_include_directories(ocean_current_world_plugins PRIVATE include)
+target_include_directories(ocean_current_world_plugin PRIVATE include)
 
-target_link_libraries(ocean_current_world_plugins
+target_link_libraries(ocean_current_world_plugin
 gz-sim${GZ_SIM_VER}::GZ-SIM${GZ_SIM_VER})
 
 ament_target_dependencies(ocean_current_world_plugin
@@ -46,7 +46,16 @@ install(DIRECTORY include/
   DESTINATION include/
 )
 
-# Environment Hooks
-ament_environment_hooks("${CMAKE_CURRENT_SOURCE_DIR}/hooks/${PROJECT_NAME}.dsv.in")
+# Environment hooks
+ament_environment_hooks(
+  "${CMAKE_CURRENT_SOURCE_DIR}/hooks/${PROJECT_NAME}.dsv.in")
 
+
+# Testing setup
+if(BUILD_TESTING)
+  find_package(ament_lint_auto REQUIRED)
+  ament_lint_auto_find_test_dependencies()
+endif()
+
+# Configure ament
 ament_package()
