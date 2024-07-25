@@ -3,9 +3,6 @@ cmake_minimum_required(VERSION 3.8)
 project(dave_gz_model_plugins)
 
 find_package(ament_cmake REQUIRED)
-find_package(dave_gz_model_plugins REQUIRED)
-
-find_package(ros_gz_example_description REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system)
 find_package(gz-cmake3 REQUIRED)
 find_package(gz-plugin2 REQUIRED COMPONENTS register)
@@ -51,11 +48,11 @@ install(DIRECTORY include/
   DESTINATION include/
 )
 
-# # Following directives are used when testing.
-# if(BUILD_TESTING)
-#   find_package(ament_lint_auto REQUIRED)
-#   ament_lint_auto_find_test_dependencies()
-# endif()
+# Following directives are used when testing.
+if(BUILD_TESTING)
+  find_package(ament_lint_auto REQUIRED)
+  ament_lint_auto_find_test_dependencies()
+endif()
 
 # Environment Hooks
 ament_environment_hooks("${CMAKE_CURRENT_SOURCE_DIR}/hooks/${PROJECT_NAME}.dsv.in")

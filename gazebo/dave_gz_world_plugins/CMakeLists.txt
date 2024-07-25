@@ -4,7 +4,6 @@ cmake_minimum_required(VERSION 3.8)
 project(dave_gz_world_plugins)
 
 find_package(ament_cmake REQUIRED)
-find_package(ros_gz_example_description REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system)
 find_package(gz-cmake3 REQUIRED)
 find_package(gz-plugin2 REQUIRED COMPONENTS register)
@@ -34,7 +33,7 @@ ament_target_dependencies(ocean_current_world_plugin
   "rclcpp"
   "std_msgs"
   "geometry_msgs"
-#   "dave_interfaces"
+  "dave_interfaces"
 )
 
 # Install targets

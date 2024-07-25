@@ -25,7 +25,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/GetCurrentModel.srv"
   "srv/SetCurrentModel.srv"
   "srv/SetCurrentDirection.srv"
-  "srv/setCurrentVelocity.srv"
+  "srv/SetCurrentVelocity.srv"
   "srv/SetStratifiedCurrentVelocity.srv"
   "srv/SetStratifiedCurrentDirection.srv"
   DEPENDENCIES geometry_msgs

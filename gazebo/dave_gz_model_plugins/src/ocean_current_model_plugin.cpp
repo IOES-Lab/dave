@@ -178,7 +178,6 @@ private:
   std::shared_ptr<rclcpp::Node> ros_node_;
   rclcpp::Publisher<std_msgs::msg::String>::SharedPtr flowVelocityPub;
 
-private:
   /// \brief Pointer to this ROS node's handle.
   std::shared_ptr<rclcpp::NodeHandle> rosNode;
 
