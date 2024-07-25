@@ -77,11 +77,13 @@
       <cast_shadows>false</cast_shadows>
     </light>
 
-    <!-- North-East-Down Frame for world -->
-    <include>
-      <uri>https://fuel.gazebosim.org/1.0/hmoyen/models/North-East-Down frame</uri>
-      <pose>0 0 0 0 0 0</pose>
-    </include>
+		<!-- Virtual north, east and down frame -->
+		<include>
+			<uri>
+				https://fuel.gazebosim.org/1.0/hmoyen/models/North East Down frame
+			</uri>
+			<pose>0 0 0 0 0 0</pose>
+		</include>
 
     <include>
       <uri>
@@ -107,11 +109,11 @@
       <pose>-191.06 115.8 -155.0 0 -1.570777 0</pose>
     </include>
 
-    <include>
+    <!-- <include>
       <uri>https://fuel.gazebosim.org/1.0/hmoyen/models/Blow-Out Preventer Panel</uri>
       <static>true</static>
       <pose>-195 115 -160 0 0 0</pose>
-    </include>
+    </include> -->
 
     <model name="platform_22">
       <static>true</static>

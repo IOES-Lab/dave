@@ -16,7 +16,16 @@
 -->
 
 <sdf version="1.4">
-	<world name="dave_bimanual_example">
+	<world name="dvl_world">
+      <scene>
+      <!-- For turquoise ambient to match particle effect -->
+      <ambient>0.0 1.0 1.0</ambient>
+      <!-- For default gray ambient -->
+      <background>0.0 0.7 0.8</background>
+
+      <grid>false</grid>
+    </scene>
+
 		<physics name="1ms" type="ignored">
 			<max_step_size>0.001</max_step_size>
 			<real_time_factor>1.0</real_time_factor>
@@ -36,6 +45,14 @@
 		<plugin
 			filename="ignition-gazebo-contact-system"
 			name="ignition::gazebo::systems::Contact">
+		</plugin>
+		<plugin
+			filename="gz-sim-sensors-system"
+			name="gz::sim::systems::Sensors">
+    	</plugin>
+		<plugin
+			filename="gz-sim-dvl-system"
+			name="gz::sim::systems::DopplerVelocityLogSystem">
 		</plugin>
 
 		<!-- Origin placed somewhere in the middle of the North Sea -->
@@ -66,7 +83,7 @@
 		<!-- Virtual north, east and down frame -->
 		<include>
 			<uri>
-				https://fuel.gazebosim.org/1.0/hmoyen/models/North East Down frame
+				https://fuel.gazebosim.org/1.0/hmoyen/models/North-East-Down frame
 			</uri>
 			<pose>0 0 0 0 0 0</pose>
 		</include>
@@ -113,12 +130,12 @@
 							<length>3.0</length>
 						</cylinder>
 					</geometry>
-						<material>
-							<ambient>0.5 0.5 0.5 1.0</ambient>
-							<diffuse>0.5 0.5 0.5 1.0</diffuse>
-							<specular>0.1 0.1 0.1 1.0</specular>
-							<emissive>0.0 0.0 0.0 1.0</emissive>
-						</material>
+					<material>
+						<script>
+							<name>Gazebo/Grey</name>
+							<uri>file://media/materials/scripts/gazebo.material</uri>
+						</script>
+					</material>
 				</visual>
 			</link>
 		</model>
