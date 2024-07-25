@@ -1,4 +1,4 @@
-#include "dave_gz_sensor_plugins/Sea_pressure_sensor.hh"
+#include "dave_gz_sensor_plugins/sea_pressure_sensor.hh"
 #include <gz/math/Pose3.hh>
 #include <gz/math/Vector3.hh>
 #include <gz/msgs/Utility.hh>
@@ -13,10 +13,11 @@
 #include <gz/sim/components/World.hh>
 #include <gz/transport/Node.hh>
 #include <memory>  // Add this line to include the <memory> header file
+#include <memory>  // Add this line to include the <memory> header file
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/fluid_pressure.hpp>
 // #include "sensor_msgs.msgs"
-#include "dave_interfaces/proto/pressure_sensor_msgs/msgs/SensorPressure.pb.h"  // (check)
+#include <pressure_sensor_msgs/msgs/SensorPressure.pb.h>  // (check)
 // trusted #include <sensor_msgs/msg/fluid_pressure.hpp> #include
 // <dave_interfaces/proto/SensorPressure.pb.h>
 #include <chrono>
@@ -47,6 +48,14 @@ public:
   bool estimateDepth;
   double standardPressure;
   double kPaPerM;
+  rclcpp::Publisher<sensor_msgs::msg::FluidPressure> rosSensorOutputPub;
+  rclcpp::Node gazeboNode;
+  rclcpp::Node rosNode;
+  rclcpp::Publisher<pressure_sensor_msgs::msgs::Pressure>
+    // std::shared_ptr<rclcpp::Publisher<sensor_msgs::msg::FluidPressure>> rosSensorOutputPub;
+    // std::shared_ptr<rclcpp::Node> gazeboNode;
+    // std::shared_ptr<rclcpp::Node> rosNode;
+    // std::shared_ptr<rclcpp::Publisher<pressure_sensor_msgs::msgs::Pressure>>
   rclcpp::Publisher<sensor_msgs::msg::FluidPressure> rosSensorOutputPub;
   rclcpp::Node gazeboNode;
   rclcpp::Node rosNode;
