@@ -16,11 +16,8 @@
 syntax = "proto3";
 package pressure_sensor_msgs.msgs;
 
-message Pressure
-{
-  // required double pressure = 1 [default = 0.0];
-  // required double stddev = 2 [default = -1.0];
-  optional double pressure = 1 [default = 0.0];
-  optional double stddev = 2 [default = -1.0];
-  optional double depth = 3 [default = -1.0];
+message Pressure {
+  double pressure = 1;
+  double stddev = 2;
+  double depth = 3;
 }

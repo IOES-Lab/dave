@@ -15,6 +15,7 @@ find_package(gz-sim8 REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(dave_interfaces REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(Protobuf REQUIRED)
 find_package(gz-msgs10 REQUIRED)  # new to proto
 
 # Set version variables
@@ -22,9 +23,6 @@ set(GZ_PLUGIN_VER ${gz-plugin2_VERSION_MAJOR})
 set(GZ_COMMON_VER ${gz-common5_VERSION_MAJOR})
 set(GZ_SIM_VER ${gz-sim8_VERSION_MAJOR})
 set(GZ_MSGS_VER ${gz-msgs10_VERSION_MAJOR})  # new to proto
-
-# DEPENDENCIES(gz-msgs${GZ_MSGS_VER}::gz-msgs${GZ_MSGS_VER}) # new to proto
-
 
 message(STATUS "Compiling against Gazebo Harmonic")
 
@@ -87,6 +85,31 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
 endif()
+
+################################
+# # Protobuf generation
+# set(PROTO_FILES dave_interfaces/proto/pressure_sensor_msgs/msgs/SensorPressure.proto)
+# protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${PROTO_FILES})
+
+# add_library(pressure_sensor_msgs_gen SHARED ${PROTO_SRCS} ${PROTO_HDRS})
+# target_link_libraries(pressure_sensor_msgs_gen ${PROTOBUF_LIBRARIES})
+
+# # Specify dependencies for your library
+# ament_target_dependencies(pressure_sensor_msgs_gen
+#   rclcpp
+#   std_msgs
+#   geometry_msgs
+#   sensor_msgs
+#   dave_interfaces
+# )
+
+# include_directories(${PROTOBUF_INCLUDE_DIRS} ${CMAKE_CURRENT_BINARY_DIR})
+
+# # Install targets
+# install(TARGETS pressure_sensor_msgs_gen
+#   DESTINATION lib/${PROJECT_NAME}
+# )
+################################
 
 # Configure ament
 ament_package()
