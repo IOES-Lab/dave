@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<sdf version="1.7">
+
+  <include>
+    <pose degrees="true">0 0 0 0 0 0</pose>
+    <uri>https://fuel.gazebosim.org/1.0/hmoyen/models/teledyne_explorer1000_bare_model</uri>
+    <experimental:params>
+      <sensor
+          element_id="explorer_base_link" action="add"
+          name="teledyne_pathfinder_dvl"
+          type="custom" gz:type="dvl">
+        <pose degrees="true">-0.60 0 -0.16 0 0 180</pose>
+        <always_on>1</always_on>
+        <update_rate>1</update_rate>
+        <topic>/dvl/velocity</topic>
+        <gz:dvl>
+          <type>phased_array</type>
+          <arrangement degrees="true">
+            <beam id="1">
+              <aperture>2</aperture>
+              <rotation>45</rotation>
+              <tilt>30</tilt>
+            </beam>
+            <beam>
+              <aperture>2</aperture>
+              <rotation>135</rotation>
+              <tilt>30</tilt>
+            </beam>
+            <beam>
+              <aperture>2</aperture>
+              <rotation>-45</rotation>
+              <tilt>30</tilt>
+            </beam>
+            <beam>
+              <aperture>2</aperture>
+              <rotation>-135</rotation>
+              <tilt>30</tilt>
+            </beam>
+          </arrangement>
+          <tracking>
+            <bottom_mode>
+              <when>best</when>
+              <noise type="gaussian">
+                <!-- +/- 0.4 cm/s precision at 10 m/s within 2 stddevs -->
+                <stddev>0.002</stddev>
+              </noise>
+              <visualize>false</visualize>
+            </bottom_mode>
+          </tracking>
+          <!-- Roughly 1 m resolution at a 100m -->
+          <resolution>0.01</resolution>
+          <maximum_range>100.</maximum_range>
+          <minimum_range>0.1</minimum_range>
+          <!-- ENU to SFM -->
+          <reference_frame>0 0 0 0 0 -1.570796</reference_frame>
+        </gz:dvl>
+      </sensor>
+    </experimental:params>
+  </include>
+</sdf>
