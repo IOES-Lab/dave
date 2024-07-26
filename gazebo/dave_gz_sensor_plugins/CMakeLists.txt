@@ -13,15 +13,12 @@ find_package(geometry_msgs REQUIRED)
 find_package(dave_interfaces REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(Protobuf REQUIRED)
-find_package(gz-msgs10 REQUIRED)  # new to proto
-find_package(Protobuf REQUIRED)
 find_package(gz-msgs10 REQUIRED)
 
 # Set version variables
 set(GZ_PLUGIN_VER ${gz-plugin2_VERSION_MAJOR})
 set(GZ_COMMON_VER ${gz-common5_VERSION_MAJOR})
 set(GZ_SIM_VER ${gz-sim8_VERSION_MAJOR})
-set(GZ_MSGS_VER ${gz-msgs10_VERSION_MAJOR})  # new to proto
 set(GZ_MSGS_VER ${gz-msgs10_VERSION_MAJOR})
 
 message(STATUS "Compiling against Gazebo Harmonic")
