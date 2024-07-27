@@ -1,8 +1,16 @@
 <?xml version="1.6" ?>
 <sdf version="1.6">
   <world name="default">
-    <include>
-      <uri>model://battery_model</uri>
-    </include>
+  <model name="battery_model">
+    <static>false</static>
+    <link name="link">
+      <sensor name="battery_sensor" type="custom">
+        <plugin name="LinearBatteryPlugin" filename="linear_battery_plugin.py">
+          <namespace>robot_namespace</namespace>
+          <update_rate>2</update_rate>
+        </plugin>
+      </sensor>
+    </link>
+  </model>
   </world>
 </sdf>

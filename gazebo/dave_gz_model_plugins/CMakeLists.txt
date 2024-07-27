@@ -14,18 +14,25 @@ find_package(rclpy REQUIRED)
 # Include directories
 include_directories(include)
 
+# Set version variables
+set(GZ_PLUGIN_VER ${gz-plugin2_VERSION_MAJOR})
+set(GZ_COMMON_VER ${gz-common5_VERSION_MAJOR})
+set(GZ_SIM_VER ${gz-sim8_VERSION_MAJOR})
+
 # Install Python package
 ament_python_install_package(${PROJECT_NAME} PACKAGE_DIR "src")
+
+
+# add_library(LinearBatteryPlugin SHARED src/linear_battery_plugin.py)
+
+# target_link_libraries(LinearBatteryPlugin
+#   gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER})
+
 
 # Install Python script directly
 install(PROGRAMS
   ${CMAKE_CURRENT_SOURCE_DIR}/test/battery_state_listener.py
   DESTINATION lib/${PROJECT_NAME}
-)
-
-install(FILES 
-  ${CMAKE_CURRENT_SOURCE_DIR}/test/battery_model/model.sdf test/battery_model/model.config
-  DESTINATION share/${PROJECT_NAME}/test/battery_model/
 )
 
 install(FILES 

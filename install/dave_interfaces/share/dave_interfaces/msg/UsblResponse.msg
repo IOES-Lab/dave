@@ -1,3 +1,0 @@
-int32 transceiver_id
-int32 response_id
-string data

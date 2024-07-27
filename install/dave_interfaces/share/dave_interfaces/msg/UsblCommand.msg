@@ -1,3 +1,0 @@
-int32 transponder_id
-int32 command_id
-string data

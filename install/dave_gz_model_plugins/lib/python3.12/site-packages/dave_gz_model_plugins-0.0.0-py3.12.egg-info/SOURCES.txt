@@ -1,7 +1,0 @@
-setup.py
-dave_gz_model_plugins/__init__.py
-dave_gz_model_plugins/linear_battery_plugin.py
-dave_gz_model_plugins.egg-info/PKG-INFO
-dave_gz_model_plugins.egg-info/SOURCES.txt
-dave_gz_model_plugins.egg-info/dependency_links.txt
-dave_gz_model_plugins.egg-info/top_level.txt
