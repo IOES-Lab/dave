@@ -1,0 +1,57 @@
+-- The C compiler identification is GNU 13.2.0
+-- The CXX compiler identification is GNU 13.2.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Found ament_cmake: 2.5.2 (/opt/ros/jazzy/share/ament_cmake/cmake)
+-- Found Python3: /usr/bin/python3 (found version "3.12.3") found components: Interpreter 
+-- Configuring done (3.7s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/abhimanyu/dave_ws/src/dave/build/dave_robot_models
+-- Install configuration: ""
+-- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/description
+-- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/description/glider_slocum
+-- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/description/glider_slocum/model.sdf
+-- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/description/glider_slocum/model.config
+-- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/description/rexrov
+-- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/description/rexrov/model.sdf
+-- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/description/rexrov/model.config
+-- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/launch
+-- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/launch/upload_robot.launch.py
+-- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/meshes
+-- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/meshes/glider_slocum
+-- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/meshes/glider_slocum/Slocum-Glider-LeftFin.dae
+-- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/meshes/glider_slocum/Slocum-Glider-RightFin.dae
+-- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/meshes/glider_slocum/Slocum-Glider-Propeller.dae
+-- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/meshes/glider_slocum/Slocum-Glider-TopRudder.dae
+-- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/meshes/glider_slocum/Slocum-Glider.dae
+-- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/meshes/glider_slocum/COLLISION-Slocum-Glider.dae
+-- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/meshes/glider_slocum/Slocum-Glider.png
+-- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/meshes/rexrov
+-- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/meshes/rexrov/RexROV_no_props.stl
+-- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/meshes/rexrov/prop.dae
+-- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/meshes/rexrov/collision.blend
+-- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/meshes/rexrov/RexROV_no_props.dae
+-- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/environment/dave_robot_models.dsv
+-- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/ament_index/resource_index/package_run_dependencies/dave_robot_models
+-- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/ament_index/resource_index/parent_prefix_path/dave_robot_models
+-- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/environment/ament_prefix_path.sh
+-- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/environment/ament_prefix_path.dsv
+-- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/environment/path.sh
+-- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/environment/path.dsv
+-- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/local_setup.bash
+-- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/local_setup.sh
+-- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/local_setup.zsh
+-- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/local_setup.dsv
+-- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/package.dsv
+-- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/ament_index/resource_index/packages/dave_robot_models
+-- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/cmake/dave_robot_modelsConfig.cmake
+-- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/cmake/dave_robot_modelsConfig-version.cmake
+-- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/package.xml

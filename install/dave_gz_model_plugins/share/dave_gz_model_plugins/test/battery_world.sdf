@@ -1,0 +1,8 @@
+<?xml version="1.6" ?>
+<sdf version="1.6">
+  <world name="default">
+    <include>
+      <uri>model://battery_model</uri>
+    </include>
+  </world>
+</sdf>

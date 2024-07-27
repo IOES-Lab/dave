@@ -1,0 +1,134 @@
+<?xml version="1.0"?>
+
+<sdf version="1.4">
+  <world name="default">
+
+    <include>
+      <uri>
+        https://fuel.gazebosim.org/1.0/OpenRobotics/models/Ground Plane
+      </uri>
+      <pose>0 0 0 0 0 0</pose>
+    </include>
+
+    <include>
+      <uri>
+        https://fuel.gazebosim.org/1.0/OpenRobotics/models/Sun
+      </uri>
+    </include>
+
+    <model name="box">
+      <pose>0 0 0.5 0 0 0</pose>
+      <link name="box_link">
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>1 1 1</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>1 1 1</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>1 0 0 1</ambient> <!-- Red color -->
+            <diffuse>1 0 0 1</diffuse>
+          </material>
+        </visual>
+      </link>
+
+      <plugin
+        filename="UsblTransceiver"
+        name="dave_gz_sensor_plugins::UsblTransceiver">
+        <namespace>USBL</namespace>
+        <transceiver_device>transceiver_manufacturer</transceiver_device>
+        <transponder_device>transponder_manufacturer</transponder_device>
+        <transponder_ID>1,2</transponder_ID>
+        <transceiver_ID>168</transceiver_ID>
+        <enable_ping_scheduler>true</enable_ping_scheduler>
+        <interrogation_mode>common</interrogation_mode>
+        <ping_frequency>0.5</ping_frequency>
+        <transponder_attached_object>sphere,sphere2</transponder_attached_object>
+        <sound_speed>1540</sound_speed>
+      </plugin>
+    </model>
+
+    <model name="sphere">
+      <pose>3 3 1 0 0 0</pose>
+      <link name="sphere_link">
+        <collision name="collision">
+          <geometry>
+            <sphere>
+              <radius>1</radius>
+            </sphere>
+          </geometry>
+        </collision>
+
+        <visual name="visual">
+          <geometry>
+            <sphere>
+              <radius>1</radius>
+            </sphere>
+          </geometry>
+          <material>
+            <ambient>0 1 0 1</ambient> <!-- Green color -->
+            <diffuse>0 1 0 1</diffuse>
+          </material>
+        </visual>
+      </link>
+      <plugin
+        filename="UsblTransponder"
+        name="dave_gz_sensor_plugins::UsblTransponder">
+        <namespace>USBL</namespace>
+        <transponder_device>transponder_manufacturer</transponder_device>
+        <transponder_ID>1</transponder_ID>
+        <transceiver_device>transceiver_manufacturer</transceiver_device>
+        <transceiver_ID>168</transceiver_ID>
+        <transceiver_model>box</transceiver_model>
+        <mu>0</mu>
+        <sigma>0.0</sigma>
+      </plugin>
+    </model>
+
+    <model name="sphere2">
+      <pose>6 6 1 0 0 0</pose>
+      <link name="sphere2_link">
+        <collision name="collision">
+          <geometry>
+            <sphere>
+              <radius>1</radius>
+            </sphere>
+          </geometry>
+        </collision>
+
+        <visual name="visual">
+          <geometry>
+            <sphere>
+              <radius>1</radius>
+            </sphere>
+          </geometry>
+          <material>
+            <ambient>0 0 1 1</ambient> <!-- Blue color -->
+            <diffuse>0 0 1 1</diffuse>
+          </material>
+        </visual>
+      </link>
+      <plugin
+        filename="UsblTransponder"
+        name="dave_gz_sensor_plugins::UsblTransponder">
+        <namespace>USBL</namespace>
+        <transponder_device>transponder_manufacturer</transponder_device>
+        <transponder_ID>2</transponder_ID>
+        <transceiver_device>transceiver_manufacturer</transceiver_device>
+        <transceiver_ID>168</transceiver_ID>
+        <transceiver_model>box</transceiver_model>
+        <sound_speed>1540</sound_speed>
+        <mu>0</mu>
+        <sigma>0.0</sigma>
+      </plugin>
+    </model>
+  </world>
+</sdf>

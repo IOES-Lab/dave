@@ -1,0 +1,198 @@
+<?xml version="1.0"?>
+<sdf version="1.7">
+  <model name="glider_slocum">
+
+    <static>false</static>
+    <link name="base_link">
+      <inertial>
+        <pose>0 0 -0.06 0 0 0</pose>
+        <mass>69.25</mass>
+        <inertia>
+          <ixx>13.193856</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.418962</iyy>
+          <iyz>0</iyz>
+          <izz>13.193856</izz>
+        </inertia>
+      </inertial>
+
+      <visual name="base_link_visual">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>0.5 0.5 0.5</scale>
+            <uri>model://meshes/glider_slocum/Slocum-Glider.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+
+      <collision name="base_link_collision">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <!-- <mesh>
+            <scale>0.5 0.5 0.5</scale>
+            <uri>model://meshes/glider_slocum/COLLISION-Slocum-Glider.dae</uri>
+          </mesh> -->
+          <box>
+            <size>0.22 1.5 0.22</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <sensor name="imu_sensor" type="imu">
+        <always_on>true</always_on>
+        <update_rate>1000.0</update_rate>
+        <topic>imu</topic>
+      </sensor>
+
+    </link>
+
+    <link name='battery_link'>
+      <inertial>
+        <pose>0 0 0 0 0 0</pose>
+        <mass>0.001</mass>
+        <inertia>
+          <ixx>1e-05</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>1e-05</iyy>
+          <iyz>0</iyz>
+          <izz>1e-05</izz>
+        </inertia>
+      </inertial>
+      <battery name='battery'>
+        <voltage>4.2</voltage>
+      </battery>
+    </link>
+
+    <joint name='battery_joint' type='fixed'>
+      <pose>0 0 0 0 0 0</pose>
+      <parent>base_link</parent>
+      <child>battery_link</child>
+    </joint>
+
+    <plugin
+      filename="gz-sim-linearbatteryplugin-system"
+      name="gz::sim::systems::LinearBatteryPlugin">
+      <battery_name>battery</battery_name>
+      <voltage>4.2</voltage>
+      <open_circuit_voltage_constant_coef>3.7</open_circuit_voltage_constant_coef>
+      <open_circuit_voltage_linear_coef>-3.1424</open_circuit_voltage_linear_coef>
+      <initial_charge>4.32</initial_charge>
+      <capacity>4.8</capacity>
+      <resistance>0.002</resistance>
+      <smooth_current_tau>1.9499</smooth_current_tau>
+      <enable_recharge>false</enable_recharge>
+      <power_load>10</power_load>
+      <start_on_motion>true</start_on_motion>
+    </plugin>
+
+    <link name="propeller_link">
+      <visual name="propeller_link_visual">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>0.5 0.5 0.5</scale>
+            <uri>model://meshes/glider_slocum/Slocum-Glider-Propeller.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <inertial>
+        <pose>0 0 0 0 0 0</pose>
+        <inertia>
+          <ixx>0.1</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.1</iyy>
+          <iyz>0</iyz>
+          <izz>0.1</izz>
+        </inertia>
+        <mass>0.5</mass>
+      </inertial>
+    </link>
+
+    <joint name="propeller_joint" type="revolute">
+      <pose>0 0 0 0 0 0</pose>
+      <parent>base_link</parent>
+      <child>propeller_link</child>
+      <axis>
+        <xyz>0 1 0</xyz>
+      </axis>
+    </joint>
+
+    <plugin
+      filename="gz-sim-thruster-system"
+      name="gz::sim::systems::Thruster">
+      <namespace>glider_slocum</namespace>
+      <joint_name>propeller_joint</joint_name>
+      <fluid_density>1025.0</fluid_density>
+      <thrust_coefficient>4.9e-05</thrust_coefficient>
+      <velocity_control>true</velocity_control>
+      <use_angvel_cmd>false</use_angvel_cmd>
+    </plugin>
+
+    <plugin
+      filename="gz-sim-hydrodynamics-system"
+      name="gz::sim::systems::Hydrodynamics">
+      <link_name>base_link</link_name>
+      <water_density>1025.0</water_density>
+      <!-- Added mass -->
+      <xDotU>0</xDotU>
+      <yDotV>0</yDotV>
+      <zDotW>0</zDotW>
+      <kDotP>0</kDotP>
+      <mDotQ>0</mDotQ>
+      <nDotR>0</nDotR>
+      <!-- <xDotU>4</xDotU>
+      <yDotV>95</yDotV>
+      <zDotW>75</zDotW>
+      <kDotP>0.4</kDotP>
+      <mDotQ>27</mDotQ>
+      <nDotR>32</nDotR> -->
+
+      <!-- Linear Drag Coefficients -->
+      <!-- diagonal terms -->
+      <xU>-8</xU>
+      <yV>-162</yV>
+      <zW>-108</zW>
+      <kP>-13</kP>
+      <mQ>-20</mQ>
+      <nR>-32</nR>
+      <!-- cross terms -->
+      <yR>150</yR>
+      <zQ>-100</zQ>
+      <mW>37</mW>
+      <nV>-34</nV>
+
+      <!-- Quadratic Drag Coefficients -->
+      <xUabsU>0</xUabsU>
+      <yVabsV>0</yVabsV>
+      <zWabsW>0</zWabsW>
+      <kPabsP>0</kPabsP>
+      <mQabsQ>0</mQabsQ>
+      <nRabsR>0</nRabsR>
+    </plugin>
+
+    <plugin
+      filename="gz-sim-imu-system"
+      name="gz::sim::systems::Imu">
+    </plugin>
+
+    <plugin
+      filename="gz-sim-odometry-publisher-system"
+      name="gz::sim::systems::OdometryPublisher">
+      <odom_frame>map</odom_frame>
+      <robot_base_frame>base_link</robot_base_frame>
+      <dimensions>3</dimensions>
+      <odom_publish_frequency>100</odom_publish_frequency>
+    </plugin>
+
+    <plugin
+      filename="gz-sim-joint-state-publisher-system"
+      name="gz::sim::systems::JointStatePublisher">
+    </plugin>
+
+
+  </model>
+</sdf>

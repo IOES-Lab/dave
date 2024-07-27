@@ -1,0 +1,63 @@
+[0.038s] Invoking command in '/home/abhimanyu/dave_ws/src/dave/build/dave_robot_models': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/abhimanyu/dave_ws/src/install/dave_worlds:/home/abhimanyu/dave_ws/src/install/dave_sensor_models:/home/abhimanyu/dave_ws/src/install/dave_robot_models:/home/abhimanyu/dave_ws/src/install/dave_robot_launch:/home/abhimanyu/dave_ws/src/install/dave_object_models:/home/abhimanyu/dave_ws/src/install/dave_demos:/home/abhimanyu/dave_ws/src/install/dave:/home/abhimanyu/MIR_Project_2024/glassy_challenge_ws/install/glassy_challenge /usr/bin/cmake /home/abhimanyu/dave_ws/src/dave/models/dave_robot_models -DCMAKE_INSTALL_PREFIX=/home/abhimanyu/dave_ws/src/dave/install/dave_robot_models
+[0.314s] -- The C compiler identification is GNU 13.2.0
+[0.541s] -- The CXX compiler identification is GNU 13.2.0
+[0.608s] -- Detecting C compiler ABI info
+[0.958s] -- Detecting C compiler ABI info - done
+[1.005s] -- Check for working C compiler: /usr/bin/cc - skipped
+[1.005s] -- Detecting C compile features
+[1.008s] -- Detecting C compile features - done
+[1.059s] -- Detecting CXX compiler ABI info
+[1.492s] -- Detecting CXX compiler ABI info - done
+[1.552s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[1.553s] -- Detecting CXX compile features
+[1.554s] -- Detecting CXX compile features - done
+[1.582s] -- Found ament_cmake: 2.5.2 (/opt/ros/jazzy/share/ament_cmake/cmake)
+[2.387s] -- Found Python3: /usr/bin/python3 (found version "3.12.3") found components: Interpreter 
+[3.768s] -- Configuring done (3.7s)
+[3.783s] -- Generating done (0.0s)
+[3.791s] -- Build files have been written to: /home/abhimanyu/dave_ws/src/dave/build/dave_robot_models
+[3.826s] Invoked command in '/home/abhimanyu/dave_ws/src/dave/build/dave_robot_models' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/abhimanyu/dave_ws/src/install/dave_worlds:/home/abhimanyu/dave_ws/src/install/dave_sensor_models:/home/abhimanyu/dave_ws/src/install/dave_robot_models:/home/abhimanyu/dave_ws/src/install/dave_robot_launch:/home/abhimanyu/dave_ws/src/install/dave_object_models:/home/abhimanyu/dave_ws/src/install/dave_demos:/home/abhimanyu/dave_ws/src/install/dave:/home/abhimanyu/MIR_Project_2024/glassy_challenge_ws/install/glassy_challenge /usr/bin/cmake /home/abhimanyu/dave_ws/src/dave/models/dave_robot_models -DCMAKE_INSTALL_PREFIX=/home/abhimanyu/dave_ws/src/dave/install/dave_robot_models
+[3.827s] Invoking command in '/home/abhimanyu/dave_ws/src/dave/build/dave_robot_models': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/abhimanyu/dave_ws/src/install/dave_worlds:/home/abhimanyu/dave_ws/src/install/dave_sensor_models:/home/abhimanyu/dave_ws/src/install/dave_robot_models:/home/abhimanyu/dave_ws/src/install/dave_robot_launch:/home/abhimanyu/dave_ws/src/install/dave_object_models:/home/abhimanyu/dave_ws/src/install/dave_demos:/home/abhimanyu/dave_ws/src/install/dave:/home/abhimanyu/MIR_Project_2024/glassy_challenge_ws/install/glassy_challenge /usr/bin/cmake --build /home/abhimanyu/dave_ws/src/dave/build/dave_robot_models -- -j4 -l4
+[4.022s] Invoked command in '/home/abhimanyu/dave_ws/src/dave/build/dave_robot_models' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/abhimanyu/dave_ws/src/install/dave_worlds:/home/abhimanyu/dave_ws/src/install/dave_sensor_models:/home/abhimanyu/dave_ws/src/install/dave_robot_models:/home/abhimanyu/dave_ws/src/install/dave_robot_launch:/home/abhimanyu/dave_ws/src/install/dave_object_models:/home/abhimanyu/dave_ws/src/install/dave_demos:/home/abhimanyu/dave_ws/src/install/dave:/home/abhimanyu/MIR_Project_2024/glassy_challenge_ws/install/glassy_challenge /usr/bin/cmake --build /home/abhimanyu/dave_ws/src/dave/build/dave_robot_models -- -j4 -l4
+[4.109s] Invoking command in '/home/abhimanyu/dave_ws/src/dave/build/dave_robot_models': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/abhimanyu/dave_ws/src/install/dave_worlds:/home/abhimanyu/dave_ws/src/install/dave_sensor_models:/home/abhimanyu/dave_ws/src/install/dave_robot_models:/home/abhimanyu/dave_ws/src/install/dave_robot_launch:/home/abhimanyu/dave_ws/src/install/dave_object_models:/home/abhimanyu/dave_ws/src/install/dave_demos:/home/abhimanyu/dave_ws/src/install/dave:/home/abhimanyu/MIR_Project_2024/glassy_challenge_ws/install/glassy_challenge /usr/bin/cmake --install /home/abhimanyu/dave_ws/src/dave/build/dave_robot_models
+[4.129s] -- Install configuration: ""
+[4.130s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/description
+[4.131s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/description/glider_slocum
+[4.131s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/description/glider_slocum/model.sdf
+[4.133s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/description/glider_slocum/model.config
+[4.134s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/description/rexrov
+[4.134s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/description/rexrov/model.sdf
+[4.136s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/description/rexrov/model.config
+[4.137s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/launch
+[4.138s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/launch/upload_robot.launch.py
+[4.139s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/meshes
+[4.140s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/meshes/glider_slocum
+[4.142s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/meshes/glider_slocum/Slocum-Glider-LeftFin.dae
+[4.142s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/meshes/glider_slocum/Slocum-Glider-RightFin.dae
+[4.143s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/meshes/glider_slocum/Slocum-Glider-Propeller.dae
+[4.146s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/meshes/glider_slocum/Slocum-Glider-TopRudder.dae
+[4.146s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/meshes/glider_slocum/Slocum-Glider.dae
+[4.147s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/meshes/glider_slocum/COLLISION-Slocum-Glider.dae
+[4.147s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/meshes/glider_slocum/Slocum-Glider.png
+[4.151s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/meshes/rexrov
+[4.151s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/meshes/rexrov/RexROV_no_props.stl
+[4.153s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/meshes/rexrov/prop.dae
+[4.155s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/meshes/rexrov/collision.blend
+[4.158s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/meshes/rexrov/RexROV_no_props.dae
+[4.211s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/environment/dave_robot_models.dsv
+[4.212s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/ament_index/resource_index/package_run_dependencies/dave_robot_models
+[4.214s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/ament_index/resource_index/parent_prefix_path/dave_robot_models
+[4.214s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/environment/ament_prefix_path.sh
+[4.215s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/environment/ament_prefix_path.dsv
+[4.215s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/environment/path.sh
+[4.215s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/environment/path.dsv
+[4.215s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/local_setup.bash
+[4.215s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/local_setup.sh
+[4.216s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/local_setup.zsh
+[4.216s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/local_setup.dsv
+[4.216s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/package.dsv
+[4.216s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/ament_index/resource_index/packages/dave_robot_models
+[4.216s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/cmake/dave_robot_modelsConfig.cmake
+[4.218s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/cmake/dave_robot_modelsConfig-version.cmake
+[4.218s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_robot_models/share/dave_robot_models/package.xml
+[4.227s] Invoked command in '/home/abhimanyu/dave_ws/src/dave/build/dave_robot_models' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/abhimanyu/dave_ws/src/install/dave_worlds:/home/abhimanyu/dave_ws/src/install/dave_sensor_models:/home/abhimanyu/dave_ws/src/install/dave_robot_models:/home/abhimanyu/dave_ws/src/install/dave_robot_launch:/home/abhimanyu/dave_ws/src/install/dave_object_models:/home/abhimanyu/dave_ws/src/install/dave_demos:/home/abhimanyu/dave_ws/src/install/dave:/home/abhimanyu/MIR_Project_2024/glassy_challenge_ws/install/glassy_challenge /usr/bin/cmake --install /home/abhimanyu/dave_ws/src/dave/build/dave_robot_models

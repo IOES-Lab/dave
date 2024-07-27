@@ -1,0 +1,10 @@
+<?xml version="1.0" ?>
+<sdf version="1.7">
+  <include>
+    <name>mossy_cinder_block</name>
+    <pose>0 0 0 0 0 0</pose>
+    <uri>
+      https://fuel.gazebosim.org/1.0/hmoyen/models/mossy_cinder_block
+    </uri>
+  </include>
+</sdf>

@@ -1,0 +1,25 @@
+[ 50%] Built target UsblTransponder
+[100%] Built target UsblTransceiver
+-- Install configuration: ""
+-- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_gz_sensor_plugins/lib/dave_gz_sensor_plugins/libUsblTransceiver.so
+-- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_gz_sensor_plugins/lib/dave_gz_sensor_plugins/libUsblTransponder.so
+-- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_gz_sensor_plugins/include/
+-- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_gz_sensor_plugins/include//dave_gz_sensor_plugins
+-- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_gz_sensor_plugins/include//dave_gz_sensor_plugins/UsblTransponder.hh
+-- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_gz_sensor_plugins/include//dave_gz_sensor_plugins/UsblTransceiver.hh
+-- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_gz_sensor_plugins/share/dave_gz_sensor_plugins/environment/dave_gz_sensor_plugins.dsv
+-- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_gz_sensor_plugins/share/ament_index/resource_index/package_run_dependencies/dave_gz_sensor_plugins
+-- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_gz_sensor_plugins/share/ament_index/resource_index/parent_prefix_path/dave_gz_sensor_plugins
+-- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_gz_sensor_plugins/share/dave_gz_sensor_plugins/environment/ament_prefix_path.sh
+-- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_gz_sensor_plugins/share/dave_gz_sensor_plugins/environment/ament_prefix_path.dsv
+-- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_gz_sensor_plugins/share/dave_gz_sensor_plugins/environment/path.sh
+-- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_gz_sensor_plugins/share/dave_gz_sensor_plugins/environment/path.dsv
+-- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_gz_sensor_plugins/share/dave_gz_sensor_plugins/local_setup.bash
+-- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_gz_sensor_plugins/share/dave_gz_sensor_plugins/local_setup.sh
+-- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_gz_sensor_plugins/share/dave_gz_sensor_plugins/local_setup.zsh
+-- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_gz_sensor_plugins/share/dave_gz_sensor_plugins/local_setup.dsv
+-- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_gz_sensor_plugins/share/dave_gz_sensor_plugins/package.dsv
+-- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_gz_sensor_plugins/share/ament_index/resource_index/packages/dave_gz_sensor_plugins
+-- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_gz_sensor_plugins/share/dave_gz_sensor_plugins/cmake/dave_gz_sensor_pluginsConfig.cmake
+-- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_gz_sensor_plugins/share/dave_gz_sensor_plugins/cmake/dave_gz_sensor_pluginsConfig-version.cmake
+-- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_gz_sensor_plugins/share/dave_gz_sensor_plugins/package.xml

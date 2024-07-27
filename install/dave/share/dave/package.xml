@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<package format="3">
+  <name>dave</name>
+  <version>0.0.0</version>
+  <description>Metapackage for Dave related packages</description>
+  <maintainer email="woensug.choi@gmail.com">Woen-Sug Choi</maintainer>
+  <license>Apache License 2.0</license>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

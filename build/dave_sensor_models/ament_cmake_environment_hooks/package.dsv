@@ -1,0 +1,4 @@
+source;share/dave_sensor_models/local_setup.bash
+source;share/dave_sensor_models/local_setup.dsv
+source;share/dave_sensor_models/local_setup.sh
+source;share/dave_sensor_models/local_setup.zsh

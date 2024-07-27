@@ -1,0 +1,588 @@
+<?xml version="1.0" ?>
+<sdf version="1.7">
+  <model name="rexrov">
+
+    <link name="base_link">
+      <inertial>
+        <pose>0 0 -0.59 0 0 0</pose>
+        <mass>1862.87</mass>
+        <inertia>
+          <ixx>525.39</ixx>
+          <ixy>1.44</ixy>
+          <ixz>33.41</ixz>
+          <iyy>794.20</iyy>
+          <iyz>2.6</iyz>
+          <izz>691.23</izz>
+        </inertia>
+      </inertial>
+
+      <visual name="visual_mesh_file">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://meshes/rexrov/RexROV_no_props.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+
+      <!-- bottom plate -->
+      <collision name="bottom_plate">
+        <pose>0 0 -0.75 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>2.56 1.50 0.10</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <!-- top plate -->
+      <collision name="top_plate">
+        <pose>0 0 0.60 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>2.56 1.50 0.40</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <!-- left / right sides -->
+      <collision name="left_side">
+        <pose>-0.20 0.70 -0.15 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>2.20 0.10 1.10</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <collision name="right_side">
+        <pose>0.20 -0.70 -0.15 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>2.20 0.10 1.10</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <sensor name="imu_sensor" type="imu">
+        <always_on>true</always_on>
+        <update_rate>1000.0</update_rate>
+        <topic>imu</topic>
+      </sensor>
+
+    </link>
+
+    <link name="thruster1">
+      <pose>-0.890895 0.334385 0.528822 0 -1.300794 -0.928689</pose>
+      <inertial>
+        <mass>0.001</mass>
+        <inertia>
+          ixx="0.0005"
+          ixy="0"
+          ixz="0"
+          iyy="0.0005"
+          iyz="0"
+          izz="0.0005"
+        </inertia>
+      </inertial>
+      <visual name="prop_mesh_file">
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://meshes/rexrov/prop.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="thruster1_collision">
+        <geometry>
+          <cylinder>
+            <length>0.000001</length>
+            <radius>0.000001</radius>
+          </cylinder>
+        </geometry>
+        <pose>0 0 0 0 0 0</pose>
+      </collision>
+    </link>
+
+    <link name="thruster2">
+      <pose>-0.890895 -0.334385 0.528822 0 -1.300794 0.928689</pose>
+      <inertial>
+        <mass>0.001</mass>
+        <inertia>
+          ixx="0.0005"
+          ixy="0"
+          ixz="0"
+          iyy="0.0005"
+          iyz="0"
+          izz="0.0005"
+        </inertia>
+      </inertial>
+      <visual name="prop_mesh_file">
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://meshes/rexrov/prop.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="thruster2_collision">
+        <geometry>
+          <cylinder>
+            <length>0.000001</length>
+            <radius>0.000001</radius>
+          </cylinder>
+        </geometry>
+        <pose>0 0 0 0 0 0</pose>
+      </collision>
+    </link>
+
+    <link name="thruster3">
+      <pose>0.890895 0.334385 0.528822 0 -1.840798 0.928689</pose>
+      <inertial>
+        <mass>0.001</mass>
+        <inertia>
+          ixx="0.0005"
+          ixy="0"
+          ixz="0"
+          iyy="0.0005"
+          iyz="0"
+          izz="0.0005"
+        </inertia>
+      </inertial>
+      <visual name="prop_mesh_file">
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://meshes/rexrov/prop.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="thruster3_collision">
+        <geometry>
+          <cylinder>
+            <length>0.000001</length>
+            <radius>0.000001</radius>
+          </cylinder>
+        </geometry>
+        <pose>0 0 0 0 0 0</pose>
+      </collision>
+    </link>
+
+    <link name="thruster4">
+      <pose>0.890895 -0.334385 0.528822 0 -1.300794 -0.928689</pose>
+      <inertial>
+        <mass>0.001</mass>
+        <inertia>
+          ixx="0.0005"
+          ixy="0"
+          ixz="0"
+          iyy="0.0005"
+          iyz="0"
+          izz="0.0005"
+        </inertia>
+      </inertial>
+      <visual name="prop_mesh_file">
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://meshes/rexrov/prop.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="thruster4_collision">
+        <geometry>
+          <cylinder>
+            <length>0.000001</length>
+            <radius>0.000001</radius>
+          </cylinder>
+        </geometry>
+        <pose>0 0 0 0 0 0</pose>
+      </collision>
+    </link>
+
+    <link name="thruster5">
+      <pose>-0.412125 0.505415 0.129 0 0 0.785398</pose>
+      <inertial>
+        <mass>0.001</mass>
+        <inertia>
+          ixx="0.0005"
+          ixy="0"
+          ixz="0"
+          iyy="0.0005"
+          iyz="0"
+          izz="0.0005"
+        </inertia>
+      </inertial>
+      <visual name="prop_mesh_file">
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://meshes/rexrov/prop.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="thruster5_collision">
+        <geometry>
+          <cylinder>
+            <length>0.000001</length>
+            <radius>0.000001</radius>
+          </cylinder>
+        </geometry>
+        <pose>0 0 0 0 0 0</pose>
+      </collision>
+    </link>
+
+    <link name="thruster6">
+      <pose>-0.412125 -0.505415 0.129 0 0 -0.785398</pose>
+      <inertial>
+        <mass>0.001</mass>
+        <inertia>
+          ixx="0.0005"
+          ixy="0"
+          ixz="0"
+          iyy="0.0005"
+          iyz="0"
+          izz="0.0005"
+        </inertia>
+      </inertial>
+      <visual name="prop_mesh_file">
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://meshes/rexrov/prop.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="thruster6_collision">
+        <geometry>
+          <cylinder>
+            <length>0.000001</length>
+            <radius>0.000001</radius>
+          </cylinder>
+        </geometry>
+        <pose>0 0 0 0 0 0</pose>
+      </collision>
+    </link>
+
+    <link name="thruster7">
+      <pose>0.412125 0.505415 0.129 0 0 2.356194</pose>
+      <inertial>
+        <mass>0.001</mass>
+        <inertia>
+          ixx="0.0005"
+          ixy="0"
+          ixz="0"
+          iyy="0.0005"
+          iyz="0"
+          izz="0.0005"
+        </inertia>
+      </inertial>
+      <visual name="prop_mesh_file">
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://meshes/rexrov/prop.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="thruster7_collision">
+        <geometry>
+          <cylinder>
+            <length>0.000001</length>
+            <radius>0.000001</radius>
+          </cylinder>
+        </geometry>
+        <pose>0 0 0 0 0 0</pose>
+      </collision>
+    </link>
+
+    <link name="thruster8">
+      <pose>0.412125 -0.505415 0.129 0 0 -2.356194</pose>
+      <inertial>
+        <mass>0.001</mass>
+        <inertia>
+          ixx="0.0005"
+          ixy="0"
+          ixz="0"
+          iyy="0.0005"
+          iyz="0"
+          izz="0.0005"
+        </inertia>
+      </inertial>
+      <visual name="prop_mesh_file">
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://meshes/rexrov/prop.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="thruster8_collision">
+        <geometry>
+          <cylinder>
+            <length>0.000001</length>
+            <radius>0.000001</radius>
+          </cylinder>
+        </geometry>
+        <pose>0 0 0 0 0 0</pose>
+      </collision>
+    </link>
+
+    <joint name="thruster1_joint" type="revolute">
+      <pose>-0.890895 0.334385 0.528822 0 -1.300794 -0.928689</pose>
+      <parent>base_link</parent>
+      <child>thruster1</child>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <effort>-1</effort>
+          <velocity>-1</velocity>
+        </limit>
+      </axis>
+    </joint>
+
+    <joint name="thruster2_joint" type="revolute">
+      <pose>-0.890895 -0.334385 0.528822 0 -1.300794 0.928689</pose>
+      <parent>base_link</parent>
+      <child>thruster2</child>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <effort>-1</effort>
+          <velocity>-1</velocity>
+        </limit>
+      </axis>
+    </joint>
+
+    <joint name="thruster3_joint" type="revolute">
+      <pose>0.890895 0.334385 0.528822 0 -1.840798 0.928689</pose>
+      <parent>base_link</parent>
+      <child>thruster3</child>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <effort>-1</effort>
+          <velocity>-1</velocity>
+        </limit>
+      </axis>
+    </joint>
+
+    <joint name="thruster4_joint" type="revolute">
+      <pose>0.890895 -0.334385 0.528822 0 -1.300794 -0.928689</pose>
+      <parent>base_link</parent>
+      <child>thruster4</child>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <effort>-1</effort>
+          <velocity>-1</velocity>
+        </limit>
+      </axis>
+    </joint>
+
+    <joint name="thruster5_joint" type="revolute">
+      <pose>-0.412125 0.505415 0.129 0 0 0.785398</pose>
+      <parent>base_link</parent>
+      <child>thruster5</child>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <effort>-1</effort>
+          <velocity>-1</velocity>
+        </limit>
+      </axis>
+    </joint>
+
+    <joint name="thruster6_joint" type="revolute">
+      <pose>-0.412125 -0.505415 0.129 0 0 -0.785398</pose>
+      <parent>base_link</parent>
+      <child>thruster6</child>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <effort>-1</effort>
+          <velocity>-1</velocity>
+        </limit>
+      </axis>
+    </joint>
+
+    <joint name="thruster7_joint" type="revolute">
+      <pose>0.412125 0.505415 0.129 0 0 2.356194</pose>
+      <parent>base_link</parent>
+      <child>thruster7</child>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <effort>-1</effort>
+          <velocity>-1</velocity>
+        </limit>
+      </axis>
+    </joint>
+
+    <joint name="thruster8_joint" type="revolute">
+      <pose>0.412125 -0.505415 0.129 0 0 -2.356194</pose>
+      <parent>base_link</parent>
+      <child>thruster8</child>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <effort>-1</effort>
+          <velocity>-1</velocity>
+        </limit>
+      </axis>
+    </joint>
+
+    <plugin
+      filename="gz-sim-thruster-system"
+      name="gz::sim::systems::Thruster">
+      <namespace>rexrov</namespace>
+      <joint_name>thruster1_joint</joint_name>
+      <fluid_density>1000.0</fluid_density>
+      <thrust_coefficient>0.00031</thrust_coefficient>
+      <velocity_control>true</velocity_control>
+      <use_angvel_cmd>false</use_angvel_cmd>
+    </plugin>
+
+    <plugin
+      filename="gz-sim-thruster-system"
+      name="gz::sim::systems::Thruster">
+      <namespace>rexrov</namespace>
+      <joint_name>thruster2_joint</joint_name>
+      <fluid_density>1000.0</fluid_density>
+      <thrust_coefficient>0.00031</thrust_coefficient>
+      <velocity_control>true</velocity_control>
+      <use_angvel_cmd>false</use_angvel_cmd>
+    </plugin>
+
+    <plugin
+      filename="gz-sim-thruster-system"
+      name="gz::sim::systems::Thruster">
+      <namespace>rexrov</namespace>
+      <joint_name>thruster3_joint</joint_name>
+      <fluid_density>1000.0</fluid_density>
+      <thrust_coefficient>0.00031</thrust_coefficient>
+      <velocity_control>true</velocity_control>
+      <use_angvel_cmd>false</use_angvel_cmd>
+    </plugin>
+
+    <plugin
+      filename="gz-sim-thruster-system"
+      name="gz::sim::systems::Thruster">
+      <namespace>rexrov</namespace>
+      <joint_name>thruster4_joint</joint_name>
+      <fluid_density>1000.0</fluid_density>
+      <thrust_coefficient>0.00031</thrust_coefficient>
+      <velocity_control>true</velocity_control>
+      <use_angvel_cmd>false</use_angvel_cmd>
+    </plugin>
+
+    <plugin
+      filename="gz-sim-thruster-system"
+      name="gz::sim::systems::Thruster">
+      <namespace>rexrov</namespace>
+      <joint_name>thruster5_joint</joint_name>
+      <fluid_density>1000.0</fluid_density>
+      <thrust_coefficient>0.00031</thrust_coefficient>
+      <velocity_control>true</velocity_control>
+      <use_angvel_cmd>false</use_angvel_cmd>
+    </plugin>
+
+    <plugin
+      filename="gz-sim-thruster-system"
+      name="gz::sim::systems::Thruster">
+      <namespace>rexrov</namespace>
+      <joint_name>thruster6_joint</joint_name>
+      <fluid_density>1000.0</fluid_density>
+      <thrust_coefficient>0.00031</thrust_coefficient>
+      <velocity_control>true</velocity_control>
+      <use_angvel_cmd>false</use_angvel_cmd>
+    </plugin>
+
+    <plugin
+      filename="gz-sim-thruster-system"
+      name="gz::sim::systems::Thruster">
+      <namespace>rexrov</namespace>
+      <joint_name>thruster7_joint</joint_name>
+      <fluid_density>1000.0</fluid_density>
+      <thrust_coefficient>0.00031</thrust_coefficient>
+      <velocity_control>true</velocity_control>
+      <use_angvel_cmd>false</use_angvel_cmd>
+    </plugin>
+
+    <plugin
+      filename="gz-sim-thruster-system"
+      name="gz::sim::systems::Thruster">
+      <namespace>rexrov</namespace>
+      <joint_name>thruster8_joint</joint_name>
+      <fluid_density>1000.0</fluid_density>
+      <thrust_coefficient>0.00031</thrust_coefficient>
+      <velocity_control>true</velocity_control>
+      <use_angvel_cmd>false</use_angvel_cmd>
+    </plugin>
+
+    <plugin
+      filename="gz-sim-hydrodynamics-system"
+      name="gz::sim::systems::Hydrodynamics">
+      <link_name>base_link</link_name>
+      <!-- Added mass -->
+      <!-- Using values of LRAUV -->
+      <xDotU>-4.876161</xDotU>
+      <yDotV>-126.324739</yDotV>
+      <zDotW>-126.324739</zDotW>
+      <kDotP>0</kDotP>
+      <mDotQ>-33.46</mDotQ>
+      <nDotR>-33.46</nDotR>
+      <!-- <xDotU>779.79</xDotU>
+      <yDotV>1222</yDotV>
+      <zDotW>3659.9</zDotW>
+      <kDotP>534.9</kDotP>
+      <mDotQ>842.69</mDotQ>
+      <nDotR>224.32</nDotR> -->
+
+      <!-- Linear Drag Coefficients -->
+      <xU>-74.82</xU>
+      <yV>-69.48</yV>
+      <zW>-728.4</zW>
+      <kP>-268.8</kP>
+      <mQ>-309.77</mQ>
+      <nR>-105</nR>
+
+      <!-- Quadratic Drag Coefficients -->
+      <xUabsU>-748.22</xUabsU>
+      <yVabsV>-992.53</yVabsV>
+      <zWabsW>-1821.01</zWabsW>
+      <kPabsP>-672</kPabsP>
+      <mQabsQ>-774.44</mQabsQ>
+      <nRabsR>-523.27</nRabsR>
+    </plugin>
+
+    <plugin
+      filename="gz-sim-imu-system"
+      name="gz::sim::systems::Imu">
+    </plugin>
+
+    <plugin
+      filename="gz-sim-odometry-publisher-system"
+      name="gz::sim::systems::OdometryPublisher">
+      <odom_frame>map</odom_frame>
+      <robot_base_frame>base_link</robot_base_frame>
+      <dimensions>3</dimensions>
+      <odom_publish_frequency>100</odom_publish_frequency>
+    </plugin>
+
+    <plugin
+      filename="gz-sim-joint-state-publisher-system"
+      name="gz::sim::systems::JointStatePublisher">
+      <joint_name>thruster1_joint</joint_name>
+      <joint_name>thruster2_joint</joint_name>
+      <joint_name>thruster3_joint</joint_name>
+      <joint_name>thruster4_joint</joint_name>
+      <joint_name>thruster5_joint</joint_name>
+      <joint_name>thruster6_joint</joint_name>
+      <joint_name>thruster7_joint</joint_name>
+      <joint_name>thruster8_joint</joint_name>
+    </plugin>
+
+  </model>
+</sdf>

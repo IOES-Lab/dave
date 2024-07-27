@@ -1,0 +1,37 @@
+file(REMOVE_RECURSE
+  "CMakeFiles/dave_interfaces__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/dave_interfaces/msg/detail/location__type_support_c.cpp.o"
+  "CMakeFiles/dave_interfaces__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/dave_interfaces/msg/detail/location__type_support_c.cpp.o.d"
+  "CMakeFiles/dave_interfaces__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/dave_interfaces/msg/detail/usbl_command__type_support_c.cpp.o"
+  "CMakeFiles/dave_interfaces__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/dave_interfaces/msg/detail/usbl_command__type_support_c.cpp.o.d"
+  "CMakeFiles/dave_interfaces__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/dave_interfaces/msg/detail/usbl_response__type_support_c.cpp.o"
+  "CMakeFiles/dave_interfaces__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/dave_interfaces/msg/detail/usbl_response__type_support_c.cpp.o.d"
+  "CMakeFiles/dave_interfaces__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/dave_interfaces/srv/detail/get_origin_spherical_coord__type_support_c.cpp.o"
+  "CMakeFiles/dave_interfaces__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/dave_interfaces/srv/detail/get_origin_spherical_coord__type_support_c.cpp.o.d"
+  "CMakeFiles/dave_interfaces__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/dave_interfaces/srv/detail/set_origin_spherical_coord__type_support_c.cpp.o"
+  "CMakeFiles/dave_interfaces__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/dave_interfaces/srv/detail/set_origin_spherical_coord__type_support_c.cpp.o.d"
+  "CMakeFiles/dave_interfaces__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/dave_interfaces/srv/detail/transform_from_spherical_coord__type_support_c.cpp.o"
+  "CMakeFiles/dave_interfaces__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/dave_interfaces/srv/detail/transform_from_spherical_coord__type_support_c.cpp.o.d"
+  "CMakeFiles/dave_interfaces__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/dave_interfaces/srv/detail/transform_to_spherical_coord__type_support_c.cpp.o"
+  "CMakeFiles/dave_interfaces__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/dave_interfaces/srv/detail/transform_to_spherical_coord__type_support_c.cpp.o.d"
+  "libdave_interfaces__rosidl_typesupport_fastrtps_c.pdb"
+  "libdave_interfaces__rosidl_typesupport_fastrtps_c.so"
+  "rosidl_typesupport_fastrtps_c/dave_interfaces/msg/detail/location__rosidl_typesupport_fastrtps_c.h"
+  "rosidl_typesupport_fastrtps_c/dave_interfaces/msg/detail/location__type_support_c.cpp"
+  "rosidl_typesupport_fastrtps_c/dave_interfaces/msg/detail/usbl_command__rosidl_typesupport_fastrtps_c.h"
+  "rosidl_typesupport_fastrtps_c/dave_interfaces/msg/detail/usbl_command__type_support_c.cpp"
+  "rosidl_typesupport_fastrtps_c/dave_interfaces/msg/detail/usbl_response__rosidl_typesupport_fastrtps_c.h"
+  "rosidl_typesupport_fastrtps_c/dave_interfaces/msg/detail/usbl_response__type_support_c.cpp"
+  "rosidl_typesupport_fastrtps_c/dave_interfaces/srv/detail/get_origin_spherical_coord__rosidl_typesupport_fastrtps_c.h"
+  "rosidl_typesupport_fastrtps_c/dave_interfaces/srv/detail/get_origin_spherical_coord__type_support_c.cpp"
+  "rosidl_typesupport_fastrtps_c/dave_interfaces/srv/detail/set_origin_spherical_coord__rosidl_typesupport_fastrtps_c.h"
+  "rosidl_typesupport_fastrtps_c/dave_interfaces/srv/detail/set_origin_spherical_coord__type_support_c.cpp"
+  "rosidl_typesupport_fastrtps_c/dave_interfaces/srv/detail/transform_from_spherical_coord__rosidl_typesupport_fastrtps_c.h"
+  "rosidl_typesupport_fastrtps_c/dave_interfaces/srv/detail/transform_from_spherical_coord__type_support_c.cpp"
+  "rosidl_typesupport_fastrtps_c/dave_interfaces/srv/detail/transform_to_spherical_coord__rosidl_typesupport_fastrtps_c.h"
+  "rosidl_typesupport_fastrtps_c/dave_interfaces/srv/detail/transform_to_spherical_coord__type_support_c.cpp"
+)
+
+# Per-language clean rules from dependency scanning.
+foreach(lang CXX)
+  include(CMakeFiles/dave_interfaces__rosidl_typesupport_fastrtps_c.dir/cmake_clean_${lang}.cmake OPTIONAL)
+endforeach()

@@ -1,0 +1,302 @@
+[0.067s] Invoking command in '/home/abhimanyu/dave_ws/src/dave/build/dave_interfaces': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/abhimanyu/dave_ws/src/install/dave_worlds:/home/abhimanyu/dave_ws/src/install/dave_sensor_models:/home/abhimanyu/dave_ws/src/install/dave_robot_models:/home/abhimanyu/dave_ws/src/install/dave_robot_launch:/home/abhimanyu/dave_ws/src/install/dave_object_models:/home/abhimanyu/dave_ws/src/install/dave_demos:/home/abhimanyu/dave_ws/src/install/dave:/home/abhimanyu/MIR_Project_2024/glassy_challenge_ws/install/glassy_challenge /usr/bin/cmake --build /home/abhimanyu/dave_ws/src/dave/build/dave_interfaces -- -j4 -l4
+[0.235s] [  1%] Built target dave_interfaces__rosidl_generator_type_description
+[0.279s] [  1%] Built target ament_cmake_python_copy_dave_interfaces
+[0.344s] [  2%] Built target dave_interfaces__cpp
+[0.370s] [ 26%] Built target dave_interfaces__rosidl_generator_c
+[0.544s] [ 36%] Built target dave_interfaces__rosidl_typesupport_fastrtps_c
+[0.584s] [ 45%] Built target dave_interfaces__rosidl_typesupport_cpp
+[0.642s] [ 55%] Built target dave_interfaces__rosidl_typesupport_fastrtps_cpp
+[0.740s] [ 64%] Built target dave_interfaces__rosidl_typesupport_introspection_c
+[0.768s] [ 74%] Built target dave_interfaces__rosidl_typesupport_c
+[0.899s] [ 84%] Built target dave_interfaces__rosidl_typesupport_introspection_cpp
+[1.025s] [ 84%] Built target dave_interfaces
+[1.144s] [ 85%] Built target dave_interfaces__py
+[1.232s] running egg_info
+[1.278s] [ 93%] Built target dave_interfaces__rosidl_generator_py
+[1.356s] writing dave_interfaces.egg-info/PKG-INFO
+[1.357s] writing dependency_links to dave_interfaces.egg-info/dependency_links.txt
+[1.357s] writing top-level names to dave_interfaces.egg-info/top_level.txt
+[1.438s] [ 95%] Built target dave_interfaces_s__rosidl_typesupport_introspection_c
+[1.450s] [ 97%] Built target dave_interfaces_s__rosidl_typesupport_fastrtps_c
+[1.464s] [100%] Built target dave_interfaces_s__rosidl_typesupport_c
+[1.550s] reading manifest file 'dave_interfaces.egg-info/SOURCES.txt'
+[1.555s] writing manifest file 'dave_interfaces.egg-info/SOURCES.txt'
+[1.680s] [100%] Built target ament_cmake_python_build_dave_interfaces_egg
+[1.706s] Invoked command in '/home/abhimanyu/dave_ws/src/dave/build/dave_interfaces' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/abhimanyu/dave_ws/src/install/dave_worlds:/home/abhimanyu/dave_ws/src/install/dave_sensor_models:/home/abhimanyu/dave_ws/src/install/dave_robot_models:/home/abhimanyu/dave_ws/src/install/dave_robot_launch:/home/abhimanyu/dave_ws/src/install/dave_object_models:/home/abhimanyu/dave_ws/src/install/dave_demos:/home/abhimanyu/dave_ws/src/install/dave:/home/abhimanyu/MIR_Project_2024/glassy_challenge_ws/install/glassy_challenge /usr/bin/cmake --build /home/abhimanyu/dave_ws/src/dave/build/dave_interfaces -- -j4 -l4
+[2.132s] Invoking command in '/home/abhimanyu/dave_ws/src/dave/build/dave_interfaces': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/abhimanyu/dave_ws/src/install/dave_worlds:/home/abhimanyu/dave_ws/src/install/dave_sensor_models:/home/abhimanyu/dave_ws/src/install/dave_robot_models:/home/abhimanyu/dave_ws/src/install/dave_robot_launch:/home/abhimanyu/dave_ws/src/install/dave_object_models:/home/abhimanyu/dave_ws/src/install/dave_demos:/home/abhimanyu/dave_ws/src/install/dave:/home/abhimanyu/MIR_Project_2024/glassy_challenge_ws/install/glassy_challenge /usr/bin/cmake --install /home/abhimanyu/dave_ws/src/dave/build/dave_interfaces
+[2.147s] -- Install configuration: ""
+[2.147s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/ament_index/resource_index/rosidl_interfaces/dave_interfaces
+[2.148s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/msg/UsblCommand.json
+[2.148s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/msg/UsblResponse.json
+[2.148s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/msg/Location.json
+[2.149s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/srv/SetOriginSphericalCoord.json
+[2.149s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/srv/GetOriginSphericalCoord.json
+[2.149s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/srv/TransformToSphericalCoord.json
+[2.150s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/srv/TransformFromSphericalCoord.json
+[2.150s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces
+[2.151s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg
+[2.151s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/usbl_response.h
+[2.151s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/rosidl_generator_c__visibility_control.h
+[2.152s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail
+[2.153s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail/usbl_response__type_support.c
+[2.153s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail/location__functions.h
+[2.154s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail/usbl_command__functions.c
+[2.154s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail/usbl_command__type_support.c
+[2.154s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail/usbl_command__type_support.h
+[2.154s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail/usbl_command__functions.h
+[2.155s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail/location__type_support.c
+[2.155s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail/usbl_response__struct.h
+[2.155s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail/location__description.c
+[2.156s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail/usbl_response__functions.h
+[2.156s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail/location__type_support.h
+[2.156s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail/usbl_command__struct.h
+[2.157s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail/usbl_response__type_support.h
+[2.157s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail/location__functions.c
+[2.158s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail/location__struct.h
+[2.158s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail/usbl_response__description.c
+[2.164s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail/usbl_response__functions.c
+[2.164s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail/usbl_command__description.c
+[2.165s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/location.h
+[2.165s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/usbl_command.h
+[2.165s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv
+[2.166s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/transform_to_spherical_coord.h
+[2.166s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/set_origin_spherical_coord.h
+[2.166s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail
+[2.167s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/transform_from_spherical_coord__type_support.h
+[2.167s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/transform_to_spherical_coord__type_support.h
+[2.168s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/transform_from_spherical_coord__functions.h
+[2.168s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/set_origin_spherical_coord__description.c
+[2.168s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/get_origin_spherical_coord__functions.c
+[2.169s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/transform_to_spherical_coord__functions.c
+[2.169s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/transform_from_spherical_coord__description.c
+[2.169s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/set_origin_spherical_coord__type_support.c
+[2.169s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/set_origin_spherical_coord__functions.h
+[2.170s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/transform_to_spherical_coord__type_support.c
+[2.170s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/get_origin_spherical_coord__type_support.c
+[2.171s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/get_origin_spherical_coord__description.c
+[2.171s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/transform_to_spherical_coord__functions.h
+[2.172s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/set_origin_spherical_coord__type_support.h
+[2.172s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/get_origin_spherical_coord__functions.h
+[2.173s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/transform_to_spherical_coord__struct.h
+[2.173s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/set_origin_spherical_coord__struct.h
+[2.173s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/transform_from_spherical_coord__functions.c
+[2.174s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/transform_from_spherical_coord__type_support.c
+[2.174s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/set_origin_spherical_coord__functions.c
+[2.174s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/transform_from_spherical_coord__struct.h
+[2.174s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/get_origin_spherical_coord__struct.h
+[2.175s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/transform_to_spherical_coord__description.c
+[2.175s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/get_origin_spherical_coord__type_support.h
+[2.175s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/get_origin_spherical_coord.h
+[2.175s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/transform_from_spherical_coord.h
+[2.175s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/environment/library_path.sh
+[2.176s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/environment/library_path.dsv
+[2.176s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/lib/libdave_interfaces__rosidl_generator_c.so
+[2.176s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces
+[2.176s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg
+[2.176s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail
+[2.177s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail/usbl_response__rosidl_typesupport_fastrtps_c.h
+[2.177s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail/usbl_command__rosidl_typesupport_fastrtps_c.h
+[2.177s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail/location__rosidl_typesupport_fastrtps_c.h
+[2.177s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/rosidl_typesupport_fastrtps_c__visibility_control.h
+[2.177s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv
+[2.178s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail
+[2.178s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/get_origin_spherical_coord__rosidl_typesupport_fastrtps_c.h
+[2.178s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/transform_from_spherical_coord__rosidl_typesupport_fastrtps_c.h
+[2.178s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/transform_to_spherical_coord__rosidl_typesupport_fastrtps_c.h
+[2.179s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/set_origin_spherical_coord__rosidl_typesupport_fastrtps_c.h
+[2.179s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/lib/libdave_interfaces__rosidl_typesupport_fastrtps_c.so
+[2.179s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces
+[2.179s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg
+[2.180s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/usbl_response.hpp
+[2.180s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/location.hpp
+[2.180s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/usbl_command.hpp
+[2.180s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail
+[2.180s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail/usbl_response__builder.hpp
+[2.181s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail/location__builder.hpp
+[2.181s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail/location__traits.hpp
+[2.181s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail/usbl_response__struct.hpp
+[2.181s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail/usbl_command__type_support.hpp
+[2.182s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail/usbl_response__traits.hpp
+[2.182s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail/location__type_support.hpp
+[2.182s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail/usbl_command__struct.hpp
+[2.182s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail/usbl_command__traits.hpp
+[2.182s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail/usbl_response__type_support.hpp
+[2.183s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail/location__struct.hpp
+[2.183s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail/usbl_command__builder.hpp
+[2.183s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/rosidl_generator_cpp__visibility_control.hpp
+[2.184s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv
+[2.184s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/set_origin_spherical_coord.hpp
+[2.184s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail
+[2.184s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/set_origin_spherical_coord__type_support.hpp
+[2.185s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/get_origin_spherical_coord__builder.hpp
+[2.185s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/transform_to_spherical_coord__builder.hpp
+[2.185s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/transform_to_spherical_coord__traits.hpp
+[2.185s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/get_origin_spherical_coord__type_support.hpp
+[2.186s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/transform_from_spherical_coord__struct.hpp
+[2.186s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/transform_to_spherical_coord__struct.hpp
+[2.186s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/transform_to_spherical_coord__type_support.hpp
+[2.186s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/set_origin_spherical_coord__traits.hpp
+[2.187s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/get_origin_spherical_coord__struct.hpp
+[2.187s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/set_origin_spherical_coord__builder.hpp
+[2.187s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/transform_from_spherical_coord__traits.hpp
+[2.187s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/transform_from_spherical_coord__type_support.hpp
+[2.187s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/transform_from_spherical_coord__builder.hpp
+[2.188s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/set_origin_spherical_coord__struct.hpp
+[2.188s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/get_origin_spherical_coord__traits.hpp
+[2.188s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/get_origin_spherical_coord.hpp
+[2.188s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/transform_to_spherical_coord.hpp
+[2.189s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/transform_from_spherical_coord.hpp
+[2.189s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces
+[2.189s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg
+[2.189s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail
+[2.190s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail/dds_fastrtps
+[2.190s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail/location__rosidl_typesupport_fastrtps_cpp.hpp
+[2.190s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail/usbl_command__rosidl_typesupport_fastrtps_cpp.hpp
+[2.190s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail/usbl_response__rosidl_typesupport_fastrtps_cpp.hpp
+[2.191s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/rosidl_typesupport_fastrtps_cpp__visibility_control.h
+[2.191s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv
+[2.191s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail
+[2.191s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/get_origin_spherical_coord__rosidl_typesupport_fastrtps_cpp.hpp
+[2.191s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/dds_fastrtps
+[2.192s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/transform_from_spherical_coord__rosidl_typesupport_fastrtps_cpp.hpp
+[2.192s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/transform_to_spherical_coord__rosidl_typesupport_fastrtps_cpp.hpp
+[2.192s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/set_origin_spherical_coord__rosidl_typesupport_fastrtps_cpp.hpp
+[2.192s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/lib/libdave_interfaces__rosidl_typesupport_fastrtps_cpp.so
+[2.193s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces
+[2.193s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg
+[2.193s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail
+[2.193s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail/usbl_response__type_support.c
+[2.193s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail/location__rosidl_typesupport_introspection_c.h
+[2.194s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail/usbl_command__type_support.c
+[2.194s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail/usbl_response__rosidl_typesupport_introspection_c.h
+[2.194s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail/location__type_support.c
+[2.194s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail/usbl_command__rosidl_typesupport_introspection_c.h
+[2.195s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/rosidl_typesupport_introspection_c__visibility_control.h
+[2.195s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv
+[2.195s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail
+[2.195s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/transform_from_spherical_coord__rosidl_typesupport_introspection_c.h
+[2.196s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/set_origin_spherical_coord__rosidl_typesupport_introspection_c.h
+[2.196s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/transform_to_spherical_coord__rosidl_typesupport_introspection_c.h
+[2.196s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/set_origin_spherical_coord__type_support.c
+[2.196s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/transform_to_spherical_coord__type_support.c
+[2.196s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/get_origin_spherical_coord__type_support.c
+[2.197s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/get_origin_spherical_coord__rosidl_typesupport_introspection_c.h
+[2.197s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/transform_from_spherical_coord__type_support.c
+[2.197s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/lib/libdave_interfaces__rosidl_typesupport_introspection_c.so
+[2.197s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/lib/libdave_interfaces__rosidl_typesupport_c.so
+[2.198s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces
+[2.198s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg
+[2.198s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail
+[2.198s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail/usbl_command__type_support.cpp
+[2.199s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail/location__rosidl_typesupport_introspection_cpp.hpp
+[2.199s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail/usbl_command__rosidl_typesupport_introspection_cpp.hpp
+[2.199s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail/usbl_response__type_support.cpp
+[2.199s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail/usbl_response__rosidl_typesupport_introspection_cpp.hpp
+[2.199s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/msg/detail/location__type_support.cpp
+[2.200s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv
+[2.200s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail
+[2.200s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/get_origin_spherical_coord__rosidl_typesupport_introspection_cpp.hpp
+[2.200s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/transform_to_spherical_coord__rosidl_typesupport_introspection_cpp.hpp
+[2.201s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/set_origin_spherical_coord__type_support.cpp
+[2.201s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/transform_to_spherical_coord__type_support.cpp
+[2.201s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/get_origin_spherical_coord__type_support.cpp
+[2.201s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/set_origin_spherical_coord__rosidl_typesupport_introspection_cpp.hpp
+[2.201s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/transform_from_spherical_coord__type_support.cpp
+[2.202s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/include/dave_interfaces/dave_interfaces/srv/detail/transform_from_spherical_coord__rosidl_typesupport_introspection_cpp.hpp
+[2.202s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/lib/libdave_interfaces__rosidl_typesupport_introspection_cpp.so
+[2.202s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/lib/libdave_interfaces__rosidl_typesupport_cpp.so
+[2.203s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/environment/pythonpath.sh
+[2.203s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/environment/pythonpath.dsv
+[2.203s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/lib/python3.12/site-packages/dave_interfaces-0.0.0-py3.12.egg-info
+[2.203s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/lib/python3.12/site-packages/dave_interfaces-0.0.0-py3.12.egg-info/PKG-INFO
+[2.204s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/lib/python3.12/site-packages/dave_interfaces-0.0.0-py3.12.egg-info/top_level.txt
+[2.204s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/lib/python3.12/site-packages/dave_interfaces-0.0.0-py3.12.egg-info/dependency_links.txt
+[2.204s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/lib/python3.12/site-packages/dave_interfaces-0.0.0-py3.12.egg-info/SOURCES.txt
+[2.204s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/lib/python3.12/site-packages/dave_interfaces
+[2.204s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/lib/python3.12/site-packages/dave_interfaces/_dave_interfaces_s.ep.rosidl_typesupport_fastrtps_c.c
+[2.205s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/lib/python3.12/site-packages/dave_interfaces/_dave_interfaces_s.ep.rosidl_typesupport_introspection_c.c
+[2.205s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/lib/python3.12/site-packages/dave_interfaces/msg
+[2.205s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/lib/python3.12/site-packages/dave_interfaces/msg/_usbl_response.py
+[2.205s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/lib/python3.12/site-packages/dave_interfaces/msg/_usbl_response_s.c
+[2.205s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/lib/python3.12/site-packages/dave_interfaces/msg/_usbl_command.py
+[2.206s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/lib/python3.12/site-packages/dave_interfaces/msg/_location.py
+[2.206s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/lib/python3.12/site-packages/dave_interfaces/msg/__init__.py
+[2.206s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/lib/python3.12/site-packages/dave_interfaces/msg/_location_s.c
+[2.206s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/lib/python3.12/site-packages/dave_interfaces/msg/_usbl_command_s.c
+[2.207s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/lib/python3.12/site-packages/dave_interfaces/_dave_interfaces_s.ep.rosidl_typesupport_c.c
+[2.207s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/lib/python3.12/site-packages/dave_interfaces/dave_interfaces_s__rosidl_typesupport_fastrtps_c.so
+[2.207s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/lib/python3.12/site-packages/dave_interfaces/__init__.py
+[2.207s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/lib/python3.12/site-packages/dave_interfaces/dave_interfaces_s__rosidl_typesupport_c.so
+[2.207s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/lib/python3.12/site-packages/dave_interfaces/dave_interfaces_s__rosidl_typesupport_introspection_c.so
+[2.208s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/lib/python3.12/site-packages/dave_interfaces/srv
+[2.208s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/lib/python3.12/site-packages/dave_interfaces/srv/_transform_to_spherical_coord_s.c
+[2.208s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/lib/python3.12/site-packages/dave_interfaces/srv/_set_origin_spherical_coord.py
+[2.208s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/lib/python3.12/site-packages/dave_interfaces/srv/__init__.py
+[2.208s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/lib/python3.12/site-packages/dave_interfaces/srv/_transform_from_spherical_coord.py
+[2.209s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/lib/python3.12/site-packages/dave_interfaces/srv/_transform_from_spherical_coord_s.c
+[2.209s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/lib/python3.12/site-packages/dave_interfaces/srv/_get_origin_spherical_coord_s.c
+[2.209s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/lib/python3.12/site-packages/dave_interfaces/srv/_transform_to_spherical_coord.py
+[2.209s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/lib/python3.12/site-packages/dave_interfaces/srv/_get_origin_spherical_coord.py
+[2.210s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/lib/python3.12/site-packages/dave_interfaces/srv/_set_origin_spherical_coord_s.c
+[2.269s] Listing '/home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/lib/python3.12/site-packages/dave_interfaces'...
+[2.269s] Listing '/home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/lib/python3.12/site-packages/dave_interfaces/msg'...
+[2.269s] Listing '/home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/lib/python3.12/site-packages/dave_interfaces/srv'...
+[2.299s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/lib/python3.12/site-packages/dave_interfaces/dave_interfaces_s__rosidl_typesupport_fastrtps_c.so
+[2.299s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/lib/python3.12/site-packages/dave_interfaces/dave_interfaces_s__rosidl_typesupport_introspection_c.so
+[2.299s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/lib/python3.12/site-packages/dave_interfaces/dave_interfaces_s__rosidl_typesupport_c.so
+[2.299s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/lib/libdave_interfaces__rosidl_generator_py.so
+[2.300s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/msg/UsblCommand.idl
+[2.300s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/msg/UsblResponse.idl
+[2.300s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/msg/Location.idl
+[2.300s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/srv/SetOriginSphericalCoord.idl
+[2.300s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/srv/GetOriginSphericalCoord.idl
+[2.300s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/srv/TransformToSphericalCoord.idl
+[2.301s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/srv/TransformFromSphericalCoord.idl
+[2.301s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/msg/UsblCommand.msg
+[2.301s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/msg/UsblResponse.msg
+[2.301s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/msg/Location.msg
+[2.301s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/srv/SetOriginSphericalCoord.srv
+[2.302s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/srv/GetOriginSphericalCoord.srv
+[2.302s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/srv/TransformToSphericalCoord.srv
+[2.302s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/srv/TransformFromSphericalCoord.srv
+[2.302s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/package.xml
+[2.303s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/ament_index/resource_index/package_run_dependencies/dave_interfaces
+[2.303s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/ament_index/resource_index/parent_prefix_path/dave_interfaces
+[2.303s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/environment/ament_prefix_path.sh
+[2.303s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/environment/ament_prefix_path.dsv
+[2.304s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/environment/path.sh
+[2.304s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/environment/path.dsv
+[2.304s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/local_setup.bash
+[2.304s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/local_setup.sh
+[2.304s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/local_setup.zsh
+[2.305s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/local_setup.dsv
+[2.305s] -- Installing: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/package.dsv
+[2.305s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/ament_index/resource_index/packages/dave_interfaces
+[2.306s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/cmake/export_dave_interfaces__rosidl_generator_cExport.cmake
+[2.306s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/cmake/export_dave_interfaces__rosidl_generator_cExport-noconfig.cmake
+[2.306s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/cmake/export_dave_interfaces__rosidl_typesupport_fastrtps_cExport.cmake
+[2.306s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/cmake/export_dave_interfaces__rosidl_typesupport_fastrtps_cExport-noconfig.cmake
+[2.307s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/cmake/export_dave_interfaces__rosidl_generator_cppExport.cmake
+[2.307s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/cmake/export_dave_interfaces__rosidl_typesupport_fastrtps_cppExport.cmake
+[2.307s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/cmake/export_dave_interfaces__rosidl_typesupport_fastrtps_cppExport-noconfig.cmake
+[2.307s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/cmake/dave_interfaces__rosidl_typesupport_introspection_cExport.cmake
+[2.308s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/cmake/dave_interfaces__rosidl_typesupport_introspection_cExport-noconfig.cmake
+[2.308s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/cmake/dave_interfaces__rosidl_typesupport_cExport.cmake
+[2.308s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/cmake/dave_interfaces__rosidl_typesupport_cExport-noconfig.cmake
+[2.309s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/cmake/dave_interfaces__rosidl_typesupport_introspection_cppExport.cmake
+[2.309s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/cmake/dave_interfaces__rosidl_typesupport_introspection_cppExport-noconfig.cmake
+[2.310s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/cmake/dave_interfaces__rosidl_typesupport_cppExport.cmake
+[2.310s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/cmake/dave_interfaces__rosidl_typesupport_cppExport-noconfig.cmake
+[2.310s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/cmake/export_dave_interfaces__rosidl_generator_pyExport.cmake
+[2.310s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/cmake/export_dave_interfaces__rosidl_generator_pyExport-noconfig.cmake
+[2.311s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/cmake/rosidl_cmake-extras.cmake
+[2.311s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/cmake/ament_cmake_export_dependencies-extras.cmake
+[2.311s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/cmake/ament_cmake_export_include_directories-extras.cmake
+[2.312s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/cmake/ament_cmake_export_libraries-extras.cmake
+[2.312s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/cmake/ament_cmake_export_targets-extras.cmake
+[2.312s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/cmake/rosidl_cmake_export_typesupport_targets-extras.cmake
+[2.312s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/cmake/rosidl_cmake_export_typesupport_libraries-extras.cmake
+[2.313s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/cmake/dave_interfacesConfig.cmake
+[2.313s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/cmake/dave_interfacesConfig-version.cmake
+[2.313s] -- Up-to-date: /home/abhimanyu/dave_ws/src/dave/install/dave_interfaces/share/dave_interfaces/package.xml
+[2.318s] Invoked command in '/home/abhimanyu/dave_ws/src/dave/build/dave_interfaces' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/abhimanyu/dave_ws/src/install/dave_worlds:/home/abhimanyu/dave_ws/src/install/dave_sensor_models:/home/abhimanyu/dave_ws/src/install/dave_robot_models:/home/abhimanyu/dave_ws/src/install/dave_robot_launch:/home/abhimanyu/dave_ws/src/install/dave_object_models:/home/abhimanyu/dave_ws/src/install/dave_demos:/home/abhimanyu/dave_ws/src/install/dave:/home/abhimanyu/MIR_Project_2024/glassy_challenge_ws/install/glassy_challenge /usr/bin/cmake --install /home/abhimanyu/dave_ws/src/dave/build/dave_interfaces
