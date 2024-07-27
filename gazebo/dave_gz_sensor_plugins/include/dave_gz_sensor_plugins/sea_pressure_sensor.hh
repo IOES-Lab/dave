@@ -2,10 +2,12 @@
 #define dave_gz_sensor_plugins__SUBSEA_PRESSURE_SENSOR_HH_
 
 // #include <sensor_msgs/FluidPressure.h>
+#include <pressure_sensor_msgs/msgs/SensorPressure.pb.h>
 #include <gz/sim/System.hh>
 #include <memory>
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/service.hpp>
+#include <sensor_msgs/msg/fluid_pressure.hpp>
 
 namespace dave_gz_sensor_plugins
 {

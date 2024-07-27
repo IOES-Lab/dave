@@ -1,4 +1,6 @@
 #include "dave_gz_sensor_plugins/sea_pressure_sensor.hh"
+#include <pressure_sensor_msgs/msgs/SensorPressure.pb.h>
+#include <chrono>
 #include <gz/math/Pose3.hh>
 #include <gz/math/Vector3.hh>
 #include <gz/msgs/Utility.hh>
@@ -12,15 +14,9 @@
 #include <gz/sim/components/Sensor.hh>
 #include <gz/sim/components/World.hh>
 #include <gz/transport/Node.hh>
-#include <memory>  // Add this line to include the <memory> header file
-#include <memory>  // Add this line to include the <memory> header file
+#include <memory>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/fluid_pressure.hpp>
-// #include "sensor_msgs.msgs"
-#include <pressure_sensor_msgs/msgs/SensorPressure.pb.h>  // (check)
-// trusted #include <sensor_msgs/msg/fluid_pressure.hpp> #include
-// <dave_interfaces/proto/SensorPressure.pb.h>
-#include <chrono>
 
 GZ_ADD_PLUGIN(
   dave_gz_sensor_plugins::SubseaPressureSensorPlugin, gz::sim::System,
@@ -48,34 +44,23 @@ public:
   bool estimateDepth;
   double standardPressure;
   double kPaPerM;
-  rclcpp::Publisher<sensor_msgs::msg::FluidPressure> rosSensorOutputPub;
-  rclcpp::Node gazeboNode;
-  rclcpp::Node rosNode;
-  rclcpp::Publisher<pressure_sensor_msgs::msgs::Pressure>
-    // std::shared_ptr<rclcpp::Publisher<sensor_msgs::msg::FluidPressure>> rosSensorOutputPub;
-    // std::shared_ptr<rclcpp::Node> gazeboNode;
-    // std::shared_ptr<rclcpp::Node> rosNode;
-    // std::shared_ptr<rclcpp::Publisher<pressure_sensor_msgs::msgs::Pressure>>
-  rclcpp::Publisher<sensor_msgs::msg::FluidPressure> rosSensorOutputPub;
-  rclcpp::Node gazeboNode;
-  rclcpp::Node rosNode;
-  rclcpp::Publisher<pressure_sensor_msgs::msgs::Pressure>
-    // std::shared_ptr<rclcpp::Publisher<sensor_msgs::msg::FluidPressure>> rosSensorOutputPub;
-    // std::shared_ptr<rclcpp::Node> gazeboNode;
-    // std::shared_ptr<rclcpp::Node> rosNode;
-    // std::shared_ptr<rclcpp::Publisher<pressure_sensor_msgs::msgs::Pressure>>
-    gazeboSensorOutputPub;  // Advertise<sensor_msgs::msgs::Pressure
+  std::shared_ptr<gz::transport::Node> gazeboNode;
+  // gz::transport::Node::Publisher<pressure_sensor_msgs::msgs::Pressure> gazeboSensorOutputPub;
+  gz::transport::Node::Publisher gazeboSensorOutputPub;
+  rclcpp::Publisher<sensor_msgs::msg::FluidPressure>::SharedPtr rosSensorOutputPub;
+  std::shared_ptr<rclcpp::Node> rosNode;
   std::string robotNamespace;
   bool gzMsgEnabled;
   double noiseAmp;
   double noiseSigma;
+  double inferredDepth;
+  double pressure;
+  // auto pos;
 };
 
 SubseaPressureSensorPlugin::SubseaPressureSensorPlugin() : dataPtr(std::make_unique<PrivateData>())
 {
-  dataPtr->rosNode = std::make_shared<rclcpp::Node>("subsea_pressure_sensor");
-  dataPtr->gazeboNode = std::make_shared<gz::transport::Node>();
-  // dataPtr->sensorOutputTopic = "sensor_output_topic";  // 1 (check)
+  dataPtr->inferredDepth = 0.0;
   // dataPtr->gzMsgEnabled = true;
   // dataPtr->noiseAmp = 0.1;
   // dataPtr->noiseSigma = 0.01;
@@ -136,8 +121,10 @@ void SubseaPressureSensorPlugin::Configure(
     this->dataPtr->kPaPerM = 9.80638;
   }
 
-  // this->dataPtr->rosNode = std::make_shared<rclcpp::Node>("subsea_pressure_sensor");  // 3
-  // (check)
+  // Initialize the Gazebo node
+  this->dataPtr->gazeboNode = std::make_shared<gz::transport::Node>();
+  // this->dataPtr->gazeboNode->Init();
+
   this->dataPtr->rosSensorOutputPub =
     this->dataPtr->rosNode->create_publisher<sensor_msgs::msg::FluidPressure>(
       "sensor_output_topic", rclcpp::QoS(10).reliable());
@@ -145,8 +132,8 @@ void SubseaPressureSensorPlugin::Configure(
   if (this->dataPtr->gzMsgEnabled)
   {
     this->dataPtr->gazeboSensorOutputPub =
-      this->dataPtr->gazeboNode->create_publisher<pressure_sensor_msgs::msgs::Pressure>(
-        this->dataPtr->robotNamespace + "/" + "sensor_output_topic", 1);
+      this->dataPtr->gazeboNode->Advertise<pressure_sensor_msgs::msgs::Pressure>(
+        this->dataPtr->robotNamespace + "/" + "sensor_output_topic");
   }
   // {
   //   this->dataPtr->gazeboSensorOutputPub =
@@ -155,38 +142,80 @@ void SubseaPressureSensorPlugin::Configure(
   // } (check the issue is that the sensor output topic is not defined) hence for now the custom
   // argument is passed. The same is done with the rosnode.
 }
+//////////////////////////////////////////
+
+gz::math::Pose3d GetWorldPose(
+  const gz::sim::Entity & _entity, gz::sim::EntityComponentManager & _ecm)
+{
+  // Ensure the WorldPose component exists
+  if (!_ecm.Component<gz::sim::components::WorldPose>(_entity))
+  {
+    _ecm.CreateComponent(_entity, gz::sim::components::WorldPose());
+  }
+
+  // Get the WorldPose component
+  const auto * worldPoseComp = _ecm.Component<gz::sim::components::WorldPose>(_entity);
+  if (worldPoseComp)
+  {
+    return worldPoseComp->Data();
+  }
+  else
+  {
+    gzerr << "WorldPose component not found for entity: " << _entity << std::endl;
+    return gz::math::Pose3d::Zero;
+  }
+}
 
 void SubseaPressureSensorPlugin::PreUpdate(
   const gz::sim::UpdateInfo & _info, gz::sim::EntityComponentManager & _ecm)
 {
   // this->dataPtr->PublishState();
 
-  if (!this->dataPtr->EnableMeasurement(_info))
-  {
-    return;
-  }
+  // if (!this->dataPtr->EnableMeasurement(_info))
+  // {
+  //   return;
+  // }
 
-  const gz::sim::components::WorldPose * pComp =
-    _ecm.Component<gz::sim::components::WorldPose>(this->dataPtr->linkEntity);
-  gz::math::Vector3d pos;
-  if (pComp)
-  {
-    pos = pComp->Data().Pos();
-  }
+  // const gz::sim::components::WorldPose * pComp =
+  //   _ecm.Component<gz::sim::components::WorldPose>(_entity);  // check
+  // gz::math::Vector3d pos;
+  // if (pComp)
+  // {
+  //   pos = pComp->Data().Pos();
+  // }
+  const gz::sim::Entity & _entity = _ecm.EntityByComponents(gz::sim::components::WorldPose());
+  // gz::math::Vector3 pos;
+  auto pos = GetWorldPose(_entity, _ecm);
+
+  // gz::math::Pose3d pose = GetWorldPose(_entity, _ecm);
+  // gz::math::Vector3d pos = pose.Pos();
+  ////////////
+  // const gz::sim::components::WorldPose * worldPoseComp =
+  //   _ecm.Component<gz::sim::components::WorldPose>(this->dataPtr->entity);
+
+  // if (worldPoseComp)
+  // {
+  //   gz::math::Pose3d worldPose = worldPoseComp->Data();
+  //   // Use 'worldPose' as needed
+  // }
+  ////////////
 
   double depth = std::abs(pos.Z());
-  double pressure = this->dataPtr->standardPressure;
+  this->dataPtr->pressure = this->dataPtr->standardPressure;
   if (depth >= 0)
   {
-    pressure += depth * this->dataPtr->kPaPerM;
+    this->dataPtr->pressure += depth * this->dataPtr->kPaPerM;
   }
 
-  pressure += this->dataPtr->GetGaussianNoise(this->dataPtr->noiseAmp);
+  // not adding gaussian noise for now
+  // pressure += this->dataPtr->GetGaussianNoise(this->dataPtr->noiseAmp);
+  this->dataPtr->pressure += this->dataPtr->noiseAmp;
 
-  double inferredDepth = 0.0;
+  // double inferredDepth = 0.0;
   if (this->dataPtr->estimateDepth)
   {
-    inferredDepth = (pressure - this->dataPtr->standardPressure) / this->dataPtr->kPaPerM;
+    this->dataPtr->inferredDepth =
+      (this->dataPtr->pressure - this->dataPtr->standardPressure) / this->dataPtr->kPaPerM;
   }
 }
 
@@ -195,35 +224,38 @@ void SubseaPressureSensorPlugin::PostUpdate(
 {
   // this->dataPtr->PublishState();
 
-  if (!this->dataPtr->EnableMeasurement(_info))
-  {
-    return;
-  }
+  // if (!this->dataPtr->EnableMeasurement(_info))
+  // {
+  //   return;
+  // }
 
   if (this->dataPtr->gzMsgEnabled)
   {
     pressure_sensor_msgs::msgs::Pressure gazeboMsg;
-    gazeboMsg.set_pressure(pressure);
+    gazeboMsg.set_pressure(this->dataPtr->pressure);
     gazeboMsg.set_stddev(this->dataPtr->noiseSigma);
     if (this->dataPtr->estimateDepth)
     {
-      gazeboMsg.set_depth(inferredDepth);
+      gazeboMsg.set_depth(this->dataPtr->inferredDepth);
     }
-    this->dataPtr->gazeboSensorOutputPub->Publish(gazeboMsg);
+    this->dataPtr->gazeboSensorOutputPub.Publish(gazeboMsg);
   }
 
   sensor_msgs::msg::FluidPressure rosMsg;
-  rosMsg.header.stamp.sec = _info.simTime.sec;
-  rosMsg.header.stamp.nanosec = _info.simTime.nsec;
+  // rosMsg.header.stamp.sec = _info.simTime.sec;
+  // rosMsg.header.stamp.nanosec = _info.simTime.nsec;
+  rosMsg.header.stamp.sec = std::chrono::duration_cast<std::chrono::seconds>(_info.simTime).count();
+  rosMsg.header.stamp.nanosec =
+    std::chrono::duration_cast<std::chrono::nanoseconds>(_info.simTime).count() % 1000000000;
   this->dataPtr->worldName = this->dataPtr->world.Name(_ecm).value();
-  rosMsg.fluid_pressure = pressure;
+  rosMsg.fluid_pressure = this->dataPtr->pressure;
   rosMsg.variance = this->dataPtr->noiseSigma * this->dataPtr->noiseSigma;
   this->dataPtr->rosSensorOutputPub->publish(rosMsg);
   this->dataPtr->lastMeasurementTime = _info.simTime;
 
   if (!_info.paused)
   {
-    rclcpp::spin_some(this->ros_node_);
+    rclcpp::spin_some(this->dataPtr->rosNode);
 
     if (_info.iterations % 1000 == 0)
     {
@@ -233,3 +265,41 @@ void SubseaPressureSensorPlugin::PostUpdate(
 }
 
 }  // namespace dave_gz_sensor_plugins
+
+/////////////////////////////////////////////////
+// bool SubseaPressureSensorPlugin::EnableMeasurement(const gz::sim::UpdateInfo & _info) const
+// {
+//   common::Time current_time = _info.simTime;
+//   double dt = (current_time - this->lastMeasurementTime).Double();
+//   return dt >= 1.0 / this->updateRate && this->isReferenceInit && this->isOn.data;
+// }
+
+/////////////////////////////////////////////////
+// this->noiseModels["default"]: A map that likely holds different noise models, with “default”
+// being a standard Gaussian distribution function.
+
+// double ROSBasePlugin::GetGaussianNoise(double _amp)
+// {
+//   return _amp * this->noiseModels["default"](this->rndGen);
+// }
+
+/////////////////////////////////////////////////
+// bool SubseaPressureSensorPlugin::GetSDFParam(
+//   const std::shared_ptr<const sdf::Element> & _sdf, const std::string & name, T & param,
+//   const T & default_value, const bool & verbose = false)
+// {
+//   if (sdf->HasElement(name))
+//   {
+//     param = sdf->GetElement(name)->Get<T>();
+//     return true;
+//   }
+//   else
+//   {
+//     param = default_value;
+//     if (verbose)
+//     {
+//       gzerr << "[uuv_sensor_plugins] Please specify a value for parameter \"" << name << "\".\n";
+//     }
+//   }
+//   return false;
+// }
