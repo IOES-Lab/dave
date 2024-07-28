@@ -1,0 +1,10 @@
+syntax = "proto3";
+package dave_gz_world_plugins_msgs.msgs;
+import "gz/msgs/vector3d.proto";
+// import "any.proto";
+
+message StratifiedCurrentVelocity
+{
+  repeated gz.msgs.Vector3d   velocity  = 1;
+  repeated double                 depth     = 2;
+}
