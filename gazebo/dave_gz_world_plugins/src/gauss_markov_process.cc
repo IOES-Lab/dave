@@ -15,7 +15,7 @@
 
 /// \file gauss_markov_process.cc
 
-#include <dave_gz_world_plugins/include/gauss_markov_process.hh>
+#include <dave_gz_world_plugins/gauss_markov_process.hh>
 
 namespace gz
 {
