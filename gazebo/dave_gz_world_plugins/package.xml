@@ -6,14 +6,14 @@
   <author email="gaurav.og.9920@gmail.com">Gaurav Kumar and woensug</author>
   <maintainer email="gaurav.og.9920@gmail.com">Gaurav Kumar and woensug</maintainer>
   <license>Apache 2.0</license>
-  <buildtool_depend>catkin</buildtool_depend>
-  <buildtool_depend>protobuf-dev</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <!-- <buildtool_depend>protobuf-dev</buildtool_depend> -->
   <build_depend>gazebo_ros</build_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>protobuf</build_depend>
   <build_depend>dave_interfaces</build_depend>
   <build_export_depend>gazebo_ros</build_export_depend>
-  <build_export_depend>protobuf</build_export_depend>
+  <!-- <build_export_depend>protobuf</build_export_depend> -->
   <exec_depend>gazebo_ros</exec_depend>
   <exec_depend>roscpp</exec_depend>
   <exec_depend>protobuf</exec_depend>

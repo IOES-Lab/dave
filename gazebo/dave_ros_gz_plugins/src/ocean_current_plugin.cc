@@ -26,38 +26,29 @@
 // 4. Integration with the rest of the system with respect to the use of smart pointers and other
 // parameters like behaviour.
 
-using namespace gz;
-using namespace sim;
-using namespace systems;
-using namespace dave_simulator_ros;
+GZ_ADD_PLUGIN(
+  dave_ros_gz_plugins::UnderwaterCurrentROSPlugin, gz::sim::System,
+  dave_ros_gz_plugins::UnderwaterCurrentROSPlugin::ISystemConfigure,
+  dave_ros_gz_plugins::UnderwaterCurrentROSPlugin::ISystemPostUpdate)
 
-class gz::sim::systems::dave_simulator_ros::UnderwaterCurrentROSPlugin
+namespace dave_ros_gz_plugins
 {
-public:
-  UnderwaterCurrentROSPlugin();
-  ~UnderwaterCurrentROSPlugin();
 
-private:
+struct UnderwaterCurrentROSPlugin::PrivateData
+{
   rclcpp::Node::SharedPtr rosNode;  // This is a smart pointer to a ROS 2 node, facilitating
                                     // communication with other ROS nodes.
   std::string db_path;
-};
-
-/////////////////////////////////////////////////
-UnderwaterCurrentROSPlugin::UnderwaterCurrentROSPlugin()
-{
-  // this->rosPublishPeriod = gz::common::Time(0.05);
-  // this->lastRosPublishTime = gz::common::Time(0.0);
   this->db_path = ament_index_cpp::get_package_share_directory("dave_worlds");
 
   // Initialize the ROS 2 node
   this->rosNode = std::make_shared<rclcpp::Node>("underwater_current_ros_plugin");
   std::chrono::steady_clock::duration lastUpdate{0};
+};
 
-  // Setting up a timer in ROS 2 Do we need this ? (to be (updated))
-  // this->rosPublishTimer = this->rosNode->create_wall_timer(
-  //   std::chrono::milliseconds(static_cast<int>(this->rosPublishPeriod.Double() * 1000)),
-  //   [this]() { this->PublishCurrentInfo(); });
+/////////////////////////////////////////////////
+UnderwaterCurrentROSPlugin::UnderwaterCurrentROSPlugin() : dataPtr(std::make_unique<PrivateData>())
+{
 }
 
 /////////////////////////////////////////////////
@@ -154,7 +145,7 @@ void UnderwaterCurrentPlugin::Configure(
 }
 
 /////////////////////////////////////////////////
-void gz::sim::systems::dave_simulator_ros::UnderwaterCurrentROSPlugin::PreUpdate(
+void gz::sim::systems::dave_ros_gz_pluginsulator_ros::UnderwaterCurrentROSPlugin::PreUpdate(
   const gz::sim::UpdateInfo & _info, gz::sim::EntityComponentManager & _ecm)
 {
   // Advertise the service to get the current velocity model
@@ -271,7 +262,7 @@ void UnderwaterCurrentROSPlugin::Update(
   }
 }
 /////////////////////////////////////////////////
-void gz::sim::systems::dave_simulator_ros::UnderwaterCurrentROSPlugin::PostUpdate(
+void gz::sim::systems::dave_ros_gz_pluginsulator_ros::UnderwaterCurrentROSPlugin::PostUpdate(
   const gz::sim::UpdateInfo & _info, const gz::sim::EntityComponentManager & _ecm)
 {
   // Advertise the service to update the current velocity model
@@ -553,5 +544,6 @@ bool UnderwaterCurrentROSPlugin::UpdateCurrentVertAngleModel(
 
 /////////////////////////////////////////////////
 GZ_REGISTER_WORLD_PLUGIN(UnderwaterCurrentROSPlugin)
+}  // namespace dave_ros_gz_plugins
 
 // #endif

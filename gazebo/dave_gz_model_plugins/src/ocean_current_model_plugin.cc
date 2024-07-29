@@ -59,18 +59,6 @@ GZ_ADD_PLUGIN_ALIAS(dave_gz_model_plugins::TransientCurrentPlugin, "TransientCur
 namespace dave_gz_model_plugins
 {
 
-class TransientCurrentPlugin  // dave_model_systems
-{
-public:
-  TransientCurrentPlugin();   /// \brief Class constructor
-  ~TransientCurrentPlugin();  /// \brief Class destructor
-
-private:
-  std::shared_ptr<rclcpp::Node> rosNode;  // This is a smart pointer to a ROS 2 node, facilitating
-                                          // communication with other ROS nodes.
-  std::string transientCurrentVelocityTopic;  // Declare the variable (updated)
-};
-
 struct TransientCurrentPlugin::PrivateData
 {
   // starts here
@@ -84,8 +72,12 @@ struct TransientCurrentPlugin::PrivateData
   // Initialize any necessary states before the plugin starts
   virtual void Init();
 
-  /// \brief Pointer to world
+  std::shared_ptr<rclcpp::Node> rosNode;  // This is a smart pointer to a ROS 2 node, facilitating
+                                          // communication with other ROS nodes.
+  std::string transientCurrentVelocityTopic;  // Declare the variable (updated)
+
 protected:
+  /// \brief Pointer to world
   physics::WorldPtr world;
 
   /// \brief Pointer to model
@@ -531,7 +523,7 @@ TransientCurrentPlugin::UpdateDatabase(
   this->dataPtr->lock_.unlock();
 }
 
-/////////////////////////////////////////////////
+///////////////////////////////////////////////// (check this,dpr)
 void TransientCurrentPlugin::Gauss_Markov_process_initialize(
   const gz::sim::UpdateInfo & _info, gz::sim::EntityComponentManager & _ecm)
 {
@@ -666,14 +658,6 @@ void TransientCurrentPlugin::Update(
 void TransientCurrentPlugin::PostUpdate(
   const gz::sim::UpdateInfo & _info, const gz::sim::EntityComponentManager & _ecm)
 {
-  // Publish the Current Velocity.
-  // if ((!_info.paused && _info.simTime > this->dataPtr->lastUpdate) && (_info.simTime -
-  // this->dataPtr->lastUpdate >= this->dataPtr->rosPublishPeriod))
-  // {
-  //   this->dataPtr->lastUpdate = _info.simTime;
-  //   PostPublishCurrentVelocity();
-  // }
-
   // Publish the Current Velocity.
   if (!_info.paused && _info.simTime > this->dataPtr->lastUpdate)
   {

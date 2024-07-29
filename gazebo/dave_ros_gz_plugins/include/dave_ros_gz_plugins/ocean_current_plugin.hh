@@ -55,7 +55,7 @@ namespace sim
 {
 namespace systems
 {
-namespace dave_simulator_ros
+namespace dave_ros_gz_pluginsulator_ros
 {
 
 class UnderwaterCurrentROSPlugin : public System,
@@ -85,7 +85,7 @@ public:
 public:
   void PostUpdate(const UpdateInfo & _info, const EntityComponentManager & _ecm) override;
 }
-}  // namespace dave_simulator_ros
+}  // namespace dave_ros_gz_pluginsulator_ros
 }  // namespace systems
 }  // namespace sim
 }  // namespace gz

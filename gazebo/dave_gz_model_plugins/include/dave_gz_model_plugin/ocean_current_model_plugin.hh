@@ -21,20 +21,13 @@
 #include <std/memory>
 #include <std/string>
 
-namespace gz
-{
-namespace sim
-{
-namespace systems
-{
 namespace dave_gz_model_plugins
 {
 class TransientCurrentPlugin : public gz::sim::System,
                                public gz::sim::ISystemConfigure,
                                public gz::sim::ISystemPreUpdate,
                                public gz::sim::ISystemUpdate,
-                               public gz::sim::ISystemPostUpdate,
-                               public ModelPlugin
+                               public gz::sim::ISystemPostUpdate
 {
 public:
   TransientCurrentPlugin();   // constructor
@@ -85,6 +78,3 @@ public:
       const gz::sim::UpdateInfo & _info, const gz::sim::EntityComponentManager & _ecm)
 }
 }  // namespace dave_gz_model_plugins
-}  // namespace systems
-}  // namespace sim
-}  // namespace gz

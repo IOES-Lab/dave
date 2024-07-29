@@ -16,7 +16,7 @@
 /// \file ocean_current_world_plugin.cc
 
 #include "dave_gz_world_plugins/ocean_current_world_plugin.hh"
-#include <StratifiedCurrentVelocity.pb.h>
+#include "dave_gz_world_plugins_msgs/msgs/StratifiedCurrentVelocity.pb.h
 #include <math.h>
 #include <dave_gz_world_plugins/gauss_markov_process.hh>
 #include <dave_gz_world_plugins/tidal_oscillation.hh>
@@ -160,24 +160,12 @@ struct UnderwaterCurrentPlugin::PrivateData
 
   /// \brief File path for stratified current database
   std::string db_path;
+
+  std::shared_ptr<rclcpp::Node> rosNode;
 };
 
-class gz::sim::systems::dave_simulator_ros::UnderwaterCurrentPlugin
-{
-public:
-  UnderwaterCurrentPlugin();
-  virtual ~UnderwaterCurrentPlugin();
-
-private:
-  void Load(sdf::ElementPtr _sdf);
-  // void OnUpdate(const common::UpdateInfo & _info);
-  std::shared_ptr<rclcpp::Node> rosNode;
-}
-
 /////////////////////////////////////////////////
-UnderwaterCurrentPlugin::UnderwaterCurrentPlugin()
-{
-}
+UnderwaterCurrentPlugin::UnderwaterCurrentPlugin() : dataPtr(std::make_unique<PrivateData>()) {}
 
 /////////////////////////////////////////////////
 UnderwaterCurrentPlugin::~UnderwaterCurrentPlugin() { this->dataPtr->rosNode.reset(); }
@@ -705,7 +693,7 @@ void UnderwaterCurrentPlugin::PublishCurrentVelocity()
 /////////////////////////////////////////////////
 void UnderwaterCurrentPlugin::PublishStratifiedCurrentVelocity()
 {
-  dave_gz_world_plugins_msgs::msgs::StratifiedCurrentVelocity currentVel;
+  dave_gz_world_plugins_msgs::msgs::StratifiedCurrentVelocity currentVel;  // check
   for (std::vector<gz::math::Vector4d>::iterator it =
          this->dataPtr->currentStratifiedVelocity.begin();
        it != this->dataPtr->currentStratifiedVelocity.end(); ++it)
