@@ -45,16 +45,6 @@
 #include <memory>
 #include <string>
 
-// using namespace gz;
-// using namespace sim;
-// using namespace systems;
-
-namespace gz
-{
-namespace sim
-{
-namespace systems
-{
 namespace dave_ros_gz_pluginsulator_ros
 {
 
@@ -63,36 +53,21 @@ class UnderwaterCurrentROSPlugin : public System,
                                    public ISystemPreUpdate,
                                    public ISystemPostUpdate
 {
-  /// \brief Class constructor
 public:
-  explicit UnderwaterCurrentROSPlugin();
-
-  /// \brief Class destructor
-public:
+  UnderwaterCurrentROSPlugin();
   ~UnderwaterCurrentROSPlugin();
 
   // Documentation inherited
-public:
   void Configure(
     const Entity & _entity, const std::shared_ptr<const sdf::Element> & _sdf,
     EntityComponentManager & _ecm, EventManager & _eventMgr) override;
 
   // Documentation inherited
-public:
   void PreUpdate(const UpdateInfo & _info, EntityComponentManager & _ecm) override;
 
   // Documentation inherited
-public:
   void PostUpdate(const UpdateInfo & _info, const EntityComponentManager & _ecm) override;
 }
 }  // namespace dave_ros_gz_pluginsulator_ros
-}  // namespace systems
-}  // namespace sim
-}  // namespace gz
-
-// Register plugin
-GZ_ADD_PLUGIN(
-  UnderwaterCurrentROSPlugin, gz::sim::System, UnderwaterCurrentROSPlugin::ISystemConfigure,
-  UnderwaterCurrentROSPlugin::ISystemPostUpdate)
 
 #endif  // OCEAN_CURRENT_PLUGIN_H_
