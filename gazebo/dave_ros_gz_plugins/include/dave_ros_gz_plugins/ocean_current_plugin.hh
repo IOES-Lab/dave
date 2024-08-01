@@ -20,38 +20,42 @@
 #ifndef OCEAN_CURRENT_PLUGIN_H_
 #define OCEAN_CURRENT_PLUGIN_H_
 
-#include <ament_index_cpp/get_package_share_directory.hpp>
-#include <dave_ros_gz_plugins/GetCurrentModel.hh>
-#include <dave_ros_gz_plugins/GetOriginSphericalCoord.hh>
-#include <dave_ros_gz_plugins/SetCurrentDirection.hh>
-#include <dave_ros_gz_plugins/SetCurrentModel.hh>
-#include <dave_ros_gz_plugins/SetCurrentVelocity.hh>
-#include <dave_ros_gz_plugins/SetOriginSphericalCoord.hh>
-#include <dave_ros_gz_plugins/SetStratifiedCurrentDirection.hh>
-#include <dave_ros_gz_plugins/SetStratifiedCurrentVelocity.hh>
-#include <dave_ros_gz_plugins/StratifiedCurrentDatabase.hh>
-#include <dave_ros_gz_plugins/StratifiedCurrentVelocity.hh>
-#include <geometry_msgs/TwistStamped.hh>
-#include <geometry_msgs/Vector3.hh>
+// #include <dave_ros_gz_plugins/GetCurrentModel.hh>
+// #include <dave_ros_gz_plugins/GetOriginSphericalCoord.hh>
+// #include <dave_ros_gz_plugins/SetCurrentDirection.hh>
+// #include <dave_ros_gz_plugins/SetCurrentModel.hh>
+// #include <dave_ros_gz_plugins/SetCurrentVelocity.hh>
+// #include <dave_ros_gz_plugins/SetOriginSphericalCoord.hh>
+// #include <dave_ros_gz_plugins/SetStratifiedCurrentDirection.hh>
+// #include <dave_ros_gz_plugins/SetStratifiedCurrentVelocity.hh>
+// #include <dave_ros_gz_plugins/StratifiedCurrentDatabase.hh>
+// #include <dave_ros_gz_plugins/StratifiedCurrentVelocity.hh>
 
 #include <gz/sim/System.hh>
-#include <gz/utilise/ImplPtr.hh>
-
-#include <boost/shared_ptr.hpp>
-#include <gz/common/Plugin.hh>
-#include <gz/physics/World.hh>
+#include <rclcpp/rclcpp.hpp>
+#include <rclcpp/service.hpp>
 
 #include <map>
 #include <memory>
 #include <string>
 
-namespace dave_ros_gz_pluginsulator_ros
-{
+#include "dave_interfaces/srv/GetCurrentModel.hpp"
+#include "dave_interfaces/srv/GetOriginSphericalCoord.hpp"
+#include "dave_interfaces/srv/SetCurrentDirection.hpp"
+#include "dave_interfaces/srv/SetCurrentModel.hpp"
+#include "dave_interfaces/srv/SetCurrentVelocity.hpp"
+#include "dave_interfaces/srv/SetOriginSphericalCoord.hpp"
+#include "dave_interfaces/srv/SetStratifiedCurrentDirection.hpp"
+#include "dave_interfaces/srv/SetStratifiedCurrentVelocity.hpp"
+#include "dave_interfaces/srv/StratifiedCurrentDatabase.hpp"
+#include "dave_interfaces/srv/StratifiedCurrentVelocity.hpp"
 
-class UnderwaterCurrentROSPlugin : public System,
-                                   public ISystemConfigure,
-                                   public ISystemPreUpdate,
-                                   public ISystemPostUpdate
+namespace dave_ros_gz_plugins
+{
+class UnderwaterCurrentROSPlugin : public gz::sim::System,
+                                   public gz::sim::ISystemConfigure,
+                                   public gz::sim::ISystemPreUpdate,
+                                   public gz::sim::ISystemPostUpdate
 {
 public:
   UnderwaterCurrentROSPlugin();
@@ -59,15 +63,71 @@ public:
 
   // Documentation inherited
   void Configure(
-    const Entity & _entity, const std::shared_ptr<const sdf::Element> & _sdf,
-    EntityComponentManager & _ecm, EventManager & _eventMgr) override;
+    const gz::sim::Entity & _entity, const std::shared_ptr<const sdf::Element> & _sdf,
+    gz::sim::EntityComponentManager & _ecm, gz::sim::EventManager & _eventMgr);
+
+  void Update(const gz::sim::UpdateInfo & _info, const gz::sim::EntityComponentManager & _ecm);
 
   // Documentation inherited
-  void PreUpdate(const UpdateInfo & _info, EntityComponentManager & _ecm) override;
+  void PreUpdate(
+    const gz::sim::UpdateInfo & _info, gz::sim::EntityComponentManager & _ecm) override;
 
   // Documentation inherited
-  void PostUpdate(const UpdateInfo & _info, const EntityComponentManager & _ecm) override;
-}
-}  // namespace dave_ros_gz_pluginsulator_ros
+  void PostUpdate(
+    const gz::sim::UpdateInfo & _info, const gz::sim::EntityComponentManager & _ecm) override;
+
+  void UpdateHorzAngle(
+    const std::shared_ptr<dave_ros_gz_plugins::srv::SetCurrentDirection::Request> _req,
+    std::shared_ptr<dave_ros_gz_plugins::srv::SetCurrentDirection::Response> _res);
+
+  bool UpdateStratHorzAngle(
+    const std::shared_ptr<dave_ros_gz_plugins::srv::SetStratifiedCurrentDirection::Request> _req,
+    std::shared_ptr<dave_ros_gz_plugins::srv::SetStratifiedCurrentDirection::Response> _res);
+
+  bool UpdateVertAngle(
+    const std::shared_ptr<dave_ros_gz_plugins::srv::SetCurrentDirection::Request> _req,
+    std::shared_ptr<dave_ros_gz_plugins::srv::SetCurrentDirection::Response> _res);
+
+  bool UpdateStratVertAngle(
+    const std::shared_ptr<dave_ros_gz_plugins::srv::SetStratifiedCurrentDirection::Request> _req,
+    std::shared_ptr<dave_ros_gz_plugins::srv::SetStratifiedCurrentDirection::Response> _res);
+
+  bool UpdateCurrentVelocity(
+    const std::shared_ptr<dave_ros_gz_plugins::srv::SetCurrentVelocity::Request> _req,
+    std::shared_ptr<dave_ros_gz_plugins::srv::SetCurrentVelocity::Response> _res);
+
+  bool UpdateStratCurrentVelocity(
+    const std::shared_ptr<dave_ros_gz_plugins::srv::SetStratifiedCurrentVelocity::Request> _req,
+    std::shared_ptr<dave_ros_gz_plugins::srv::SetStratifiedCurrentVelocity::Response> _res);
+
+  bool GetCurrentVelocityModel(
+    const std::shared_ptr<dave_ros_gz_plugins::srv::GetCurrentModel::Request> _req,
+    std::shared_ptr<dave_ros_gz_plugins::srv::GetCurrentModel::Response> _res);
+
+  bool GetCurrentHorzAngleModel(
+    const std::shared_ptr<dave_ros_gz_plugins::srv::GetCurrentModel::Request> _req,
+    std::shared_ptr<dave_ros_gz_plugins::srv::GetCurrentModel::Response> _res);
+
+  bool GetCurrentVertAngleModel(
+    const std::shared_ptr<dave_ros_gz_plugins::srv::GetCurrentModel::Request> _req,
+    std::shared_ptr<dave_ros_gz_plugins::srv::GetCurrentModel::Response> _res);
+
+  bool UpdateCurrentVelocityModel(
+    const std::shared_ptr<dave_ros_gz_plugins::srv::SetCurrentModel::Request> _req,
+    std::shared_ptr<dave_ros_gz_plugins::srv::SetCurrentModel::Response> _res);
+
+  bool UpdateCurrentHorzAngleModel(
+    const std::shared_ptr<dave_ros_gz_plugins::srv::SetCurrentModel::Request> _req,
+    std::shared_ptr<dave_ros_gz_plugins::srv::SetCurrentModel::Response> _res);
+
+  bool UpdateCurrentVertAngleModel(
+    const std::shared_ptr<dave_ros_gz_plugins::srv::SetCurrentModel::Request> _req,
+    std::shared_ptr<dave_ros_gz_plugins::srv::SetCurrentModel::Response> _res);
+
+private:
+  struct PrivateData;
+  std::unique_ptr<PrivateData> dataPtr;
+};
+}  // namespace dave_ros_gz_plugins
 
 #endif  // OCEAN_CURRENT_PLUGIN_H_

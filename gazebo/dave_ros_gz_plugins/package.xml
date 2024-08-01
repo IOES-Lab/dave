@@ -9,26 +9,15 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
   <buildtool_depend>protobuf-dev</buildtool_depend>
   <depend>rclcpp</depend>
-  <depend>std_msgs</depend>
   <depend>dave_interfaces</depend>
   <depend>sensor_msgs</depend>
   <depend>geometry_msgs</depend>
-  <depend>ros_gz_bridge</depend>
-  <depend>ros_gz_sim</depend>
-  <depend>gz_msgs</depend>
-  <depend>gz_dev</depend>
-  <build_depend>gz_ros</build_depend>
+  <depend>std_msgs</depend>
   <build_depend>protobuf</build_depend>
   <build_depend>message_generation</build_depend>
-  <build_depend>rclcpp</build_depend>
-  <build_depend>dave_interfaces</build_depend>
-  <build_export_depend>gz_ros</build_export_depend>
   <!-- <build_export_depend>protobuf</build_export_depend> -->
-  <exec_depend>gz_ros</exec_depend>
   <exec_depend>protobuf</exec_depend>
   <exec_depend>message_runtime</exec_depend>
-  <exec_depend>rclcpp</exec_depend>
-  <exec_depend>dave_interfaces</exec_depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
   <export>

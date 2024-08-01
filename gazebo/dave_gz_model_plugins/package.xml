@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?><package format="3">
   <name>dave_gz_model_plugins</name>
-  <version>3.1.1</version>
+  <version>0.0.0</version>
   <description>The dave_gz_model_plugins package (gz model plugin definitions)</description>
   <author email="gaurav.og.9920@gmail.com">Gaurav Kumar and woensug</author>
   <maintainer email="gaurav.og.9920@gmail.com">Gaurav Kumar and woensug</maintainer>

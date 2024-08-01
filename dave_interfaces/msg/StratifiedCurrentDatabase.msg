@@ -7,7 +7,7 @@ float32[] depths
 geometry_msgs/Vector3[] velocities
 
 # Tide time (GMT)
-int16[] gmtyear
+int16[] timegmtyear
 int16[] timegmtmonth
 int16[] timegmtday
 int16[] timegmthour

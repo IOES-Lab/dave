@@ -21,21 +21,17 @@
 
 #include <dave_gz_world_plugins/gauss_markov_process.hh>
 #include <dave_gz_world_plugins/tidal_oscillation.hh>
-
-#include <ros/package.h>
 #include <gz/sim/System.hh>
+#include "dave_gz_world_plugins_msgs/msgs/StratifiedCurrentVelocity.pb.h"
 
 // #include <cmath>
-#include <std/map>
-#include <std/string>
-#include <std/vector>
+#include <map>
+#include <string>
+#include <vector>
 
 #include <geometry_msgs/msg/twist_stamped.hpp>
 #include <geometry_msgs/msg/vector3.hpp>
-#include <gz/common/Plugin.hh>
-#include <gz/common/Time.hh>
 
-#include <gazebo/gazebo.hh>
 #include <gz/transport/Node.hh>
 #include <sdf/sdf.hh>
 
@@ -72,11 +68,9 @@ public:
   /// \param[in] _info Information used in the update event.
   //   void Update(const common::UpdateInfo & _info); (check if this is needed)
 
-  void UnderwaterCurrentPlugin::Update(
-    const gz::sim::UpdateInfo & _info, gz::sim::EntityComponentManager & _ecm);
+  void PreUpdate(const gz::sim::UpdateInfo & _info, gz::sim::EntityComponentManager & _ecm);
 
-  void UnderwaterCurrentPlugin::PreUpdate(
-    const gz::sim::UpdateInfo & _info, gz::sim::EntityComponentManager & _ecm);
+  void Update(const gz::sim::UpdateInfo & _info, gz::sim::EntityComponentManager & _ecm);
 
   void PostUpdate(const gz::sim::UpdateInfo & _info, const gz::sim::EntityComponentManager & _ecm);
 

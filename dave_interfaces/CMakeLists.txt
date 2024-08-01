@@ -60,7 +60,7 @@ gz_msgs_generate_messages(
   # The cmake target to be generated for libraries/executables to link
   TARGET msgs    # pressure_sensor_msgs_gen
   # The protobuf package to generate (Typically based on the path)
-  PROTO_PACKAGE "pressure_sensor_msgs.msgs"
+  PROTO_PACKAGE "dave_gz_world_plugins_msgs.msgs"
   # The path to the base directory of the proto files
   # All import paths should be relative to this (eg gz/custom_msgs/vector3d.proto)
   MSGS_PATH ${CMAKE_CURRENT_SOURCE_DIR}/proto

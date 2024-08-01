@@ -48,7 +48,7 @@ ament_target_dependencies(ocean_current_plugin
 )
 
 # Install targets
-install(TARGETS SphericalCoords dave_ros_gz_plugins
+install(TARGETS SphericalCoords
   DESTINATION lib/${PROJECT_NAME}
 )
 

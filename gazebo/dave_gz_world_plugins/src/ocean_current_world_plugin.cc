@@ -16,7 +16,8 @@
 /// \file ocean_current_world_plugin.cc
 
 #include "dave_gz_world_plugins/ocean_current_world_plugin.hh"
-#include "dave_gz_world_plugins_msgs/msgs/StratifiedCurrentVelocity.pb.h
+#include <dave_gz_world_plugins_msgs/msgs/StratifiedCurrentVelocity.pb.h>
+
 #include <math.h>
 #include <dave_gz_world_plugins/gauss_markov_process.hh>
 #include <dave_gz_world_plugins/tidal_oscillation.hh>
@@ -28,12 +29,6 @@
 #include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
 
-#include <gz/gazebo.hh>
-#include <gz/msgs/msgs.hh>
-#include <gz/physics/Link.hh>
-#include <gz/physics/Model.hh>
-#include <gz/physics/PhysicsEngine.hh>
-#include <gz/physics/World.hh>
 #include <gz/transport/Node.hh>
 #include <sdf/sdf.hh>
 

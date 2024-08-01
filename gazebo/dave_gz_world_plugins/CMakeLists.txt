@@ -13,6 +13,7 @@ find_package(gz-common5 REQUIRED COMPONENTS profiler)
 find_package(gz-sim8 REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(dave_interfaces REQUIRED)
+find_package(sensor_msgs REQUIRED)
 find_package(Protobuf REQUIRED)
 find_package(gz-msgs10 REQUIRED)
 
@@ -31,36 +32,36 @@ src/gauss_markov_process.cc)
 add_library(tidal_oscillation SHARED
 src/tidal_oscillation.cc)
 
-target_include_directories(ocean_current_world_plugin PRIVATE include)
+target_include_directories(ocean_current_world_plugin PRIVATE include ${dave_interfaces_INCLUDE_DIRS})
 target_include_directories(gauss_markov_process PRIVATE include)
 target_include_directories(tidal_oscillation PRIVATE include)
 
 target_link_libraries(ocean_current_world_plugin
-gz-sim${GZ_SIM_VER}::GZ-SIM${GZ_SIM_VER})
+gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER})
 target_link_libraries(gauss_markov_process
-gz-sim${GZ_SIM_VER}::GZ-SIM${GZ_SIM_VER})
+gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER})
 target_link_libraries(tidal_oscillation
-gz-sim${GZ_SIM_VER}::GZ-SIM${GZ_SIM_VER})
+gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER})
 
 ament_target_dependencies(ocean_current_world_plugin
-  "rclcpp"
-  "std_msgs"
-  "geometry_msgs"
-  "dave_interfaces"
+  rclcpp
+  std_msgs
+  geometry_msgs
+  dave_interfaces
 )
 
 ament_target_dependencies(gauss_markov_process
-  "rclcpp"
-  "std_msgs"
-  "geometry_msgs"
-  "dave_interfaces"
+  rclcpp
+  std_msgs
+  geometry_msgs
+  dave_interfaces
 )
 
 ament_target_dependencies(tidal_oscillation
-  "rclcpp"
-  "std_msgs"
-  "geometry_msgs"
-  "dave_interfaces"
+  rclcpp
+  std_msgs
+  geometry_msgs
+  dave_interfaces
 )
 
 # Install targets
@@ -76,7 +77,6 @@ install(DIRECTORY include/
 # Environment hooks
 ament_environment_hooks(
   "${CMAKE_CURRENT_SOURCE_DIR}/hooks/${PROJECT_NAME}.dsv.in")
-
 
 # Testing setup
 if(BUILD_TESTING)
