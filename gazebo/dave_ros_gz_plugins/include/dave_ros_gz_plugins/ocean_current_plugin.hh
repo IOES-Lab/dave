@@ -39,16 +39,16 @@
 #include <memory>
 #include <string>
 
-#include "dave_interfaces/srv/GetCurrentModel.hpp"
-#include "dave_interfaces/srv/GetOriginSphericalCoord.hpp"
-#include "dave_interfaces/srv/SetCurrentDirection.hpp"
-#include "dave_interfaces/srv/SetCurrentModel.hpp"
-#include "dave_interfaces/srv/SetCurrentVelocity.hpp"
-#include "dave_interfaces/srv/SetOriginSphericalCoord.hpp"
-#include "dave_interfaces/srv/SetStratifiedCurrentDirection.hpp"
-#include "dave_interfaces/srv/SetStratifiedCurrentVelocity.hpp"
-#include "dave_interfaces/srv/StratifiedCurrentDatabase.hpp"
-#include "dave_interfaces/srv/StratifiedCurrentVelocity.hpp"
+#include "dave_interfaces/srv/Get_Current_Model.hpp"
+#include "dave_interfaces/srv/Get_Origin_Spherical_Coord.hpp"
+#include "dave_interfaces/srv/Set_Current_Direction.hpp"
+#include "dave_interfaces/srv/Set_Current_Model.hpp"
+#include "dave_interfaces/srv/Set_Current_Velocity.hpp"
+#include "dave_interfaces/srv/Set_Origin_Spherical_Coord.hpp"
+#include "dave_interfaces/srv/Set_Stratified_Current_Direction.hpp"
+#include "dave_interfaces/srv/Set_Stratified_Current_Velocity.hpp"
+// #include "dave_interfaces/srv/Stratified_Current_Database.hpp"
+// #include "dave_interfaces/srv/Stratified_Current_Velocity.hpp"
 
 namespace dave_ros_gz_plugins
 {
@@ -77,52 +77,52 @@ public:
     const gz::sim::UpdateInfo & _info, const gz::sim::EntityComponentManager & _ecm) override;
 
   void UpdateHorzAngle(
-    const std::shared_ptr<dave_ros_gz_plugins::srv::SetCurrentDirection::Request> _req,
-    std::shared_ptr<dave_ros_gz_plugins::srv::SetCurrentDirection::Response> _res);
+    const std::shared_ptr<dave_interfaces::srv::SetCurrentDirection::Request> _req,
+    std::shared_ptr<dave_interfaces::srv::SetCurrentDirection::Response> _res);
 
   bool UpdateStratHorzAngle(
-    const std::shared_ptr<dave_ros_gz_plugins::srv::SetStratifiedCurrentDirection::Request> _req,
-    std::shared_ptr<dave_ros_gz_plugins::srv::SetStratifiedCurrentDirection::Response> _res);
+    const std::shared_ptr<dave_interfaces::srv::SetStratifiedCurrentDirection::Request> _req,
+    std::shared_ptr<dave_interfaces::srv::SetStratifiedCurrentDirection::Response> _res);
 
   bool UpdateVertAngle(
-    const std::shared_ptr<dave_ros_gz_plugins::srv::SetCurrentDirection::Request> _req,
-    std::shared_ptr<dave_ros_gz_plugins::srv::SetCurrentDirection::Response> _res);
+    const std::shared_ptr<dave_interfaces::srv::SetCurrentDirection::Request> _req,
+    std::shared_ptr<dave_interfaces::srv::SetCurrentDirection::Response> _res);
 
   bool UpdateStratVertAngle(
-    const std::shared_ptr<dave_ros_gz_plugins::srv::SetStratifiedCurrentDirection::Request> _req,
-    std::shared_ptr<dave_ros_gz_plugins::srv::SetStratifiedCurrentDirection::Response> _res);
+    const std::shared_ptr<dave_interfaces::srv::SetStratifiedCurrentDirection::Request> _req,
+    std::shared_ptr<dave_interfaces::srv::SetStratifiedCurrentDirection::Response> _res);
 
   bool UpdateCurrentVelocity(
-    const std::shared_ptr<dave_ros_gz_plugins::srv::SetCurrentVelocity::Request> _req,
-    std::shared_ptr<dave_ros_gz_plugins::srv::SetCurrentVelocity::Response> _res);
+    const std::shared_ptr<dave_interfaces::srv::SetCurrentVelocity::Request> _req,
+    std::shared_ptr<dave_interfaces::srv::SetCurrentVelocity::Response> _res);
 
   bool UpdateStratCurrentVelocity(
-    const std::shared_ptr<dave_ros_gz_plugins::srv::SetStratifiedCurrentVelocity::Request> _req,
-    std::shared_ptr<dave_ros_gz_plugins::srv::SetStratifiedCurrentVelocity::Response> _res);
+    const std::shared_ptr<dave_interfaces::srv::SetStratifiedCurrentVelocity::Request> _req,
+    std::shared_ptr<dave_interfaces::srv::SetStratifiedCurrentVelocity::Response> _res);
 
   bool GetCurrentVelocityModel(
-    const std::shared_ptr<dave_ros_gz_plugins::srv::GetCurrentModel::Request> _req,
-    std::shared_ptr<dave_ros_gz_plugins::srv::GetCurrentModel::Response> _res);
+    const std::shared_ptr<dave_interfaces::srv::GetCurrentModel::Request> _req,
+    std::shared_ptr<dave_interfaces::srv::GetCurrentModel::Response> _res);
 
   bool GetCurrentHorzAngleModel(
-    const std::shared_ptr<dave_ros_gz_plugins::srv::GetCurrentModel::Request> _req,
-    std::shared_ptr<dave_ros_gz_plugins::srv::GetCurrentModel::Response> _res);
+    const std::shared_ptr<dave_interfaces::srv::GetCurrentModel::Request> _req,
+    std::shared_ptr<dave_interfaces::srv::GetCurrentModel::Response> _res);
 
   bool GetCurrentVertAngleModel(
-    const std::shared_ptr<dave_ros_gz_plugins::srv::GetCurrentModel::Request> _req,
-    std::shared_ptr<dave_ros_gz_plugins::srv::GetCurrentModel::Response> _res);
+    const std::shared_ptr<dave_interfaces::srv::GetCurrentModel::Request> _req,
+    std::shared_ptr<dave_interfaces::srv::GetCurrentModel::Response> _res);
 
   bool UpdateCurrentVelocityModel(
-    const std::shared_ptr<dave_ros_gz_plugins::srv::SetCurrentModel::Request> _req,
-    std::shared_ptr<dave_ros_gz_plugins::srv::SetCurrentModel::Response> _res);
+    const std::shared_ptr<dave_interfaces::srv::SetCurrentModel::Request> _req,
+    std::shared_ptr<dave_interfaces::srv::SetCurrentModel::Response> _res);
 
   bool UpdateCurrentHorzAngleModel(
-    const std::shared_ptr<dave_ros_gz_plugins::srv::SetCurrentModel::Request> _req,
-    std::shared_ptr<dave_ros_gz_plugins::srv::SetCurrentModel::Response> _res);
+    const std::shared_ptr<dave_interfaces::srv::SetCurrentModel::Request> _req,
+    std::shared_ptr<dave_interfaces::srv::SetCurrentModel::Response> _res);
 
   bool UpdateCurrentVertAngleModel(
-    const std::shared_ptr<dave_ros_gz_plugins::srv::SetCurrentModel::Request> _req,
-    std::shared_ptr<dave_ros_gz_plugins::srv::SetCurrentModel::Response> _res);
+    const std::shared_ptr<dave_interfaces::srv::SetCurrentModel::Request> _req,
+    std::shared_ptr<dave_interfaces::srv::SetCurrentModel::Response> _res);
 
 private:
   struct PrivateData;
