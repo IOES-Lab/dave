@@ -18,6 +18,7 @@
 #include "dave_gz_world_plugins/ocean_current_world_plugin.hh"
 #include <dave_gz_world_plugins_msgs/msgs/StratifiedCurrentVelocity.pb.h>
 
+#include <gz/msgs/vector3d.pb.h>
 #include <math.h>
 #include <boost/algorithm/string.hpp>
 #include <boost/bind.hpp>
@@ -34,8 +35,9 @@
 #include <gz/sim/System.hh>
 #include <gz/sim/World.hh>
 #include <gz/transport/Node.hh>
+#include <map>
 #include <sdf/sdf.hh>
-#include "gz/common/StringUtils.hh"
+#include <string>
 #include "gz/plugin/Register.hh"
 #include "gz/sim/components/Model.hh"
 #include "gz/sim/components/World.hh"
@@ -69,7 +71,8 @@ struct UnderwaterCurrentPlugin::PrivateData
   std::shared_ptr<gz::transport::Node> gz_node;
 
   /// \brief Map of publishers
-  gz::transport::Node::Publisher publishers;
+  // gz::transport::Node::Publisher publishers;
+  std::map<std::string, gz::transport::Node::Publisher> publishers;
 
   /// \brief Vehicle Depth Subscriber
   gz::transport::Node subscriber;
@@ -496,6 +499,7 @@ void UnderwaterCurrentPlugin::LoadStratifiedCurrentDatabase()
   this->dataPtr->publishers[this->dataPtr->stratifiedCurrentVelocityTopic] =
     this->dataPtr->gz_node->Advertise<dave_gz_world_plugins_msgs::msgs::StratifiedCurrentVelocity>(
       this->dataPtr->ns + "/" + this->dataPtr->stratifiedCurrentVelocityTopic);
+
   gzmsg << "Stratified current velocity topic name: "
         << this->dataPtr->ns + "/" + this->dataPtr->stratifiedCurrentVelocityTopic << std::endl;
 }
@@ -673,7 +677,7 @@ void UnderwaterCurrentPlugin::LoadGlobalCurrentConfig()
 
   // Advertise the current velocity & stratified current velocity topics
   this->dataPtr->publishers[this->dataPtr->currentVelocityTopic] =
-    this->dataPtr->gz_node->Advertise<msgs::Vector3d>(
+    this->dataPtr->gz_node->Advertise<gz::msgs::Vector3d>(
       this->dataPtr->ns + "/" + this->dataPtr->currentVelocityTopic);
   gzmsg << "Current velocity topic name: "
         << this->dataPtr->ns + "/" + this->dataPtr->currentVelocityTopic << std::endl;
@@ -682,12 +686,12 @@ void UnderwaterCurrentPlugin::LoadGlobalCurrentConfig()
 /////////////////////////////////////////////////
 void UnderwaterCurrentPlugin::PublishCurrentVelocity()
 {
-  msgs::Vector3d currentVel;
-  msgs::Set(
+  gz::msgs::Vector3d currentVel;
+  gz::msgs::Set(
     &currentVel, gz::math::Vector3d(
                    this->dataPtr->currentVelocity.X(), this->dataPtr->currentVelocity.Y(),
                    this->dataPtr->currentVelocity.Z()));
-  this->dataPtr->publishers[this->dataPtr->currentVelocityTopic]->Publish(currentVel);
+  this->dataPtr->publishers[this->dataPtr->currentVelocityTopic].Publish(currentVel);
 }
 
 /////////////////////////////////////////////////
@@ -698,14 +702,14 @@ void UnderwaterCurrentPlugin::PublishStratifiedCurrentVelocity()
          this->dataPtr->currentStratifiedVelocity.begin();
        it != this->dataPtr->currentStratifiedVelocity.end(); ++it)
   {
-    msgs::Set(currentVel.add_velocity(), gz::math::Vector3d(it->X(), it->Y(), it->Z()));
+    gz::msgs::Set(currentVel.add_velocity(), gz::math::Vector3d(it->X(), it->Y(), it->Z()));
     currentVel.add_depth(it->W());
   }
   if (currentVel.velocity_size() == 0)
   {
     return;
   }
-  this->dataPtr->publishers[this->dataPtr->stratifiedCurrentVelocityTopic]->Publish(currentVel);
+  this->dataPtr->publishers[this->dataPtr->stratifiedCurrentVelocityTopic].Publish(currentVel);
 }
 
 /////////////////////////////////////////////////
@@ -719,18 +723,18 @@ void UnderwaterCurrentPlugin::Update(
   const gz::sim::UpdateInfo & _info, gz::sim::EntityComponentManager & _ecm)
 {
   // Update the time
-  this->dataPtr->time = _info.simTime;
+  auto time = std::chrono::duration<double>(_info.simTime).count();
 
   // Calculate the flow velocity and the direction using the Gauss-Markov
   // model
 
   // Update current velocity
-  double currentVelMag = this->dataPtr->currentVelModel.Update(time.Double());
+  double currentVelMag = this->dataPtr->currentVelModel.Update(time);
   // Update current horizontal direction around z axis of flow frame
-  double horzAngle = this->dataPtr->currentHorzAngleModel.Update(time.Double());
+  double horzAngle = this->dataPtr->currentHorzAngleModel.Update(time);
 
   // Update current horizontal direction around z axis of flow frame
-  double vertAngle = this->dataPtr->currentVertAngleModel.Update(time.Double());
+  double vertAngle = this->dataPtr->currentVertAngleModel.Update(time);
 
   // Generating the current velocity vector as in the North-East-Down frame
   this->dataPtr->currentVelocity = gz::math::Vector3d(
@@ -742,9 +746,9 @@ void UnderwaterCurrentPlugin::Update(
   for (int i = 0; i < this->dataPtr->stratifiedDatabase.size(); i++)
   {
     double depth = this->dataPtr->stratifiedDatabase[i].Z();
-    currentVelMag = this->dataPtr->stratifiedCurrentModels[i][0].Update(time.Double());
-    horzAngle = this->dataPtr->stratifiedCurrentModels[i][1].Update(time.Double());
-    vertAngle = this->dataPtr->stratifiedCurrentModels[i][2].Update(time.Double());
+    currentVelMag = this->dataPtr->stratifiedCurrentModels[i][0].Update(time);
+    horzAngle = this->dataPtr->stratifiedCurrentModels[i][1].Update(time);
+    vertAngle = this->dataPtr->stratifiedCurrentModels[i][2].Update(time);
     gz::math::Vector4d depthVel(
       currentVelMag * cos(horzAngle) * cos(vertAngle),
       currentVelMag * sin(horzAngle) * cos(vertAngle), currentVelMag * sin(vertAngle), depth);
@@ -758,7 +762,7 @@ void UnderwaterCurrentPlugin::PostUpdate(
 {
   // Update time stamp
   this->dataPtr->lastUpdate = _info.simTime;
-  this->dataPtr->PublishCurrentVelocity();
-  this->dataPtr->PublishStratifiedCurrentVelocity();
+  PublishCurrentVelocity();
+  PublishStratifiedCurrentVelocity();
 }
 }  // namespace dave_gz_world_plugins

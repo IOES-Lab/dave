@@ -1,25 +1,22 @@
-#ifndef OCEAN_CURRENT_MODEL_PLUGIN_H_
-#define OCEAN_CURRENT_MODEL_PLUGIN_H_
+#ifndef OCEAN_CURRENT_MODEL_PLUGIN_HH_
+#define OCEAN_CURRENT_MODEL_PLUGIN_HH_
 
-#include <dave_gz_ros_plugins/gauss_markov_process.hh>
+// #include "dave_gz_world_plugins/gauss_markov_process.hh"
 // #include <dave_gz_ros_plugins/tidal_oscillation.h>
 
 #include <gz/sim/System.hh>
-#include <gz/utilise/ImplPtr.hh>
-
-#include <gz/common/Plugin.hh>
+// #include <gz/utilise/ImplPtr.hh>
 #include <gz/physics/World.hh>
-#include <std/shared_ptr.hpp>
 
+#include <chrono>
 #include <geometry_msgs/msg/twist_stamped.hpp>
-#include <geometry_msgs/msg/vector3.hh>
-#include <gz/common/Plugin.hh>
-#include <gz/common/Time.hh>
+#include <geometry_msgs/msg/vector3.hpp>
+#include <gz/transport/Node.hh>
+#include <map>
+#include <memory>
 #include <rclcpp/rclcpp.hpp>
-#include <std/chrono>
-#include <std/map>
-#include <std/memory>
-#include <std/string>
+#include <sdf/sdf.hh>
+#include <string>
 
 namespace dave_gz_model_plugins
 {
@@ -30,8 +27,8 @@ class TransientCurrentPlugin : public gz::sim::System,
                                public gz::sim::ISystemPostUpdate
 {
 public:
-  TransientCurrentPlugin();   // constructor
-  ~TransientCurrentPlugin();  // Destructor
+  TransientCurrentPlugin();                      // constructor
+  ~TransientCurrentPlugin() override = default;  // Destructor
 
   // Configure the plugin with necessary entities and component managers
   void Configure(
@@ -41,8 +38,7 @@ public:
   // Function called before the simulation state updates
   void PreUpdate(const gz::sim::UpdateInfo & _info, gz::sim::EntityComponentManager & _ecm);
 
-  void TransientCurrentPlugin::Update(
-    const gz::sim::UpdateInfo & _info, gz::sim::EntityComponentManager & _ecm);
+  void Update(const gz::sim::UpdateInfo & _info, gz::sim::EntityComponentManager & _ecm);
 
   // Function called after the simulation state updates
   void PostUpdate(const gz::sim::UpdateInfo & _info, const gz::sim::EntityComponentManager & _ecm);
@@ -51,7 +47,7 @@ public:
   /// \param[in] _entity Target entity
   /// \param[in] _ecm Entity component manager
   /// \return True if buoyancy should be applied.
-  bool IsEnabled(Entity _entity, const EntityComponentManager & _ecm) const;
+  // bool IsEnabled(gz::sim::Entity & _entity, gz::sim::EntityComponentManager & _ecm) const;
 
   // Initialize any necessary states before the plugin starts
   virtual void Init();
@@ -60,21 +56,20 @@ public:
   void databaseSubThread();
 
   /// \brief Calculate ocean current using database and vehicle state
-  void TransientCurrentPlugin::CalculateOceanCurrent(
-    const gz::sim::UpdateInfo & _info, gz::sim::EntityComponentManager & _ecm);
+  void CalculateOceanCurrent();
 
-  void TransientCurrentPlugin::PublishCurrentVelocity(
-    const gz::sim::UpdateInfo & _info, const gz::sim::EntityComponentManager & _ecm);
-
-  void TransientCurrentPlugin::Gauss_Markov_process_initialize(
-    const gz::sim::UpdateInfo & _info, gz::sim::EntityComponentManager & _ecm);
+  void Gauss_Markov_process_initialize();
 
   /// \brief Convey model state from gazebo topic to outside
-  TransientCurrentPlugin::UpdateDatabase(
-    const dave_ros_gz_plugins::StratifiedCurrentDatabase::ConstPtr & _msg)
+  void UpdateDatabase();
 
-    /// \brief Publish ocean current
-    void TransientCurrentPlugin::PublishCurrentVelocity(
-      const gz::sim::UpdateInfo & _info, const gz::sim::EntityComponentManager & _ecm)
-}
+  /// \brief Publish ocean current
+  void PublishCurrentVelocity();
+
+private:
+  struct PrivateData;
+  std::unique_ptr<PrivateData> dataPtr;
+};
 }  // namespace dave_gz_model_plugins
+
+#endif  // OCEAN_CURRENT_MODEL_PLUGIN_HH_

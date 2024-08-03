@@ -12,6 +12,7 @@ find_package(gz-common5 REQUIRED COMPONENTS profiler)
 find_package(gz-sim8 REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(dave_interfaces REQUIRED)
+find_package(dave_gz_world_plugins REQUIRED)
 
 # Set version variables with gazebo Harmonic
 set(GZ_PLUGIN_VER ${gz-plugin2_VERSION_MAJOR})
@@ -24,7 +25,7 @@ add_library(ocean_current_model_plugin SHARED
   src/ocean_current_model_plugin.cc
 )
 
-target_include_directories(ocean_current_model_plugin PRIVATE include)
+target_include_directories(ocean_current_model_plugin PRIVATE include ${dave_gz_world_plugins_INCLUDE_DIRS})
 
 target_link_libraries(ocean_current_model_plugin
   gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER})
@@ -32,10 +33,11 @@ target_link_libraries(ocean_current_model_plugin
 
 # Specify dependencies for ocean_current_plugin using ament_target_dependencies
 ament_target_dependencies(ocean_current_model_plugin
-  "rclcpp"
-  "std_msgs"
-  "geometry_msgs"
-  "dave_interfaces"
+  rclcpp
+  std_msgs
+  geometry_msgs
+  dave_interfaces
+  dave_gz_world_plugins
 )
 
 # Install targets

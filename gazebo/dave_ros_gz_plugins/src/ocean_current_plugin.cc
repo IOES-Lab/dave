@@ -13,6 +13,8 @@
 #include <algorithm>
 #include <functional>
 
+#include <gz/common/Exception.hh>
+#include <gz/sim/Model.hh>
 #include <gz/sim/System.hh>
 #include <gz/sim/World.hh>
 #include "gz/plugin/Register.hh"
@@ -35,8 +37,6 @@ namespace dave_ros_gz_plugins
 {
 struct UnderwaterCurrentROSPlugin::PrivateData
 {
-  rclcpp::Node::SharedPtr rosNode;  // This is a smart pointer to a ROS 2 node, facilitating
-                                    // communication with other ROS nodes.
   // std::string db_path;  (check)(TODO)
   // this->dataPtr->db_path = ament_index_cpp::get_package_share_directory("dave_worlds");
   std::chrono::steady_clock::duration lastUpdate{0};
@@ -66,9 +66,9 @@ struct UnderwaterCurrentROSPlugin::PrivateData
   std::string currentVelocityTopic;
   std::string ns;
   rclcpp::Publisher<geometry_msgs::msg::TwistStamped>::SharedPtr flowVelocityPub;
-  rclcpp::Publisher<dave_ros_gz_plugins::msg::StratifiedCurrentVelocity>::SharedPtr
+  rclcpp::Publisher<dave_interfaces::msg::StratifiedCurrentVelocity>::SharedPtr
     stratifiedCurrentVelocityPub;
-  rclcpp::Publisher<dave_ros_gz_plugins::msg::StratifiedCurrentDatabase>::SharedPtr
+  rclcpp::Publisher<dave_interfaces::msg::StratifiedCurrentDatabase>::SharedPtr
     stratifiedCurrentDatabasePub;
 };
 
@@ -130,12 +130,12 @@ void UnderwaterCurrentROSPlugin::Configure(
 
   // Advertise the stratified ocean current message
   this->dataPtr->stratifiedCurrentVelocityPub =
-    this->dataPtr->rosNode->create_publisher<dave_ros_gz_plugins::msg::StratifiedCurrentVelocity>(
+    this->dataPtr->rosNode->create_publisher<dave_interfaces::msg::StratifiedCurrentVelocity>(
       this->dataPtr->stratifiedCurrentVelocityTopic, rclcpp::QoS(10));
 
   // Advertise the stratified ocean current database message
   this->dataPtr->stratifiedCurrentDatabasePub =
-    this->dataPtr->rosNode->create_publisher<dave_ros_gz_plugins::msg::StratifiedCurrentDatabase>(
+    this->dataPtr->rosNode->create_publisher<dave_interfaces::msg::StratifiedCurrentDatabase>(
       this->dataPtr->stratifiedCurrentVelocityDatabaseTopic, rclcpp::QoS(10));
 
   // Create and advertise services
@@ -218,7 +218,7 @@ void UnderwaterCurrentROSPlugin::Update(
     this->dataPtr->flowVelocityPub->publish(flowVelMsg);
 
     // Generate and publish stratified current velocity
-    dave_ros_gz_plugins::msg::StratifiedCurrentVelocity stratCurrentVelocityMsg;
+    dave_interfaces::msg::StratifiedCurrentVelocity stratCurrentVelocityMsg;
     stratCurrentVelocityMsg.header.stamp = this->dataPtr->rosNode->get_clock()->now();
     stratCurrentVelocityMsg.header.frame_id = "world";
 
@@ -237,7 +237,7 @@ void UnderwaterCurrentROSPlugin::Update(
     this->dataPtr->stratifiedCurrentVelocityPub->publish(stratCurrentVelocityMsg);
 
     // Generate and publish stratified current database
-    dave_ros_gz_plugins::msg::StratifiedCurrentDatabase currentDatabaseMsg;
+    dave_interfaces::msg::StratifiedCurrentDatabase currentDatabaseMsg;
     for (int i = 0; i < this->dataPtr->stratifiedDatabase.size(); i++)
     {
       // Stratified current database entry preparation

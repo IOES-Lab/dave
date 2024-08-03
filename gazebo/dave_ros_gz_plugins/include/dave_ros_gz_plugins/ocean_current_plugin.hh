@@ -39,6 +39,8 @@
 #include <memory>
 #include <string>
 
+#include "dave_interfaces/msg/Stratified_Current_Database.hpp"
+#include "dave_interfaces/msg/Stratified_Current_Velocity.hpp"
 #include "dave_interfaces/srv/Get_Current_Model.hpp"
 #include "dave_interfaces/srv/Get_Origin_Spherical_Coord.hpp"
 #include "dave_interfaces/srv/Set_Current_Direction.hpp"
