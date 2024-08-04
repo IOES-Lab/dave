@@ -5,9 +5,9 @@
     <static>false</static>
     <link name="link">
       <sensor name="battery_sensor" type="custom">
-        <plugin name="LinearBatteryPlugin" filename="linear_battery_plugin.py">
-          <namespace>robot_namespace</namespace>
-          <update_rate>2</update_rate>
+        <plugin filename="gz-sim-python-system-loader-system" name="gz::sim::systems::PythonSystemLoader">
+        <module_name>linear_battery_plugin</module_name>
+        <update_rate>2</update_rate>
         </plugin>
       </sensor>
     </link>
