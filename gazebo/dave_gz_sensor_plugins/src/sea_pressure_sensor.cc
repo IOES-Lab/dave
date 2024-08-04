@@ -28,18 +28,16 @@ namespace dave_gz_sensor_plugins
 {
 struct SubseaPressureSensorPlugin::PrivateData
 {
+public:
   std::string ns;
   gz::sim::EntityComponentManager * ecm;
   /// \brief The world
-public:
   gz::sim::World world{gz::sim::kNullEntity};
 
   /// \brief The world name;
-public:
   std::string worldName;
   double saturation;
 
-public:
   std::chrono::steady_clock::duration lastMeasurementTime{0};
   bool estimateDepth;
   double standardPressure;
@@ -61,9 +59,9 @@ public:
 SubseaPressureSensorPlugin::SubseaPressureSensorPlugin() : dataPtr(std::make_unique<PrivateData>())
 {
   dataPtr->inferredDepth = 0.0;
-  // dataPtr->gzMsgEnabled = true;
-  // dataPtr->noiseAmp = 0.1;
-  // dataPtr->noiseSigma = 0.01;
+  dataPtr->gzMsgEnabled = true;  // consider changing to false
+  dataPtr->noiseAmp = 0.0;
+  dataPtr->noiseSigma = 3.0;
 }
 
 SubseaPressureSensorPlugin::~SubseaPressureSensorPlugin() {}
@@ -75,9 +73,11 @@ void SubseaPressureSensorPlugin::Configure(
   this->dataPtr->world = gz::sim::World(_ecm.EntityByComponents(gz::sim::components::World()));
   // this->dataPtr->sensorOutputTopic = "sensor_output_topic";
 
+  // Initialize the ROS 2 node
   this->dataPtr->rosNode = std::make_shared<rclcpp::Node>("subsea_pressure_sensor");  // 2 (check)
+
+  // Initialize the Gazebo node
   this->dataPtr->gazeboNode = std::make_shared<gz::transport::Node>();
-  // this->dataPtr->gazeboNode->Init();
 
   if (!this->dataPtr->world.Valid(_ecm))
   {
@@ -91,7 +91,7 @@ void SubseaPressureSensorPlugin::Configure(
   }
   else
   {
-    this->dataPtr->saturation = 3000;
+    this->dataPtr->saturation = 3000;  // original xacro file has it as range set at 30000
   }
 
   if (_sdf->HasElement("estimate_depth_on"))
@@ -121,8 +121,6 @@ void SubseaPressureSensorPlugin::Configure(
     this->dataPtr->kPaPerM = 9.80638;
   }
 
-  // Initialize the Gazebo node
-  this->dataPtr->gazeboNode = std::make_shared<gz::transport::Node>();
   // this->dataPtr->gazeboNode->Init();
 
   this->dataPtr->rosSensorOutputPub =
@@ -185,7 +183,7 @@ void SubseaPressureSensorPlugin::PreUpdate(
   // }
   const gz::sim::Entity & _entity = _ecm.EntityByComponents(gz::sim::components::WorldPose());
   // gz::math::Vector3 pos;
-  auto pos = GetWorldPose(_entity, _ecm);
+  auto pos = GetWorldPose(_entity, _ecm);  // check if the var name would be worldPoseComp
 
   // gz::math::Pose3d pose = GetWorldPose(_entity, _ecm);
   // gz::math::Vector3d pos = pose.Pos();
@@ -199,7 +197,7 @@ void SubseaPressureSensorPlugin::PreUpdate(
   //   // Use 'worldPose' as needed
   // }
   ////////////
-
+  // Depth data is extracted from the model and pressure is calculated
   double depth = std::abs(pos.Z());
   this->dataPtr->pressure = this->dataPtr->standardPressure;
   if (depth >= 0)
@@ -209,10 +207,10 @@ void SubseaPressureSensorPlugin::PreUpdate(
 
   // not adding gaussian noise for now
   // pressure += this->dataPtr->GetGaussianNoise(this->dataPtr->noiseAmp);
-  this->dataPtr->pressure += this->dataPtr->noiseAmp;
+  this->dataPtr->pressure += this->dataPtr->noiseAmp;  // noiseAmp is 0.0
 
   // double inferredDepth = 0.0;
-  if (this->dataPtr->estimateDepth)
+  if (this->dataPtr->estimateDepth)  // estimateDepth is false by default
   {
     this->dataPtr->inferredDepth =
       (this->dataPtr->pressure - this->dataPtr->standardPressure) / this->dataPtr->kPaPerM;
@@ -244,9 +242,11 @@ void SubseaPressureSensorPlugin::PostUpdate(
   sensor_msgs::msg::FluidPressure rosMsg;
   // rosMsg.header.stamp.sec = _info.simTime.sec;
   // rosMsg.header.stamp.nanosec = _info.simTime.nsec;
-  rosMsg.header.stamp.sec = std::chrono::duration_cast<std::chrono::seconds>(_info.simTime).count();
+  rosMsg.header.stamp.sec =
+    std::chrono::duration_cast<std::chrono::seconds>(_info.simTime).count();  // Time in seconds
   rosMsg.header.stamp.nanosec =
-    std::chrono::duration_cast<std::chrono::nanoseconds>(_info.simTime).count() % 1000000000;
+    std::chrono::duration_cast<std::chrono::nanoseconds>(_info.simTime).count() %
+    1000000000;  // Time in nanoseconds
   this->dataPtr->worldName = this->dataPtr->world.Name(_ecm).value();
   rosMsg.fluid_pressure = this->dataPtr->pressure;
   rosMsg.variance = this->dataPtr->noiseSigma * this->dataPtr->noiseSigma;
