@@ -55,6 +55,11 @@
 			name="gz::sim::systems::DopplerVelocityLogSystem">
 		</plugin>
 
+		<plugin
+			filename="DVLBridge"
+			name="dave_ros_gz_plugins::DVLBridge">
+		</plugin>
+
 		<!-- Origin placed somewhere in the middle of the North Sea -->
 		<spherical_coordinates>
 			<latitude_deg>56.71897669633431</latitude_deg>

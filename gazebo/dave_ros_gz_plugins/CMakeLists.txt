@@ -20,10 +20,14 @@ set(GZ_SIM_VER ${gz-sim8_VERSION_MAJOR})
 message(STATUS "Compiling against Gazebo Harmonic")
 
 add_library(SphericalCoords SHARED src/SphericalCoords.cc)
+add_library(DVLBridge SHARED src/DVLBridge.cc)
 
 target_include_directories(SphericalCoords PRIVATE include)
+target_include_directories(DVLBridge PRIVATE include)
 
 target_link_libraries(SphericalCoords
+  gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER})
+target_link_libraries(DVLBridge
   gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER})
 
 # Specify dependencies for FullSystem using ament_target_dependencies
@@ -33,9 +37,15 @@ ament_target_dependencies(SphericalCoords
   geometry_msgs
   std_msgs
 )
+ament_target_dependencies(DVLBridge
+  dave_interfaces
+  rclcpp
+  geometry_msgs
+  std_msgs
+)
 
 # Install targets
-install(TARGETS SphericalCoords
+install(TARGETS SphericalCoords DVLBridge
   DESTINATION lib/${PROJECT_NAME}
 )
 
