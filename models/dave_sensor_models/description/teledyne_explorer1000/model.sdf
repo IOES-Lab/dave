@@ -56,5 +56,11 @@
         </gz:dvl>
       </sensor>
     </experimental:params>
+
+    <plugin
+      filename="DVLBridge"
+      name="dave_ros_gz_plugins::DVLBridge">
+      <topic>/dvl/velocity</topic>
+    </plugin>
   </include>
 </sdf>

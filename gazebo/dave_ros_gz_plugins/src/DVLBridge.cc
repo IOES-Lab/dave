@@ -17,16 +17,14 @@
 #include <iostream>
 
 #include <gz/common/Console.hh>
+#include <gz/transport/Node.hh>
 #include <rclcpp/rclcpp.hpp>
 #include "gz/plugin/Register.hh"
-#include <gz/transport/Node.hh>
-
 
 #include "dave_ros_gz_plugins/DVLBridge.hh"
 
 GZ_ADD_PLUGIN(
-  dave_ros_gz_plugins::DVLBridge, gz::sim::System,
-  dave_ros_gz_plugins::DVLBridge::ISystemConfigure,
+  dave_ros_gz_plugins::DVLBridge, gz::sim::System, dave_ros_gz_plugins::DVLBridge::ISystemConfigure,
   dave_ros_gz_plugins::DVLBridge::ISystemPostUpdate)
 
 namespace dave_ros_gz_plugins
@@ -35,7 +33,8 @@ namespace dave_ros_gz_plugins
 struct DVLBridge::PrivateData
 {
   // Add any private data members here.
-  gz::transport::Node m_gzNode;
+  gz::transport::Node gz_node;
+  std::string dvl_topic;
   rclcpp::Publisher<dave_interfaces::msg::DVL>::SharedPtr dvl_pub;
 };
 
@@ -54,6 +53,17 @@ void DVLBridge::Configure(
 
   this->ros_node_ = std::make_shared<rclcpp::Node>("dvl_bridge_node");
 
+  // Grab dvl topic from SDF
+  if (!_sdf->HasElement("topic"))
+  {
+    this->dataPtr->dvl_topic = "/dvl/velocity";
+    gzmsg << "dvl topic set to default:  " << this->dataPtr->dvl_topic << std::endl;
+  }
+  else
+  {
+    this->dataPtr->dvl_topic = _sdf->Get<std::string>("topic");
+    gzmsg << "dvl topic: " << this->dataPtr->dvl_topic << std::endl;
+  }
 }
 
 void DVLBridge::receiveGazeboCallback(const gz::msgs::DVLVelocityTracking & msg)
@@ -165,17 +175,14 @@ void DVLBridge::PostUpdate(
     rclcpp::spin_some(this->ros_node_);
 
     // Gazebo subscriber
-    std::string dvl_topic = "/dvl/velocity";
-
     std::function<void(const gz::msgs::DVLVelocityTracking &)> callback =
       std::bind(&DVLBridge::receiveGazeboCallback, this, std::placeholders::_1);
 
-    this->dataPtr->m_gzNode.Subscribe(dvl_topic, callback);
+    this->dataPtr->gz_node.Subscribe(this->dataPtr->dvl_topic, callback);
 
     // ROS2 publisher
-    this->dataPtr->dvl_pub = this->ros_node_->create_publisher<dave_interfaces::msg::DVL>(
-      dvl_topic, 1);
-
+    this->dataPtr->dvl_pub =
+      this->ros_node_->create_publisher<dave_interfaces::msg::DVL>(this->dataPtr->dvl_topic, 1);
   }
 }
 

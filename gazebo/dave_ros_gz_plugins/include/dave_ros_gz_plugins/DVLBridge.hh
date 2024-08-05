@@ -20,19 +20,18 @@
 
 #include <memory>
 
-#include <gz/sim/System.hh>
 #include <gz/msgs/dvl_velocity_tracking.pb.h>
+#include <gz/sim/System.hh>
 #include <rclcpp/rclcpp.hpp>
 #include "dave_interfaces/msg/dvl.hpp"
 #include "dave_interfaces/msg/dvl_beam.hpp"
-
 
 namespace dave_ros_gz_plugins
 
 {
 class DVLBridge : public gz::sim::System,
-                        public gz::sim::ISystemConfigure,
-                        public gz::sim::ISystemPostUpdate
+                  public gz::sim::ISystemConfigure,
+                  public gz::sim::ISystemPostUpdate
 {
 public:
   DVLBridge();
@@ -51,21 +50,24 @@ private:
   std::shared_ptr<rclcpp::Node> ros_node_;
 
   struct PrivateData;
-  enum DVLType{
+  enum DVLType
+  {
     DVL_TYPE_UNSPECIFIED = 0,
     DVL_TYPE_PISTON = 1,
     DVL_TYPE_PHASED_ARRAY = 2
-    };
-  enum DVLTargetType{
+  };
+  enum DVLTargetType
+  {
     DVL_TARGET_UNSPECIFIED = 0,
     DVL_TARGET_BOTTOM = 1,
     DVL_TARGET_WATER = 2
-    };
-  enum ReferenceType{
+  };
+  enum ReferenceType
+  {
     DVL_REFERENCE_UNSPECIFIED = 0,
     DVL_REFERENCE_EARTH = 1,
     DVL_REFERENCE_SHIP = 2
-    };
+  };
   std::unique_ptr<PrivateData> dataPtr;
 };
 }  // namespace dave_ros_gz_plugins
