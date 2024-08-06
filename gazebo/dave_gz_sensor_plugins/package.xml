@@ -3,6 +3,7 @@
   <name>dave_gz_sensor_plugins</name>
   <version>0.0.0</version>
   <description>DAVE sensor plugins</description>
+  <maintainer email="gaurav.og.9920@gmail.com">Gaurav kumar</maintainer>
   <maintainer email="helenamoyen@gmail.com">Helena Moyen</maintainer>
   <license>Apache 2.0</license>
   <buildtool_depend>ament_cmake</buildtool_depend>
