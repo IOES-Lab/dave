@@ -1,4 +1,4 @@
-<?xml version="1.0" ?>
+<?xml version="1.0"?>
 <sdf version="1.7">
   <model name="rexrov">
 
@@ -582,6 +582,23 @@
       <joint_name>thruster6_joint</joint_name>
       <joint_name>thruster7_joint</joint_name>
       <joint_name>thruster8_joint</joint_name>
+    </plugin>
+
+    <!-- Sea Pressure Sensor Plugin -->
+    <plugin
+      filename="sea_pressure_sensor"
+      name=" dave_gz_sensor_plugins::SubseaPressureSensorPlugin">
+      <namespace>rexrov</namespace>
+      <!-- <link_name>base_link</link_name> -->
+      <topic>sea_pressure</topic>
+      <!-- <mass>0.015</mass> -->
+      <update_rate>10</update_rate>
+      <!-- <saturation>3000</saturation> -->
+      <noise_sigma>3.0</noise_sigma>
+      <noise_amplitude>0.0</noise_amplitude>
+      <estimate_depth_on>false</estimate_depth_on>
+      <standard_pressure>101.325</standard_pressure>
+      <kPa_per_meter>9.80638</kPa_per_meter>
     </plugin>
 
   </model>

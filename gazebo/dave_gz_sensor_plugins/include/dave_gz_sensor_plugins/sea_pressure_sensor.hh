@@ -2,6 +2,7 @@
 #define dave_gz_sensor_plugins__SUBSEA_PRESSURE_SENSOR_HH_
 
 // #include <sensor_msgs/FluidPressure.h>
+#include <gz/msgs/vector3d.pb.h>
 #include <pressure_sensor_msgs/msgs/SensorPressure.pb.h>
 #include <gz/sim/System.hh>
 #include <memory>
@@ -30,7 +31,17 @@ public:
 
   void PostUpdate(const gz::sim::UpdateInfo & _info, const gz::sim::EntityComponentManager & _ecm);
 
+  gz::math::Pose3d GetWorldPose(
+    const gz::sim::Entity & _entity, gz::sim::EntityComponentManager & _ecm);
+
+  gz::math::Pose3d GetModelPose(
+    const gz::sim::Entity & modelEntity, gz::sim::EntityComponentManager & ecm);
+
+  gz::sim::Entity GetModelEntity(
+    const std::string & modelName, gz::sim::EntityComponentManager & ecm);
+
 private:
+  std::shared_ptr<rclcpp::Node> rosNode;
   struct PrivateData;
   std::unique_ptr<PrivateData> dataPtr;
 };
