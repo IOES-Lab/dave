@@ -1,6 +1,6 @@
 ARG ROS_DISTRO="jazzy"
 FROM osrf/ros:$ROS_DISTRO-desktop-full
-ARG BRANCH="ros2"
+ARG BRANCH="dockertest"
 
 # Install Utilities
 # hadolint ignore=DL3008
@@ -39,7 +39,7 @@ RUN adduser --shell /bin/bash --disabled-password --gecos '' $USER \
 
 # Install ROS-Gazebo framework
 ADD https://raw.githubusercontent.com/IOES-Lab/dave/$BRANCH/\
-extras/ros-jazzy-gz-harmonic-install.sh install.sh
+extras/ros-jazzy-binary-gz-harmonic-source-install.sh install.sh
 RUN bash install.sh
 
 # Set up Dave workspace
@@ -66,4 +66,5 @@ RUN touch /ros_entrypoint.sh && sed --in-place --expression \
 
 # Set User as user
 USER $USER
-RUN echo "source /opt/ros/jazzy/setup.bash" >> ~/.bashrc
+RUN echo "source /opt/ros/jazzy/setup.bash" >> ~/.bashrc  && \
+    echo "source /opt/gazebo/install/setup.bash" >> ~/.bashrc
