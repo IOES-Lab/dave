@@ -16,7 +16,8 @@ env:
 
 jobs:
   build-and-push-to-docker-hub:
-    runs-on: ubuntu-latest
+    # runs-on: ubuntu-latest
+    runs-on: self-hosted
     permissions:
       contents: read
       packages: write
