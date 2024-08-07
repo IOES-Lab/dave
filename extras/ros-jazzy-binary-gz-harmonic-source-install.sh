@@ -100,7 +100,7 @@ sudo apt -y install $(sort -u $(find . -iname 'packages-'`lsb_release -cs`'.apt'
 echo -e "\033[34mBuilding the project with colcon...\033[0m"
 cd /opt/gazebo || exit
 # Build gz-physics with limited cores to avoid memory issues
-MAKEFLAGS="-j2" colcon build --cmake-args -DBUILD_TESTING=OFF --merge-install --packages-up-to gz-physics
+MAKEFLAGS="-j2" colcon build --cmake-args -DBUILD_TESTING=OFF --merge-install --packages-up-to gz-physics7
 # Full build
 colcon build --cmake-args -DBUILD_TESTING=OFF --merge-install
 
