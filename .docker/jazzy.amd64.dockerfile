@@ -43,7 +43,7 @@ extras/ros-jazzy-binary-gz-harmonic-source-install.sh install.sh
 RUN bash install.sh
 
 # Set up Dave workspace
-ENV DAVE_WS /root/ws_dave
+ENV DAVE_WS=/opt/ws_dave
 WORKDIR $DAVE_WS/src
 
 ADD https://raw.githubusercontent.com/IOES-Lab/dave/$BRANCH/\

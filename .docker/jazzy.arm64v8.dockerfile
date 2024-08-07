@@ -78,7 +78,7 @@
 
 # Using the pre-built image for above commented out dockerfile code lines
 # hadolint ignore=DL3007
-FROM woensugchoi/ubuntu-arm-rdp-base:latest
+FROM --platform=linux/arm64 woensugchoi/ubuntu-arm-rdp-base:latest
 ARG USER=docker
 
 # ROS-Gazebo arg
@@ -91,7 +91,7 @@ extras/ros-jazzy-binary-gz-harmonic-source-install.sh install.sh
 RUN bash install.sh
 
 # Set up Dave workspace
-ENV ROS_UNDERLAY /home/$USER/dave_ws/install
+ENV ROS_UNDERLAY=/home/$USER/dave_ws/install
 WORKDIR $ROS_UNDERLAY/../src
 
 ADD https://raw.githubusercontent.com/IOES-Lab/dave/$BRANCH/\
@@ -129,7 +129,7 @@ RUN touch /ros_entrypoint.sh && sed --in-place --expression \
 # Set User as user
 USER docker
 RUN echo "source /opt/ros/jazzy/setup.bash" >> ~/.bashrc && \
-    echo "source ~/gazebo/install/setup.bash" >> ~/.bashrc && \
+    echo "source /opt/gazebo/install/setup.bash" >> ~/.bashrc && \
     echo "if [ -d ~/HOST ]; then chown docker:docker ~/HOST; fi" \
     >> ~/.bashrc
 
