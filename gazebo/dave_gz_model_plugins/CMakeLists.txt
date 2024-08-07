@@ -20,14 +20,7 @@ set(GZ_COMMON_VER ${gz-common5_VERSION_MAJOR})
 set(GZ_SIM_VER ${gz-sim8_VERSION_MAJOR})
 
 # Install Python package
-ament_python_install_package(${PROJECT_NAME} PACKAGE_DIR "src")
-
-
-# add_library(LinearBatteryPlugin SHARED src/linear_battery_plugin.py)
-
-# target_link_libraries(LinearBatteryPlugin
-#   gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER})
-
+ament_python_install_package(linear_battery_plugin PACKAGE_DIR "src/linear_battery_plugin")
 
 # Install Python script directly
 install(PROGRAMS
@@ -35,7 +28,7 @@ install(PROGRAMS
   DESTINATION lib/${PROJECT_NAME}
 )
 
-install(FILES 
+install(FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/test/battery_world.sdf
   DESTINATION share/${PROJECT_NAME}/test/
 )

@@ -3,11 +3,12 @@
   <world name="default">
   <model name="battery_model">
     <static>false</static>
-    <link name="link">
+    <link name="base_link">
       <sensor name="battery_sensor" type="custom">
         <plugin filename="gz-sim-python-system-loader-system" name="gz::sim::systems::PythonSystemLoader">
-        <module_name>linear_battery_plugin</module_name>
-        <update_rate>2</update_rate>
+          <module_name>linear_battery_plugin</module_name>
+          <namespace>battery_model/base_link</namespace>
+          <update_rate>2</update_rate>
         </plugin>
       </sensor>
     </link>

@@ -1,10 +1,9 @@
 import rclpy
-from rclpy.node import Node
 from sensor_msgs.msg import BatteryState
-from gz.sim8.systems import LinearBatteryPlugin
-from gz.sim8 import Model, Link, Plugin
+from gz.sim8 import Model, Link
 
-class LinearBatteryGzSimPlugin(LinearBatteryPlugin):
+
+class LinearBatteryGzSimPlugin:
 
     def __init__(self):
         super().__init__()
@@ -17,27 +16,31 @@ class LinearBatteryGzSimPlugin(LinearBatteryPlugin):
     def configure(self, entity, sdf, ecm, event_mgr):
         try:
             self.model = Model(entity)
-            self.link = Link(self.model.link_by_name("link_name"))
+            self.link = Link(self.model.link_by_name(ecm, "link_name"))
+            self.robot_namespace = self.model.name(ecm)
         except Exception as e:
             print(f"Error loading plugin: {e}")
             return
 
-        if sdf.HasElement("namespace"):
-            self.robot_namespace = sdf.Get("namespace")
-
-        if sdf.HasElement("update_rate"):
-            self.update_rate = sdf.Get("update_rate")
+        namespace = sdf.get_string("namespace", "default_model/default_link")[0]
+        if namespace == "default_model/default_link":
+            self.robot_namespace = self.model.name(ecm)
+        else:
+            self.robot_namespace = namespace + "/" + self.model.name(ecm)
+        self.update_rate = sdf.get_int("update_rate", 2)[0]
 
         if self.update_rate <= 0.0:
             print(f"Invalid update rate, setting it to 2 Hz, rate={self.update_rate}")
             self.update_rate = 2
 
         rclpy.init()
-        self.node = rclpy.create_node('battery_plugin', namespace=self.robot_namespace)
-        self.battery_state_pub = self.node.create_publisher(BatteryState, 'battery_state', 10)
-        self.update_timer = self.node.create_timer(1.0 / self.update_rate, self.publish_battery_state)
+        self.node = rclpy.create_node("battery_plugin", namespace=self.robot_namespace)
+        self.battery_state_pub = self.node.create_publisher(BatteryState, "battery_state", 10)
+        self.update_timer = self.node.create_timer(
+            1.0 / self.update_rate, self.publish_battery_state
+        )
 
-        self.node.get_logger().info(f"Battery Plugin for link <{self.link.name}> initialized")
+        self.node.get_logger().info(f"Battery Plugin for <{namespace}> initialized")
         self.node.get_logger().info(f"Update rate [Hz]={self.update_rate}")
 
     def publish_battery_state(self):
@@ -62,6 +65,7 @@ class LinearBatteryGzSimPlugin(LinearBatteryPlugin):
 
     def reset(self):
         super().reset()
+
 
 def get_system():
     return LinearBatteryGzSimPlugin()
