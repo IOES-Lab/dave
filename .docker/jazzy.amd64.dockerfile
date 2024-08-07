@@ -62,7 +62,15 @@ RUN . "/opt/ros/${ROS_DISTRO}/setup.sh" && \
 
 # source entrypoint setup
 RUN touch /ros_entrypoint.sh && sed --in-place --expression \
-    '$i source "$DAVE_WS/install/setup.bash"' /ros_entrypoint.sh
+    '$i source "/opt/ws_dave/install/setup.bash"' /ros_entrypoint.sh
+
+# Source ROS and Gazebo
+RUN sed --in-place --expression \
+'$i source "/opt/ros/jazzy/setup.bash"' /ros_entrypoint.sh && \
+sed --in-place --expression \
+'$i source "/opt/gazebo/install/setup.bash"' /ros_entrypoint.sh && \
+sed --in-place --expression \
+'$i export PYTHONPATH=$PYTHONPATH:/opt/gazebo/install/lib/python' /ros_entrypoint.sh
 
 # Set User as user
 USER $USER
