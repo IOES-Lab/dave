@@ -111,6 +111,7 @@ echo -e "\033[34mBuilding the project with colcon...\033[0m"
 cd /opt/gazebo || exit
 # Build gz-physics with limited cores to avoid memory issues
 MAKEFLAGS="-j2" colcon build --cmake-args -DBUILD_TESTING=OFF --merge-install --packages-up-to gz-physics7
+<<<<<<< HEAD
 =======
 cd ~/gazebo || exit
 =======
@@ -119,6 +120,8 @@ cd /opt/gazebo || exit
 # Build gz-physics with limited cores to avoid memory issues
 MAKEFLAGS="-j2" colcon build --cmake-args -DBUILD_TESTING=OFF --merge-install --packages-up-to gz-physics
 >>>>>>> 3179fd4 (source install test)
+=======
+>>>>>>> a4627f9 (specify gz-physics version)
 # Full build
 colcon build --cmake-args -DBUILD_TESTING=OFF --merge-install
 
