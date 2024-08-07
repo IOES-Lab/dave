@@ -89,7 +89,11 @@ sudo apt update && apt install -y \
 
 echo
 echo -e "\033[34mSetting up Gazebo source directory...\033[0m"
+<<<<<<< HEAD
 mkdir -p /opt/gazebo/src && cd /opt/gazebo/src || exit
+=======
+mkdir -p ~/gazebo/src && cd ~/gazebo/src || exit
+>>>>>>> 3179fd4 (source install test)
 curl -O https://raw.githubusercontent.com/gazebo-tooling/gazebodistro/master/collection-harmonic.yaml
 vcs import < collection-harmonic.yaml
 
@@ -98,9 +102,15 @@ echo -e "\033[34mUpdating package list and installing dependencies...\033[0m"
 sudo apt -y install $(sort -u $(find . -iname 'packages-'`lsb_release -cs`'.apt' -o -iname 'packages.apt' | grep -v '/\.git/') | sed '/gz\|sdf/d' | tr '\n' ' ')
 
 echo -e "\033[34mBuilding the project with colcon...\033[0m"
+<<<<<<< HEAD
 cd /opt/gazebo || exit
 # Build gz-physics with limited cores to avoid memory issues
 MAKEFLAGS="-j2" colcon build --cmake-args -DBUILD_TESTING=OFF --merge-install --packages-up-to gz-physics7
+=======
+cd ~/gazebo || exit
+# Build gz-physics with limited cores to avoid memory issues
+MAKEFLAGS="-j2" colcon build --cmake-args -DBUILD_TESTING=OFF --merge-install --packages-up-to gz-physics
+>>>>>>> 3179fd4 (source install test)
 # Full build
 colcon build --cmake-args -DBUILD_TESTING=OFF --merge-install
 
@@ -109,7 +119,11 @@ echo -e "\033[32m============================================================\03
 echo -e "\033[32mROS-Gazebo Framework Installation completed. Awesome! 🤘🚀 \033[0m"
 echo -e "Following command will set-up ROS-Gazebo environment variables to run it"
 echo -e "\033[95msource /opt/ros/jazzy/setup.bash\033[0m"
+<<<<<<< HEAD
 echo -e "\033[95msource /opt/gazebo/install/setup.bash\033[0m"
 echo -e "\033[95mexport PYTHONPATH=\$PYTHONPATH:/opt/gazebo/install/lib/python\033[0m"
+=======
+echo -e "\033[95msource ~/gazebo/install/setup.bash\033[0m"
+>>>>>>> 3179fd4 (source install test)
 echo -e "You may check ROS, and Gazebo version installed with \033[33mprintenv ROS_DISTRO\033[0m and \033[33mecho \$GZ_VERSION\033[0m"
 echo

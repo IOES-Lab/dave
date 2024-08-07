@@ -7,6 +7,7 @@ on:
     tags: ["*"]
     branches:
       - ros2
+      - dockertest
 
 env:
   IMAGE_NAME: ${{ github.repository }}
