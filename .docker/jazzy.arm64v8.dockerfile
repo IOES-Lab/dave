@@ -82,7 +82,7 @@ FROM --platform=linux/arm64 woensugchoi/ubuntu-arm-rdp-base:latest
 ARG USER=docker
 
 # ROS-Gazebo arg
-ARG BRANCH="dockertest"
+ARG BRANCH="ros2"
 ARG ROS_DISTRO="jazzy"
 
 # Install ROS-Gazebo framework
@@ -130,6 +130,7 @@ RUN touch /ros_entrypoint.sh && sed --in-place --expression \
 USER docker
 RUN echo "source /opt/ros/jazzy/setup.bash" >> ~/.bashrc && \
     echo "source /opt/gazebo/install/setup.bash" >> ~/.bashrc && \
+    echo "export PYTHONPATH=$PYTHONPATH:/opt/gazebo/install/lib/python" >> ~/.bashrc && \
     echo "if [ -d ~/HOST ]; then chown docker:docker ~/HOST; fi" \
     >> ~/.bashrc
 

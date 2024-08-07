@@ -1,6 +1,6 @@
 ARG ROS_DISTRO="jazzy"
 FROM osrf/ros:$ROS_DISTRO-desktop-full
-ARG BRANCH="dockertest"
+ARG BRANCH="ros2"
 
 # Install Utilities
 # hadolint ignore=DL3008
