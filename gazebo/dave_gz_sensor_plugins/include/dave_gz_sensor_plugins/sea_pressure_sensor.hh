@@ -1,7 +1,6 @@
 #ifndef dave_gz_sensor_plugins__SUBSEA_PRESSURE_SENSOR_HH_
 #define dave_gz_sensor_plugins__SUBSEA_PRESSURE_SENSOR_HH_
 
-// #include <sensor_msgs/FluidPressure.h>
 #include <gz/msgs/vector3d.pb.h>
 #include <gz/sim/System.hh>
 #include <memory>
