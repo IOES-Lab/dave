@@ -18,6 +18,7 @@ jobs:
   build-and-push-to-docker-hub:
     # runs-on: ubuntu-latest
     runs-on: self-hosted
+    timeout-minutes: 1440
     permissions:
       contents: read
       packages: write
