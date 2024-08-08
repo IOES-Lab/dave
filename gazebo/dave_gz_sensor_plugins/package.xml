@@ -6,6 +6,7 @@
   <maintainer email="gaurav.og.9920@gmail.com">Gaurav kumar</maintainer>
   <maintainer email="helenamoyen@gmail.com">Helena Moyen</maintainer>
   <license>Apache 2.0</license>
+  <depend>geometry_msgs</depend>
   <buildtool_depend>ament_cmake</buildtool_depend>
   <test_depend>ament_lint_auto</test_depend>
   <build_depend>dave_interfaces</build_depend>

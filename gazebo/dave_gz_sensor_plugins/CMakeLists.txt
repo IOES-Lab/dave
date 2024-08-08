@@ -29,9 +29,7 @@ add_library(sea_pressure_sensor SHARED src/sea_pressure_sensor.cc)
 
 target_include_directories(UsblTransceiver PRIVATE include)
 target_include_directories(UsblTransponder PRIVATE include)
-target_include_directories(sea_pressure_sensor PRIVATE include
-  ${dave_interfaces_INCLUDE_DIRS}
-)
+target_include_directories(sea_pressure_sensor PRIVATE include)
 
 target_link_libraries(UsblTransceiver
   gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
@@ -61,10 +59,10 @@ ament_target_dependencies(UsblTransponder
 )
 
 ament_target_dependencies(sea_pressure_sensor
-  dave_interfaces
   rclcpp
   std_msgs
   sensor_msgs
+  geometry_msgs
 )
 
 # Install targets
@@ -87,30 +85,5 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
 endif()
-
-################################
-# # Protobuf generation
-# set(PROTO_FILES dave_interfaces/proto/pressure_sensor_msgs/msgs/SensorPressure.proto)
-# protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${PROTO_FILES})
-
-# add_library(pressure_sensor_msgs_gen SHARED ${PROTO_SRCS} ${PROTO_HDRS})
-# target_link_libraries(pressure_sensor_msgs_gen ${PROTOBUF_LIBRARIES})
-
-# # Specify dependencies for your library
-# ament_target_dependencies(pressure_sensor_msgs_gen
-#   rclcpp
-#   std_msgs
-#   geometry_msgs
-#   sensor_msgs
-#   dave_interfaces
-# )
-
-# include_directories(${PROTOBUF_INCLUDE_DIRS} ${CMAKE_CURRENT_BINARY_DIR})
-
-# # Install targets
-# install(TARGETS pressure_sensor_msgs_gen
-#   DESTINATION lib/${PROJECT_NAME}
-# )
-################################
 
 ament_package()

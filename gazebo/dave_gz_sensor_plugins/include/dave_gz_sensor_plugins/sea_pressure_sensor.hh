@@ -3,7 +3,6 @@
 
 // #include <sensor_msgs/FluidPressure.h>
 #include <gz/msgs/vector3d.pb.h>
-#include <pressure_sensor_msgs/msgs/SensorPressure.pb.h>
 #include <gz/sim/System.hh>
 #include <memory>
 #include <rclcpp/rclcpp.hpp>
