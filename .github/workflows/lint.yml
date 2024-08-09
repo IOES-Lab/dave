@@ -7,6 +7,8 @@ on:
     tags: ["*"]
     branches:
       - ros2
+  pull_request:
+    types: [opened, reopened]
 
 jobs:
   #   ament_lint:
