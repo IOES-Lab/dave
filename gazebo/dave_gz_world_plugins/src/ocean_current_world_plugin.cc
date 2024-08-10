@@ -216,7 +216,8 @@ void UnderwaterCurrentPlugin::LoadTidalOscillationDatabase()
   this->dataPtr->tideFlag = true;
   this->dataPtr->tidalHarmonicFlag = false;
 
-  sdf::ElementPtr tidalOscillationParams = this->dataPtr->sdf->GetElement("tidal_oscillation");
+  sdf::ElementPtr tidalOscillationParams =
+    this->dataPtr->sdf->GetElement("tidal_oscillation");  // include this xml/ (TODO)
   sdf::ElementPtr tidalHarmonicParams;
 
   // Read the tidal oscillation parameter from the SDF file // (TO DO)(TO UNDERSTAND)
@@ -700,7 +701,8 @@ void UnderwaterCurrentPlugin::PublishStratifiedCurrentVelocity()
   dave_gz_world_plugins_msgs::msgs::StratifiedCurrentVelocity currentVel;  // check
   for (std::vector<gz::math::Vector4d>::iterator it =
          this->dataPtr->currentStratifiedVelocity.begin();
-       it != this->dataPtr->currentStratifiedVelocity.end(); ++it)
+       it != this->dataPtr->currentStratifiedVelocity.end();
+       ++it)  // currentStratifiedVelocity values defined where ? (TODO)
   {
     gz::msgs::Set(currentVel.add_velocity(), gz::math::Vector3d(it->X(), it->Y(), it->Z()));
     currentVel.add_depth(it->W());

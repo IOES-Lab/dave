@@ -18,6 +18,7 @@ find_package(dave_gz_world_plugins REQUIRED)
 set(GZ_PLUGIN_VER ${gz-plugin2_VERSION_MAJOR})
 set(GZ_COMMON_VER ${gz-common5_VERSION_MAJOR})
 set(GZ_SIM_VER ${gz-sim8_VERSION_MAJOR})
+set(GZ_MSGS_VER ${gz-msgs10_VERSION_MAJOR})
 
 message(STATUS "Compiling against Gazebo Harmonic")
 
@@ -50,14 +51,16 @@ install(DIRECTORY include/
   DESTINATION include/
 )
 
+# Environment hooks
+ament_environment_hooks(
+  "${CMAKE_CURRENT_SOURCE_DIR}/hooks/${PROJECT_NAME}.dsv.in"
+)
+
 # Following directives are used when testing.
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
 endif()
-
-# Environment Hooks
-ament_environment_hooks("${CMAKE_CURRENT_SOURCE_DIR}/hooks/${PROJECT_NAME}.dsv.in")
 
 ament_package()
 

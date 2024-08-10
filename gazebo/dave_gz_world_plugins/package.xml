@@ -2,9 +2,8 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?><package format="3">
   <name>dave_gz_world_plugins</name>
   <version>0.0.0</version>
-  <description>The dave_gz_world_plugins package (gz world plugin definitions)</description>
-  <author email="gaurav.og.9920@gmail.com">Gaurav Kumar and woensug</author>
-  <maintainer email="gaurav.og.9920@gmail.com">Gaurav Kumar and woensug</maintainer>
+  <description>The dave_gz_world_plugins</description>
+  <maintainer email="gaurav.og.9920@gmail.com">Gaurav Kumar</maintainer>
   <license>TODO: License declaration</license>
   <buildtool_depend>ament_cmake</buildtool_depend>
   <!-- <buildtool_depend>protobuf-dev</buildtool_depend> -->

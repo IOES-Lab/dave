@@ -1,21 +1,5 @@
-// Copyright (c) 2016 The UUV Simulator Authors.
-// All rights reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-/// \file ocean_current_model_plugin.cc
 #include "dave_gz_model_plugins/ocean_current_model_plugin.hh"
-// #include <dave_gz_world_plugins/gauss_markov_process.hh>
+// #include "dave_gz_world_plugins/gauss_markov_process.hh"
 // #include <dave_gz_world_plugins/tidal_oscillation.hh>
 #include <algorithm>
 #include <chrono>
@@ -27,11 +11,11 @@
 #include <gz/sim/components/Link.hh>
 #include <gz/sim/components/Name.hh>
 #include <gz/sim/components/ParentEntity.hh>
+#include <gz/sim/components/World.hh>
 #include <gz/transport/Node.hh>
 #include <iostream>
 #include <memory>
 #include <rclcpp/rclcpp.hpp>
-#include <std_msgs/msg/float64.hpp>
 #include <std_msgs/msg/string.hpp>
 #include <string>
 #include <unordered_map>
@@ -66,43 +50,26 @@ struct TransientCurrentPlugin::PrivateData
 
   // Initialize any necessary states before the plugin starts
   virtual void Init();
-
-  std::shared_ptr<rclcpp::Node> rosNode;  // This is a smart pointer to a ROS 2 node, facilitating
-                                          // communication with other ROS nodes.
   std::string transientCurrentVelocityTopic;  // Declare the variable (updated)
-
-protected:
-  /// \brief Pointer to world
   gz::sim::World world{gz::sim::kNullEntity};
-
-  /// \brief Pointer to model
   gz::sim::Entity entity{gz::sim::kNullEntity};
   gz::sim::Model model{gz::sim::kNullEntity};
   gz::sim::Entity modelLink{gz::sim::kNullEntity};
-
-  /// \brief Namespace for topics and services
   std::string ns;
-
-  /// \brief Connects the update event callback
   virtual void Connect();
-
-  /// \brief Pointer to a node for communication
   std::shared_ptr<gz::transport::Node> gz_node;
-
-  /// \brief Map of publishers
-  std::map<std::string, gz::transport::Publisher> publishers;
-
-  /// \brief Current velocity topic and transient current velocity topic
+  // std::map<std::string, gz::transport::Publisher> publishers;
+  gz::transport::Node::Publisher gz_current_vel_pub;
   std::string currentVelocityTopic;
-
-  /// \brief Last update time stamp
   std::chrono::steady_clock::duration lastUpdate{0};
-
-  /// \brief Last depth index
-  int lastDepthIndex;
-
-  /// \brief Current linear velocity vector
+  int lastDepthIndex = 0;
   gz::math::Vector3d currentVelocity;
+  std::mutex lock_;
+  std::chrono::steady_clock::duration rosPublishPeriod{0};
+  std::shared_ptr<rclcpp::Node> ros_node_;
+  rclcpp::Publisher<std_msgs::msg::String>::SharedPtr flowVelocityPub;
+  rclcpp::Subscription<dave_interfaces::msg::StratifiedCurrentDatabase>::SharedPtr databaseSub;
+  std::string modelName;
 
   /// \brief Gauss-Markov process instance for the velocity components // TODO
   // gz::GaussMarkovProcess currentVelNorthModel; // TODO
@@ -117,7 +84,6 @@ protected:
   double noiseFreq_East;
   double noiseFreq_Down;
 
-  /// \brief Vector to read database
   std::vector<gz::math::Vector3d> database;
 
   /// \brief Tidal Oscillation interpolation model
@@ -154,57 +120,33 @@ protected:
   std::array<int, 5> world_start_time;
 
   /// \brief Private data pointer
-private:
-  std::shared_ptr<rclcpp::Node> ros_node_;
-  rclcpp::Publisher<std_msgs::msg::String>::SharedPtr flowVelocityPub;
-
-  /// \brief Pointer to this ROS node's handle.
-  std::shared_ptr<rclcpp::NodeHandle> rosNode;
-
-  /// \brief Publisher for the flow velocity in the world frame
-
-  /// \brief Subscriber for the transient ocean current database
-  rclcpp::Subscriber databaseSub;
-
-  /// \brief A ROS callbackqueue that helps process messages
-  rclcpp::CallbackQueue databaseSubQueue;
-
-  /// \brief A thread the keeps running the rosQueue
-  std::thread databaseSubQueueThread;
-
-  /// \brief A thread mutex to lock
-  std::mutex lock_;
-
-  /// \brief Period after which we should publish a message via ROS.
-  std::chrono::steady_clock::duration rosPublishPeriod{0};
-
-  /// \brief Last time we published a message via ROS.
-  // std::chrono::steady_clock::duration lastRosPublishTime{0};
-
-  std::shared_ptr<rclcpp::Node> ros_node_;
-  // std::chrono::steady_clock::duration currentTime{0};
-  this->dataPtr->rosPublishPeriod = 0.05;
-  // ends here
 };
 
 // constructor
 TransientCurrentPlugin::TransientCurrentPlugin() : dataPtr(std::make_unique<PrivateData>()) {}
 
-TransientCurrentPlugin::~TransientCurrentPlugin()
-{
-  // Shutdown the ROS 2 node
-  this->rosNode.reset();
-}
+TransientCurrentPlugin::~TransientCurrentPlugin() = default;
 
 void TransientCurrentPlugin::Configure(
   const gz::sim::Entity & _entity, const std::shared_ptr<const sdf::Element> & _sdf,
   gz::sim::EntityComponentManager & _ecm, gz::sim::EventManager & _eventMgr)
 {
-  this->dataPtr->world = _entity;
-  this->dataPtr->entity = _entity;
-  this->dataPtr->model = gz::sim::Model(_entity);
-  this->dataPtr->modelName = this->dataPtr->model.Name(_ecm);
-  this->dataPtr->sdf = _sdf;
+  if (!rclcpp::ok())
+  {
+    rclcpp::init(0, nullptr);
+  }
+
+  gzdbg << "dave_gz_model_plugins::TransientCureentPlugin::Configure on entity: " << _entity
+        << std::endl;
+
+  auto worldEntity = _ecm.EntityByComponents(gz::sim::components::World());
+  this->dataPtr->world = gz::sim::World(worldEntity);
+
+  auto model = gz::sim::Model(_entity);
+  this->dataPtr->model = model;
+  this->dataPtr->modelName = model.Name(_ecm);
+
+  // this->dataPtr->sdf = _sdf; // not needed check
 
   gzmsg << "Loading transient ocean current model plugin..." << std::endl;
 
@@ -215,12 +157,12 @@ void TransientCurrentPlugin::Configure(
   else
   {
     this->dataPtr->currentVelocityTopic =
-      "hydrodynamics/current_velocity/" + this->dataPtr->model.Name();
-    gz::sim::log::error() << "Empty flow_velocity_topic for transient_current model plugin. "
-                          << "Default topicName definition is used" << std::endl;
+      "hydrodynamics/current_velocity/" + this->dataPtr->modelName;
+    gzerr << "Empty flow_velocity_topic for transient_current model plugin."
+          << "Default topicName definition is used" << std::endl;
   }
-  gz::sim::log::info() << "Transient velocity topic name for " << this->dataPtr->model.Name()
-                       << " : " << this->dataPtr->currentVelocityTopic << std::endl;
+  gzmsg << "Transient velocity topic name for " << this->dataPtr->modelName << " : "
+        << this->dataPtr->currentVelocityTopic << std::endl;
   // Read the namespace for topics and services
   this->dataPtr->ns = _sdf->Get<std::string>("namespace");
 
@@ -230,20 +172,20 @@ void TransientCurrentPlugin::Configure(
   // Advertise the ROS flow velocity as a stamped twist message
   this->dataPtr->flowVelocityPub =
     this->dataPtr->ros_node_->create_publisher<geometry_msgs::msg::TwistStamped>(
-      this->dataPtr->currentVelocityTopic, rclcpp::QOS(10));
+      this->dataPtr->currentVelocityTopic, rclcpp::QoS(10));
 
   // Initializing the Gazebo transport node
-  this->dataPtr->gz_node = transport::NodePtr(new transport::Node());  // check
+  this->dataPtr->gz_node = std::make_shared<gz::transport::Node>();
 
   // Advertise the current velocity topic in ROS 2
-  this->dataPtr->publishers[this->dataPtr->currentVelocityTopic] =
+  this->dataPtr->gz_current_vel_pub[this->dataPtr->currentVelocityTopic] =
     this->dataPtr->gz_node->create_publisher<geometry_msgs::msg::Vector3>(
       this->dataPtr->currentVelocityTopic, rclcpp::QoS(10));
 
   // Read topic name of stratified ocean current from SDF
   if (_sdf->HasElement("transient_current"))
   {
-    sdf::ElementPtr currentVelocityParams = _sdf->GetElement("transient_current");
+    sdf::Element currentVelocityParams = _sdf->GetElement("transient_current");
     if (currentVelocityParams->HasElement("topic_stratified"))
     {
       this->dataPtr->transientCurrentVelocityTopic =
@@ -257,18 +199,14 @@ void TransientCurrentPlugin::Configure(
     }
 
     // Tidal Oscillation
-    if (
-      this->dataPtr->sdf->HasElement("tide_oscillation") &&
-      this->dataPtr->sdf->Get<bool>("tide_oscillation") == true)
+    if (_sdf->HasElement("tide_oscillation"))  // TODO
     {
-      this->dataPtr->tideFlag = true;
+      this->dataPtr->tideFlag = _sdf->Get<bool>("tide_oscillation");
     }
     else
     {
       this->dataPtr->tideFlag = false;
     }
-
-    this->dataPtr->lastDepthIndex = 0;
   }
 }
 /////////////////////////////////////////////////
@@ -436,7 +374,7 @@ void TransientCurrentPlugin::PublishCurrentVelocity()
     &currentVel, gz::math::Vector3d(
                    this->dataPtr->currentVelocity.X(), this->dataPtr->currentVelocity.Y(),
                    this->dataPtr->currentVelocity.Z()));
-  this->dataPtr->publishers[this->dataPtr->currentVelocityTopic]->Publish(currentVel);
+  this->dataPtr->gz_current_vel_pub[this->dataPtr->currentVelocityTopic]->Publish(currentVel);
 }
 
 /////////////////////////////////////////////////
@@ -503,7 +441,7 @@ void TransientCurrentPlugin::Gauss_Markov_process_initialize()
   // initialize velocity_north_model parameters
   if (currentVelocityParams->HasElement("velocity_north"))
   {
-    sdf::ElementPtr elem = currentVelocityParams->GetElement("velocity_north");
+    sdf::Element elem = currentVelocityParams->GetElement("velocity_north");
     if (elem->HasElement("mean"))
     {
       this->currentVelNorthModel.mean = 0.0;
@@ -534,7 +472,7 @@ void TransientCurrentPlugin::Gauss_Markov_process_initialize()
   // initialize velocity_east_model parameters
   if (currentVelocityParams->HasElement("velocity_east"))
   {
-    sdf::ElementPtr elem = currentVelocityParams->GetElement("velocity_east");
+    sdf::Element elem = currentVelocityParams->GetElement("velocity_east");
     if (elem->HasElement("mean"))
     {
       this->currentVelEastModel.mean = 0.0;
@@ -608,7 +546,7 @@ void TransientCurrentPlugin::PreUpdate(
 
   // Subscribe stratified ocean current database
   this->dataPtr->databaseSub =
-    this->dataPtr->rosNode
+    this->dataPtr->ros_node_
       ->create_subscription<dave_ros_gz_plugins::msg::StratifiedCurrentDatabase>(
         this->dataPtr->transientCurrentVelocityTopic, 10,
         std::bind(&TransientCurrentPlugin::UpdateDatabase, this, _1));
@@ -629,11 +567,22 @@ void TransientCurrentPlugin::Update(
 void TransientCurrentPlugin::PostUpdate(
   const gz::sim::UpdateInfo & _info, const gz::sim::EntityComponentManager & _ecm)
 {
-  // Publish the Current Velocity.
-  if (!_info.paused && _info.simTime > this->dataPtr->lastUpdate)
+  // Publish the Current Velocity. TODO find if we really need this
+  // if (!_info.paused && _info.simTime > this->dataPtr->lastUpdate)
+  // {
+  //   this->dataPtr->lastUpdate = _info.simTime;
+  //   PostPublishCurrentVelocity();
+  // }
+  this->dataPtr->lastUpdate = _info.simTime;
+  PostPublishCurrentVelocity();
+  if (!_info.paused)
   {
-    this->dataPtr->lastUpdate = _info.simTime;
-    PostPublishCurrentVelocity();
+    rclcpp::spin_some(this->rosNode);
+
+    if (_info.iterations % 1000 == 0)
+    {
+      gzmsg << "dave_gz_model_plugins::TransientCurrentPlugin::PostUpdate" << std::endl;
+    }
   }
 }
 }  // namespace dave_gz_model_plugins

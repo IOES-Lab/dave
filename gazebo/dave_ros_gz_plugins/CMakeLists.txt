@@ -11,6 +11,7 @@ find_package(gz-common5 REQUIRED COMPONENTS profiler)
 find_package(gz-sim8 REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(dave_interfaces REQUIRED)
+find_package(dave_gz_world_plugins REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system)
 
 # Set version variables
@@ -26,7 +27,7 @@ add_library(ocean_current_plugin SHARED src/ocean_current_plugin.cc)
 
 # Include directories
 target_include_directories(SphericalCoords PRIVATE include)
-target_include_directories(ocean_current_plugin PRIVATE include)
+target_include_directories(ocean_current_plugin PRIVATE include ${dave_gz_world_plugins_INCLUDE_DIRS})
 
 # Linking
 target_link_libraries(SphericalCoords gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER})
@@ -45,6 +46,7 @@ ament_target_dependencies(ocean_current_plugin
   std_msgs
   geometry_msgs
   dave_interfaces
+  dave_gz_world_plugins
 )
 
 # Install targets

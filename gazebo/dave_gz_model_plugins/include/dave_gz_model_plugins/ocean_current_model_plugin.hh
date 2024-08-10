@@ -17,6 +17,8 @@
 #include <rclcpp/rclcpp.hpp>
 #include <sdf/sdf.hh>
 #include <string>
+#include "dave_interfaces/msg/Stratified_Current_Database.hpp"
+#include "dave_interfaces/msg/Stratified_Current_Velocity.hpp"
 
 namespace dave_gz_model_plugins
 {
@@ -27,8 +29,8 @@ class TransientCurrentPlugin : public gz::sim::System,
                                public gz::sim::ISystemPostUpdate
 {
 public:
-  TransientCurrentPlugin();                      // constructor
-  ~TransientCurrentPlugin() override = default;  // Destructor
+  TransientCurrentPlugin();   // constructor
+  ~TransientCurrentPlugin();  // Destructor
 
   // Configure the plugin with necessary entities and component managers
   void Configure(

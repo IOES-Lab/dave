@@ -10,6 +10,7 @@
   <buildtool_depend>protobuf-dev</buildtool_depend>
   <depend>rclcpp</depend>
   <depend>dave_interfaces</depend>
+  <depend>dave_gz_world_plugins</depend>
   <depend>sensor_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>std_msgs</depend>
