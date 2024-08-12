@@ -1,8 +1,8 @@
-#ifndef OCEAN_CURRENT_MODEL_PLUGIN_HH_
-#define OCEAN_CURRENT_MODEL_PLUGIN_HH_
+#ifndef DAVE_GZ_MODEL_PLUGINS__OCEAN_CURRENT_MODEL_PLUGIN_HH_
+#define DAVE_GZ_MODEL_PLUGINS__OCEAN_CURRENT_MODEL_PLUGIN_HH_
 
-// #include "dave_gz_world_plugins/gauss_markov_process.hh"
-// #include <dave_gz_ros_plugins/tidal_oscillation.h>
+#include "dave_gz_world_plugins/gauss_markov_process.hh"
+#include "dave_gz_world_plugins/tidal_oscillation.h"
 
 #include <gz/sim/System.hh>
 // #include <gz/utilise/ImplPtr.hh>
@@ -84,4 +84,4 @@ private:
 };
 }  // namespace dave_gz_model_plugins
 
-#endif  // OCEAN_CURRENT_MODEL_PLUGIN_HH_
+#endif  // DAVE_GZ_MODEL_PLUGINS__OCEAN_CURRENT_MODEL_PLUGIN_HH_

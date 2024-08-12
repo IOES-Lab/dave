@@ -1,23 +1,5 @@
-// Copyright (c) 2016 The dave Simulator Authors.
-// All rights reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-/// \file tidal_oscillation.h
-/// \brief Interpolation of NOAA data for Tidal Oscillation feature
-
-#ifndef TIDAL_OSCILLATION_H_
-#define TIDAL_OSCILLATION_H_
+#ifndef DAVE_GZ_WORLD_PLUGINS__TIDAL_OSCILLATION_HH_
+#define DAVE_GZ_WORLD_PLUGINS__TIDAL_OSCILLATION_HH_
 
 #include <cstdlib>
 #include <ctime>
@@ -29,7 +11,7 @@
 
 // #include <boost/math/interpolators/barycentric_rational.hpp>
 
-namespace gz
+namespace dave_gz_world_plugins
 {
 /// \brief Interpolation of NOAA data for Tidal Oscillation feature
 class TidalOscillation
@@ -117,6 +99,6 @@ public:
 public:
   bool currentType;
 };
-}  // namespace gz
+}  // namespace dave_gz_world_plugins
 
-#endif  // TIDAL_OSCILLATION_H_
+#endif  // DAVE_GZ_WORLD_PLUGINS__TIDAL_OSCILLATION_HH_S

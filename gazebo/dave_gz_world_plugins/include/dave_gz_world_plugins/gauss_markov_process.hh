@@ -1,23 +1,5 @@
-// Copyright (c) 2016 The dave Simulator Authors.
-// All rights reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-/// \file gauss_markov_process.h
-/// \brief Implementation of a Gauss-Markov process model
-
-#ifndef GAUSS_MARKOV_PROCESS_H_
-#define GAUSS_MARKOV_PROCESS_H_
+#ifndef DAVE_GZ_WORLD_PLUGINS__GAUSS_MARKOV_PROCESS_HH_
+#define DAVE_GZ_WORLD_PLUGINS__GAUSS_MARKOV_PROCESS_HH_
 
 #include <cstdlib>
 #include <ctime>
@@ -27,7 +9,7 @@
 #include <random>
 #include <rclcpp/rclcpp.hpp>
 
-namespace gz
+namespace dave_gz_world_plugins
 {
 /// \brief Implementation of a Gauss-Markov process to model the current
 /// velocity and direction according to [1]
@@ -99,6 +81,6 @@ public:
 public:
   void Print();
 };
-}  // namespace gz
+}  // namespace dave_gz_world_plugins
 
-#endif  // GAUSS_MARKOV_PROCESS_H_
+#endif  // DAVE_GZ_WORLD_PLUGINS__GAUSS_MARKOV_PROCESS_HH_

@@ -72,12 +72,12 @@ struct UnderwaterCurrentPlugin::PrivateData
   std::string ns;
 
   /// \brief Gauss-Markov process instance for the current velocity
-  gz::GaussMarkovProcess currentVelModel;
+  dave_gz_world_plugins::GaussMarkovProcess currentVelModel;
 
   /// \brief Gauss-Markov process instance for horizontal angle model
-  gz::GaussMarkovProcess currentHorzAngleModel;
-  gz::GaussMarkovProcess currentVertAngleModel;
-  std::vector<std::vector<gz::GaussMarkovProcess>> stratifiedCurrentModels;
+  dave_gz_world_plugins::GaussMarkovProcess currentHorzAngleModel;
+  dave_gz_world_plugins::GaussMarkovProcess currentVertAngleModel;
+  std::vector<std::vector<dave_gz_world_plugins::GaussMarkovProcess>> stratifiedCurrentModels;
   std::vector<std::array<int, 5>> dateGMT;
   std::vector<double> speedcmsec;
   bool tidalHarmonicFlag;
@@ -109,7 +109,7 @@ struct UnderwaterCurrentPlugin::PrivateData
   bool tideFlag;
 
   /// \brief Tidal Oscillation interpolation model
-  gz::TidalOscillation tide;
+  dave_gz_world_plugins::TidalOscillation tide;
 
   /// \brief Last update time stamp
   std::chrono::steady_clock::duration lastUpdate{0};
@@ -424,7 +424,7 @@ void UnderwaterCurrentPlugin::LoadStratifiedCurrentDatabase()
     // Means are the database-specified magnitudes & angles, and
     // the other values come from the constant current models
     // TODO: Vertical angle currently set to 0 (not in database)
-    gz::GaussMarkovProcess magnitudeModel;
+    dave_gz_world_plugins::GaussMarkovProcess magnitudeModel;
     magnitudeModel.mean = hypot(row[1], row[0]);
     magnitudeModel.var = magnitudeModel.mean;
     magnitudeModel.max = this->dataPtr->currentVelModel.max;
@@ -434,7 +434,7 @@ void UnderwaterCurrentPlugin::LoadStratifiedCurrentDatabase()
     // magnitudeModel.lastUpdate = this->dataPtr->lastUpdate;
     magnitudeModel.lastUpdate = std::chrono::duration<double>(this->dataPtr->lastUpdate).count();
 
-    gz::GaussMarkovProcess hAngleModel;
+    dave_gz_world_plugins::GaussMarkovProcess hAngleModel;
     hAngleModel.mean = atan2(row[1], row[0]);
     hAngleModel.var = hAngleModel.mean;
     hAngleModel.max = M_PI;
@@ -443,7 +443,7 @@ void UnderwaterCurrentPlugin::LoadStratifiedCurrentDatabase()
     hAngleModel.noiseAmp = this->dataPtr->currentHorzAngleModel.noiseAmp;
     hAngleModel.lastUpdate = std::chrono::duration<double>(this->dataPtr->lastUpdate).count();
 
-    gz::GaussMarkovProcess vAngleModel;
+    dave_gz_world_plugins::GaussMarkovProcess vAngleModel;
     vAngleModel.mean = 0.0;
     vAngleModel.var = vAngleModel.mean;
     vAngleModel.max = M_PI / 2.0;
@@ -452,7 +452,7 @@ void UnderwaterCurrentPlugin::LoadStratifiedCurrentDatabase()
     vAngleModel.noiseAmp = this->dataPtr->currentVertAngleModel.noiseAmp;
     vAngleModel.lastUpdate = std::chrono::duration<double>(this->dataPtr->lastUpdate).count();
 
-    std::vector<gz::GaussMarkovProcess> depthModels;
+    std::vector<dave_gz_world_plugins::GaussMarkovProcess> depthModels;
     depthModels.push_back(magnitudeModel);
     depthModels.push_back(hAngleModel);
     depthModels.push_back(vAngleModel);

@@ -1,6 +1,4 @@
 #include "dave_gz_model_plugins/ocean_current_model_plugin.hh"
-// #include "dave_gz_world_plugins/gauss_markov_process.hh"
-// #include <dave_gz_world_plugins/tidal_oscillation.hh>
 #include <algorithm>
 #include <array>
 #include <chrono>
@@ -23,6 +21,8 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include "dave_gz_world_plugins/gauss_markov_process.hh"
+#include "dave_gz_world_plugins/tidal_oscillation.hh"
 #include "gz/common/StringUtils.hh"
 #include "gz/plugin/Register.hh"
 

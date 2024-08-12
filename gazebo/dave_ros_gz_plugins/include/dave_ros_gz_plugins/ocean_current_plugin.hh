@@ -2,19 +2,8 @@
 /// \brief Publishes the ocean current velocity in ROS messages and cxreates a
 /// service to alter the flow model in runtime
 
-#ifndef OCEAN_CURRENT_PLUGIN_H_
-#define OCEAN_CURRENT_PLUGIN_H_
-
-// #include <dave_ros_gz_plugins/GetCurrentModel.hh>
-// #include <dave_ros_gz_plugins/GetOriginSphericalCoord.hh>
-// #include <dave_ros_gz_plugins/SetCurrentDirection.hh>
-// #include <dave_ros_gz_plugins/SetCurrentModel.hh>
-// #include <dave_ros_gz_plugins/SetCurrentVelocity.hh>
-// #include <dave_ros_gz_plugins/SetOriginSphericalCoord.hh>
-// #include <dave_ros_gz_plugins/SetStratifiedCurrentDirection.hh>
-// #include <dave_ros_gz_plugins/SetStratifiedCurrentVelocity.hh>
-// #include <dave_ros_gz_plugins/StratifiedCurrentDatabase.hh>
-// #include <dave_ros_gz_plugins/StratifiedCurrentVelocity.hh>
+#ifndef DAVE_ROS_GZ_PLUGINS__OCEAN_CURRENT_PLUGIN_HH_
+#define DAVE_ROS_GZ_PLUGINS__OCEAN_CURRENT_PLUGIN_HH_
 
 #include <gz/sim/System.hh>
 #include <rclcpp/rclcpp.hpp>
@@ -119,4 +108,4 @@ private:
 };
 }  // namespace dave_ros_gz_plugins
 
-#endif  // OCEAN_CURRENT_PLUGIN_H_
+#endif  // DAVE_ROS_GZ_PLUGINS__OCEAN_CURRENT_PLUGIN_HH_
