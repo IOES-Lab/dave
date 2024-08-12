@@ -1,20 +1,3 @@
-// Copyright (c) 2016 The UUV Simulator Authors.
-// All rights reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-/// \file ocean_current_world_plugin.cc
-
 #include "dave_gz_world_plugins/ocean_current_world_plugin.hh"
 #include <dave_gz_world_plugins_msgs/msgs/StratifiedCurrentVelocity.pb.h>
 
@@ -43,11 +26,6 @@
 #include "gz/sim/components/World.hh"
 // #include <ament_index_cpp/get_package_share_directory.hpp> TODO (235-239)
 
-// using namespace gz;
-// using namespace sim;
-// using namespace systems;
-// using namespace dave_gz_world_plugins;
-
 GZ_ADD_PLUGIN(
   dave_gz_world_plugins::UnderwaterCurrentPlugin, gz::sim::System,
   dave_gz_world_plugins::UnderwaterCurrentPlugin::ISystemConfigure,
@@ -58,13 +36,8 @@ namespace dave_gz_world_plugins
 {
 struct UnderwaterCurrentPlugin::PrivateData
 {
-  /// \brief Pointer to world
   gz::sim::World world{gz::sim::kNullEntity};
-
-  /// \brief Pointer to sdf
   sdf::ElementPtr sdf;
-
-  /// \brief True if the sea surface is present
   bool hasSurface;
 
   /// \brief Pointer to a node for communication
@@ -72,7 +45,7 @@ struct UnderwaterCurrentPlugin::PrivateData
 
   /// \brief Map of publishers
   // gz::transport::Node::Publisher publishers;
-  std::map<std::string, gz::transport::Node::Publisher> publishers;
+  gz::transport::Node::Publisher gz_node_cvel_world_pub;
 
   /// \brief Vehicle Depth Subscriber
   gz::transport::Node subscriber;
@@ -103,20 +76,10 @@ struct UnderwaterCurrentPlugin::PrivateData
 
   /// \brief Gauss-Markov process instance for horizontal angle model
   gz::GaussMarkovProcess currentHorzAngleModel;
-
-  /// \brief Gauss-Markov process instance for vertical angle model
   gz::GaussMarkovProcess currentVertAngleModel;
-
-  /// \brief Vector of Gauss-Markov process instances for stratified velocity
   std::vector<std::vector<gz::GaussMarkovProcess>> stratifiedCurrentModels;
-
-  /// \brief Vector of dateGMT for tidal oscillation
   std::vector<std::array<int, 5>> dateGMT;
-
-  /// \brief Vector of speedcmsec for tidal oscillation
   std::vector<double> speedcmsec;
-
-  /// \brief Tidal current harmonic constituents
   bool tidalHarmonicFlag;
 
   double M2_amp;
@@ -497,7 +460,7 @@ void UnderwaterCurrentPlugin::LoadStratifiedCurrentDatabase()
   }
   csvFile.close();
 
-  this->dataPtr->publishers[this->dataPtr->stratifiedCurrentVelocityTopic] =
+  this->dataPtr->gz_node_cvel_world_pub =
     this->dataPtr->gz_node->Advertise<dave_gz_world_plugins_msgs::msgs::StratifiedCurrentVelocity>(
       this->dataPtr->ns + "/" + this->dataPtr->stratifiedCurrentVelocityTopic);
 
@@ -677,9 +640,8 @@ void UnderwaterCurrentPlugin::LoadGlobalCurrentConfig()
     std::chrono::duration<double>(this->dataPtr->lastUpdate).count();
 
   // Advertise the current velocity & stratified current velocity topics
-  this->dataPtr->publishers[this->dataPtr->currentVelocityTopic] =
-    this->dataPtr->gz_node->Advertise<gz::msgs::Vector3d>(
-      this->dataPtr->ns + "/" + this->dataPtr->currentVelocityTopic);
+  this->dataPtr->gz_node_cvel_world_pub = this->dataPtr->gz_node->Advertise<gz::msgs::Vector3d>(
+    this->dataPtr->ns + "/" + this->dataPtr->currentVelocityTopic);
   gzmsg << "Current velocity topic name: "
         << this->dataPtr->ns + "/" + this->dataPtr->currentVelocityTopic << std::endl;
 }
@@ -692,7 +654,7 @@ void UnderwaterCurrentPlugin::PublishCurrentVelocity()
     &currentVel, gz::math::Vector3d(
                    this->dataPtr->currentVelocity.X(), this->dataPtr->currentVelocity.Y(),
                    this->dataPtr->currentVelocity.Z()));
-  this->dataPtr->publishers[this->dataPtr->currentVelocityTopic].Publish(currentVel);
+  this->dataPtr->gz_node_cvel_world_pub.Publish(currentVel);
 }
 
 /////////////////////////////////////////////////
@@ -711,7 +673,7 @@ void UnderwaterCurrentPlugin::PublishStratifiedCurrentVelocity()
   {
     return;
   }
-  this->dataPtr->publishers[this->dataPtr->stratifiedCurrentVelocityTopic].Publish(currentVel);
+  this->dataPtr->gz_node_cvel_world_pub.Publish(currentVel);
 }
 
 /////////////////////////////////////////////////

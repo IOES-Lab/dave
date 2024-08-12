@@ -2,15 +2,18 @@
 // #include "dave_gz_world_plugins/gauss_markov_process.hh"
 // #include <dave_gz_world_plugins/tidal_oscillation.hh>
 #include <algorithm>
+#include <array>
 #include <chrono>
 #include <gz/physics/World.hh>
 #include <gz/plugin/Register.hh>
 #include <gz/sim/Model.hh>
+#include <gz/sim/System.hh>
 #include <gz/sim/Util.hh>
 #include <gz/sim/World.hh>
 #include <gz/sim/components/Link.hh>
 #include <gz/sim/components/Name.hh>
 #include <gz/sim/components/ParentEntity.hh>
+#include <gz/sim/components/Pose.hh>
 #include <gz/sim/components/World.hh>
 #include <gz/transport/Node.hh>
 #include <iostream>
@@ -67,8 +70,9 @@ struct TransientCurrentPlugin::PrivateData
   std::mutex lock_;
   std::chrono::steady_clock::duration rosPublishPeriod{0};
   std::shared_ptr<rclcpp::Node> ros_node_;
-  rclcpp::Publisher<std_msgs::msg::String>::SharedPtr flowVelocityPub;
+  rclcpp::Publisher<geometry_msgs::msg::TwistStamped>::SharedPtr flowVelocityPub;
   rclcpp::Subscription<dave_interfaces::msg::StratifiedCurrentDatabase>::SharedPtr databaseSub;
+  // std::shared_ptr<rclcpp::Publisher<geometry_msgs::msg::TwistStamped>> flowVelocityPub;
   std::string modelName;
 
   /// \brief Gauss-Markov process instance for the velocity components // TODO
@@ -118,8 +122,7 @@ struct TransientCurrentPlugin::PrivateData
 
   /// \brief Tidal oscillation world start time (GMT)
   std::array<int, 5> world_start_time;
-
-  /// \brief Private data pointer
+  gz::sim::Entity modelEntity;
 };
 
 // constructor
@@ -139,12 +142,16 @@ void TransientCurrentPlugin::Configure(
   gzdbg << "dave_gz_model_plugins::TransientCureentPlugin::Configure on entity: " << _entity
         << std::endl;
 
+  // Make a clone so that we can call non-const methods
+  sdf::ElementPtr sdfClone = _sdf->Clone();
+
   auto worldEntity = _ecm.EntityByComponents(gz::sim::components::World());
   this->dataPtr->world = gz::sim::World(worldEntity);
 
   auto model = gz::sim::Model(_entity);
   this->dataPtr->model = model;
   this->dataPtr->modelName = model.Name(_ecm);
+  this->dataPtr->modelEntity = GetModelEntity(this->dataPtr->modelName, _ecm);
 
   // this->dataPtr->sdf = _sdf; // not needed check
 
@@ -167,25 +174,35 @@ void TransientCurrentPlugin::Configure(
   this->dataPtr->ns = _sdf->Get<std::string>("namespace");
 
   // Initialize the ROS 2 node
-  this->dataPtr->ros_node_ = std::make_shared<rclcpp::Node>("TransirentCurrentPlugin");
+  this->ros_node_ = std::make_shared<rclcpp::Node>("TransirentCurrentPlugin");
 
   // Advertise the ROS flow velocity as a stamped twist message
   this->dataPtr->flowVelocityPub =
-    this->dataPtr->ros_node_->create_publisher<geometry_msgs::msg::TwistStamped>(
+    this->ros_node_->create_publisher<geometry_msgs::msg::TwistStamped>(
       this->dataPtr->currentVelocityTopic, rclcpp::QoS(10));
 
   // Initializing the Gazebo transport node
   this->dataPtr->gz_node = std::make_shared<gz::transport::Node>();
 
   // Advertise the current velocity topic in ROS 2
-  this->dataPtr->gz_current_vel_pub[this->dataPtr->currentVelocityTopic] =
-    this->dataPtr->gz_node->create_publisher<geometry_msgs::msg::Vector3>(
-      this->dataPtr->currentVelocityTopic, rclcpp::QoS(10));
+  this->dataPtr->gz_current_vel_pub =
+    this->dataPtr->gz_node->Advertise<geometry_msgs::msg::Vector3>(
+      this->dataPtr->currentVelocityTopic);
 
   // Read topic name of stratified ocean current from SDF
-  if (_sdf->HasElement("transient_current"))
+  LoadCurrentVelocityParams(sdfClone, _ecm);
+}
+
+/////////////////////////////////////////////////
+void TransientCurrentPlugin::LoadCurrentVelocityParams(
+  sdf::ElementPtr _sdf, gz::sim::EntityComponentManager & _ecm)
+{
+  // Read topic name of stratified ocean current from SDF
+  sdf::ElementPtr currentVelocityParams;
+  if (_sdf->HasElement("transient_current"))  // Add this to the sdf file TODO
   {
-    sdf::Element currentVelocityParams = _sdf->GetElement("transient_current");
+    currentVelocityParams = _sdf->GetElement(
+      "transient_current");  // tried const sdf::Element switched to using Auto (check)
     if (currentVelocityParams->HasElement("topic_stratified"))
     {
       this->dataPtr->transientCurrentVelocityTopic =
@@ -214,13 +231,45 @@ void TransientCurrentPlugin::Init()
 {
   // Doing nothing for now
 }
+//////////////////////////////////////////
+
+gz::sim::Entity TransientCurrentPlugin::GetModelEntity(
+  const std::string & modelName, gz::sim::EntityComponentManager & ecm)
+{
+  gz::sim::Entity modelEntity = gz::sim::kNullEntity;
+
+  ecm.Each<gz::sim::components::Name>(
+    [&](const gz::sim::Entity & entity, const gz::sim::components::Name * nameComp) -> bool
+    {
+      if (nameComp->Data() == modelName)
+      {
+        modelEntity = entity;
+        return false;  // Stop iteration
+      }
+      return true;  // Continue iteration
+    });
+
+  return modelEntity;
+}
 /////////////////////////////////////////////////
-void TransientCurrentPlugin::CalculateOceanCurrent()
+gz::math::Pose3d TransientCurrentPlugin::GetModelPose(
+  const gz::sim::Entity & modelEntity, gz::sim::EntityComponentManager & ecm)
+{
+  const auto * poseComp = ecm.Component<gz::sim::components::Pose>(modelEntity);
+  if (poseComp)
+  {
+    return poseComp->Data();
+  }
+  else
+  {
+    gzerr << "Pose component not found for entity: " << modelEntity << std::endl;
+    return gz::math::Pose3d::Zero;
+  }
+}
+/////////////////////////////////////////////////
+void TransientCurrentPlugin::CalculateOceanCurrent(double vehicleDepth)
 {
   this->dataPtr->lock_.lock();
-
-  // Update vehicle position
-  double vehicleDepth = -this->dataPtr->model->WorldPose().Pos().Z();
 
   if (this->dataPtr->database.size() == 0)
   {
@@ -286,7 +335,7 @@ void TransientCurrentPlugin::CalculateOceanCurrent()
     if (this->dataPtr->tideFlag)
     {
       // Update tide oscillation
-      this->dataPtr->time = this->dataPtr->currentTime;
+      this->dataPtr->time = this->dataPtr->lastUpdate;
 
       if (this->dataPtr->tide_Constituents)
       {
@@ -335,9 +384,6 @@ void TransientCurrentPlugin::CalculateOceanCurrent()
     this->dataPtr->currentVelEastModel.var = this->dataPtr->currentVelEastModel.mean;
     this->dataPtr->currentVelDownModel.var = this->dataPtr->currentVelDownModel.mean;
 
-    // Update time
-    this->dataPtr->time = this->dataPtr->lastUpdate;
-
     // Update current velocity
     double velocityNorth =
       this->dataPtr->currentVelNorthModel.Update((this->dataPtr->time).Double());
@@ -374,7 +420,7 @@ void TransientCurrentPlugin::PublishCurrentVelocity()
     &currentVel, gz::math::Vector3d(
                    this->dataPtr->currentVelocity.X(), this->dataPtr->currentVelocity.Y(),
                    this->dataPtr->currentVelocity.Z()));
-  this->dataPtr->gz_current_vel_pub[this->dataPtr->currentVelocityTopic]->Publish(currentVel);
+  this->dataPtr->gz_current_vel_pub.Publish(currentVel);
 }
 
 /////////////////////////////////////////////////
@@ -540,16 +586,14 @@ void TransientCurrentPlugin::Gauss_Markov_process_initialize()
 void TransientCurrentPlugin::PreUpdate(
   const gz::sim::UpdateInfo & _info, gz::sim::EntityComponentManager & _ecm)
 {
-  this->dataPtr->currentTime = _info.simTime;
-  this->dataPtr->time = this->dataPtr->currentTime;
+  this->dataPtr->time = _info.simTime;
   this->dataPtr->Gauss_Markov_process_initialize();  // something is wrong here (check)
 
   // Subscribe stratified ocean current database
   this->dataPtr->databaseSub =
-    this->dataPtr->ros_node_
-      ->create_subscription<dave_ros_gz_plugins::msg::StratifiedCurrentDatabase>(
-        this->dataPtr->transientCurrentVelocityTopic, 10,
-        std::bind(&TransientCurrentPlugin::UpdateDatabase, this, _1));
+    this->ros_node_->create_subscription<dave_interfaces::msg::StratifiedCurrentDatabase>(
+      this->dataPtr->transientCurrentVelocityTopic, 10,
+      std::bind(&TransientCurrentPlugin::UpdateDatabase, this, _1));
 
   // Connect the update event callback for ROS and ocean current calculation
   this->dataPtr->Connect();
@@ -561,7 +605,10 @@ void TransientCurrentPlugin::PreUpdate(
 void TransientCurrentPlugin::Update(
   const gz::sim::UpdateInfo & _info, gz::sim::EntityComponentManager & _ecm)
 {
-  this->dataPtr->calculateOceanCurrent();
+  // Update vehicle position
+  gz::math::Pose3d vehicle_pos = GetModelPose(this->dataPtr->modelEntity, _ecm);
+  double vehicleDepth = std::abs(vehicle_pos.Z());
+  CalculateOceanCurrent(vehicleDepth);
 }
 /////////////////////////////////////////////////
 void TransientCurrentPlugin::PostUpdate(
@@ -574,10 +621,10 @@ void TransientCurrentPlugin::PostUpdate(
   //   PostPublishCurrentVelocity();
   // }
   this->dataPtr->lastUpdate = _info.simTime;
-  PostPublishCurrentVelocity();
+  PublishCurrentVelocity();
   if (!_info.paused)
   {
-    rclcpp::spin_some(this->rosNode);
+    rclcpp::spin_some(this->ros_node_);
 
     if (_info.iterations % 1000 == 0)
     {

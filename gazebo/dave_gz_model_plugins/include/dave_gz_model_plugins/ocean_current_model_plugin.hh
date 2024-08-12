@@ -45,6 +45,15 @@ public:
   // Function called after the simulation state updates
   void PostUpdate(const gz::sim::UpdateInfo & _info, const gz::sim::EntityComponentManager & _ecm);
 
+  void TransientCurrentPlugin::LoadCurrentVelocityParams(
+    sdf::ElementPtr _sdf, gz::sim::EntityComponentManager & _ecm);
+
+  gz::math::Pose3d GetModelPose(
+    const gz::sim::Entity & modelEntity, gz::sim::EntityComponentManager & ecm);
+
+  gz::sim::Entity GetModelEntity(
+    const std::string & modelName, gz::sim::EntityComponentManager & ecm);
+
   /// \brief Check if an entity is enabled or not.
   /// \param[in] _entity Target entity
   /// \param[in] _ecm Entity component manager
@@ -58,7 +67,7 @@ public:
   void databaseSubThread();
 
   /// \brief Calculate ocean current using database and vehicle state
-  void CalculateOceanCurrent();
+  void CalculateOceanCurrent(double vehicleDepth);
 
   void Gauss_Markov_process_initialize();
 
@@ -69,6 +78,7 @@ public:
   void PublishCurrentVelocity();
 
 private:
+  std::shared_ptr<rclcpp::Node> ros_node_;
   struct PrivateData;
   std::unique_ptr<PrivateData> dataPtr;
 };
