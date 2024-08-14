@@ -31,7 +31,7 @@ target_include_directories(ocean_current_model_plugin
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
   PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
   )
 
 target_link_libraries(ocean_current_model_plugin
