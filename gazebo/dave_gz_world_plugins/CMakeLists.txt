@@ -27,11 +27,14 @@ set(GZ_MSGS_VER ${gz-msgs10_VERSION_MAJOR})
 message(STATUS "compiling against Gazebo Harmonic")
 
 add_library(ocean_current_world_plugin SHARED
-src/ocean_current_world_plugin.cc)
+  src/ocean_current_world_plugin.cc
+)
 add_library(gauss_markov_process SHARED
-src/gauss_markov_process.cc)
+  src/gauss_markov_process.cc
+)
 add_library(tidal_oscillation SHARED
-src/tidal_oscillation.cc)
+  src/tidal_oscillation.cc
+)
 
 target_include_directories(ocean_current_world_plugin
   PUBLIC
@@ -40,28 +43,31 @@ target_include_directories(ocean_current_world_plugin
   PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     include ${dave_interfaces_INCLUDE_DIRS}
-    )
+)
 target_include_directories(gauss_markov_process
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
   PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
-  )
+)
 target_include_directories(tidal_oscillation
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
   PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
-  )
+)
 
 target_link_libraries(ocean_current_world_plugin
-gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER})
+  gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
+)
 target_link_libraries(gauss_markov_process
-gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER})
+  gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
+)
 target_link_libraries(tidal_oscillation
-gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER})
+  gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
+)
 
 ament_target_dependencies(ocean_current_world_plugin
   rclcpp
@@ -96,10 +102,23 @@ install(
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
   RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include
 )
 
+ament_export_include_directories("include/${PROJECT_NAME}")
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
-ament_export_dependencies(${THIS_PACKAGE_INCLUDE_DEPENDS})
+ament_export_dependencies(
+  gz-cmake3
+  gz-plugin2
+  gz-msgs10
+  gz-common5
+  gz-sim8
+  geometry_msgs
+  sensor_msgs
+  std_msgs
+  dave_interfaces
+  rclcpp
+)
 
 # Environment hooks
 ament_environment_hooks(

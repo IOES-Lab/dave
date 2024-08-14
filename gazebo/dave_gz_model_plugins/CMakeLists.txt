@@ -32,10 +32,11 @@ target_include_directories(ocean_current_model_plugin
     $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
   PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
-  )
+)
 
 target_link_libraries(ocean_current_model_plugin
-  gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER})
+  gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
+)
 
 
 # Specify dependencies for ocean_current_plugin using ament_target_dependencies
@@ -59,10 +60,22 @@ install(
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
   RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include
 )
 
+ament_export_include_directories("include/${PROJECT_NAME}")
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
-ament_export_dependencies(${THIS_PACKAGE_INCLUDE_DEPENDS})
+ament_export_dependencies(
+  gz-cmake3
+  gz-plugin2
+  gz-common5
+  gz-sim8
+  geometry_msgs
+  std_msgs
+  dave_interfaces
+  dave_gz_world_plugins
+  rclcpp
+)
 
 # Environment hooks
 ament_environment_hooks(
