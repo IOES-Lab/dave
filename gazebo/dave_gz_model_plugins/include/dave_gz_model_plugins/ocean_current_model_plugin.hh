@@ -2,7 +2,7 @@
 #define DAVE_GZ_MODEL_PLUGINS__OCEAN_CURRENT_MODEL_PLUGIN_HH_
 
 #include "dave_gz_world_plugins/gauss_markov_process.hh"
-#include "dave_gz_world_plugins/tidal_oscillation.h"
+#include "dave_gz_world_plugins/tidal_oscillation.hh"
 
 #include <gz/sim/System.hh>
 // #include <gz/utilise/ImplPtr.hh>

@@ -26,8 +26,22 @@ add_library(SphericalCoords SHARED src/SphericalCoords.cc)
 add_library(ocean_current_plugin SHARED src/ocean_current_plugin.cc)
 
 # Include directories
-target_include_directories(SphericalCoords PRIVATE include)
-target_include_directories(ocean_current_plugin PRIVATE include ${dave_gz_world_plugins_INCLUDE_DIRS})
+target_include_directories(SphericalCoords
+  PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
+  PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+  )
+target_include_directories(ocean_current_plugin
+  PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
+  PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    include ${dave_gz_world_plugins_INCLUDE_DIRS}
+    include ${dave_interfaces_INCLUDE_DIRS}
+  )
 
 # Linking
 target_link_libraries(SphericalCoords gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER})
@@ -49,20 +63,22 @@ ament_target_dependencies(ocean_current_plugin
   dave_gz_world_plugins
 )
 
-# Install targets
-install(TARGETS SphericalCoords
-  DESTINATION lib/${PROJECT_NAME}
-)
-
-# Install targets
-install(TARGETS ocean_current_plugin
-  DESTINATION lib/${PROJECT_NAME}
-)
-
 # Install headers
 install(DIRECTORY include/
-  DESTINATION include/
+  DESTINATION include/${PROJECT_NAME}
 )
+
+# Install targets
+install(
+  TARGETS SphericalCoords ocean_current_plugin
+  EXPORT export_${PROJECT_NAME}
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+
+ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
+ament_export_dependencies(${THIS_PACKAGE_INCLUDE_DEPENDS})
 
 # Environment hooks
 ament_environment_hooks("${CMAKE_CURRENT_SOURCE_DIR}/hooks/${PROJECT_NAME}.dsv.in")

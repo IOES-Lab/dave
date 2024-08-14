@@ -33,9 +33,28 @@ src/gauss_markov_process.cc)
 add_library(tidal_oscillation SHARED
 src/tidal_oscillation.cc)
 
-target_include_directories(ocean_current_world_plugin PRIVATE include ${dave_interfaces_INCLUDE_DIRS})
-target_include_directories(gauss_markov_process PRIVATE include)
-target_include_directories(tidal_oscillation PRIVATE include)
+target_include_directories(ocean_current_world_plugin
+  PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
+  PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    include ${dave_interfaces_INCLUDE_DIRS}
+    )
+target_include_directories(gauss_markov_process
+  PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
+  PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+  )
+target_include_directories(tidal_oscillation
+  PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
+  PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+  )
 
 target_link_libraries(ocean_current_world_plugin
 gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER})
@@ -65,15 +84,22 @@ ament_target_dependencies(tidal_oscillation
   dave_interfaces
 )
 
-# Install targets
-install(TARGETS ocean_current_world_plugin gauss_markov_process tidal_oscillation
-  DESTINATION lib/${PROJECT_NAME}
-)
-
 # Install headers
 install(DIRECTORY include/
-  DESTINATION include/
+  DESTINATION include/${PROJECT_NAME}
 )
+
+# Install targets
+install(
+  TARGETS ocean_current_world_plugin gauss_markov_process tidal_oscillation
+  EXPORT export_${PROJECT_NAME}
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+
+ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
+ament_export_dependencies(${THIS_PACKAGE_INCLUDE_DEPENDS})
 
 # Environment hooks
 ament_environment_hooks(
