@@ -50,7 +50,7 @@ namespace custom
 
     /// \brief A map of custom entities to their sensors
     private: std::unordered_map<gz::sim::Entity,
-        std::shared_ptr<MultibeamSonar>> entitySensorMap;
+        std::shared_ptr<MultibeamSonarSensor>> entitySensorMap;
   };
 }
 #endif

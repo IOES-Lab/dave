@@ -36,7 +36,7 @@
 #include <gz/sim/EntityComponentManager.hh>
 #include <gz/sim/Util.hh>
 
-#include "MultibeamSonar.hh"
+#include "MultibeamSonarSensor.hh"
 #include "MultibeamSonarSystemPlugin.hh"
 
 using namespace custom;
@@ -60,15 +60,15 @@ void MultibeamSonarSystemPlugin::PreUpdate(const gz::sim::UpdateInfo &,
         // Default to scoped name as topic
         if (data.Topic().empty())
         {
-          std::string topic = scopedName(_entity, _ecm) + "/odometer";
+          std::string topic = scopedName(_entity, _ecm) + "/multibeam_sonar";
           data.SetTopic(topic);
         }
 
         gz::sensors::SensorFactory sensorFactory;
-        auto sensor = sensorFactory.CreateSensor<custom::MultibeamSonar>(data);
+        auto sensor = sensorFactory.CreateSensor<custom::MultibeamSonarSensor>(data);
         if (nullptr == sensor)
         {
-          gzerr << "Failed to create odometer [" << sensorScopedName << "]"
+          gzerr << "Failed to create Multibeam Sonar Sensor [" << sensorScopedName << "]"
                  << std::endl;
           return false;
         }
@@ -99,7 +99,6 @@ void MultibeamSonarSystemPlugin::PostUpdate(const gz::sim::UpdateInfo &_info,
   {
     for (auto &[entity, sensor] : this->entitySensorMap)
     {
-      sensor->NewPosition(gz::sim::worldPose(entity, _ecm).Pos());
       sensor->Update(_info.simTime);
     }
   }

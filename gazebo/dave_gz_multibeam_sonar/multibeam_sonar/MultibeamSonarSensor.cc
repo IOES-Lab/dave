@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Open Source Robotics Foundation
+ * Copyright (C) 2021 Open Source Robotics Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,14 +31,13 @@
 #include <gz/msgs/Utility.hh>
 #include <gz/transport/Node.hh>
 
-#include "dave_gz_sensor_plugins/depth_camera.hh"
 #include "gz/sensors/Manager.hh"
 #include "gz/sensors/SensorFactory.hh"
 #include "gz/sensors/ImageGaussianNoiseModel.hh"
 #include "gz/sensors/ImageNoise.hh"
 #include "gz/sensors/RenderingEvents.hh"
 
-#include "PointCloudUtil.hh"
+#include "MultibeamSonarSensor.hh"
 
 // undefine near and far macros from windows.h
 #ifdef _WIN32
@@ -46,104 +45,7 @@
   #undef far
 #endif
 
-/// \brief Private data for MultibeamSonarSensor
-class gz::sensors::MultibeamSonarSensorPrivate
-{
-  /// \brief Save an image
-  /// \param[in] _data the image data to be saved
-  /// \param[in] _width width of image in pixels
-  /// \param[in] _height height of image in pixels
-  /// \param[in] _format The format the data is in
-  /// \return True if the image was saved successfully. False can mean
-  /// that the path provided to the constructor does exist and creation
-  /// of the path was not possible.
-  /// \sa ImageSaver
-  public: bool SaveImage(const float *_data, unsigned int _width,
-    unsigned int _height, gz::common::Image::PixelFormatType _format);
-
-  /// \brief Helper function to convert depth data to depth image
-  /// \param[in] _data depth data
-  /// \param[out] _imageBuffer resulting depth image data
-  /// \param[in] _width width of image
-  /// \param[in] _height height of image
-  public: bool ConvertDepthToImage(const float *_data,
-    unsigned char *_imageBuffer, unsigned int _width, unsigned int _height);
-
-  /// \brief node to create publisher
-  public: transport::Node node;
-
-  /// \brief publisher to publish images
-  public: transport::Node::Publisher pub;
-
-  /// \brief true if Load() has been called and was successful
-  public: bool initialized = false;
-
-    /// \brief Rendering camera
-  public: gz::rendering::DepthCameraPtr depthCamera;
-
-  /// \brief Depth data buffer.
-  public: float *depthBuffer = nullptr;
-
-  /// \brief point cloud data buffer.
-  public: float *pointCloudBuffer = nullptr;
-
-  /// \brief xyz data buffer.
-  public: float *xyzBuffer = nullptr;
-
-  /// \brief Near clip distance.
-  public: float near = 0.0;
-
-  /// \brief Pointer to an image to be published
-  public: gz::rendering::Image image;
-
-  /// \brief Noise added to sensor data
-  public: std::map<SensorNoiseType, NoisePtr> noises;
-
-  /// \brief Event that is used to trigger callbacks when a new image
-  /// is generated
-  public: gz::common::EventT<
-          void(const gz::msgs::Image &)> imageEvent;
-
-  /// \brief Connection from depth camera with new depth data
-  public: gz::common::ConnectionPtr depthConnection;
-
-  /// \brief Connection from depth camera with new point cloud data
-  public: gz::common::ConnectionPtr pointCloudConnection;
-
-  /// \brief Connection to the Manager's scene change event.
-  public: gz::common::ConnectionPtr sceneChangeConnection;
-
-  /// \brief Just a mutex for thread safety
-  public: std::mutex mutex;
-
-  /// \brief True to save images
-  public: bool saveImage = false;
-
-  /// \brief path directory to where images are saved
-  public: std::string saveImagePath = "./";
-
-  /// \prefix of an image name
-  public: std::string saveImagePrefix = "./";
-
-  /// \brief counter used to set the image filename
-  public: std::uint64_t saveImageCounter = 0;
-
-  /// \brief SDF Sensor DOM object.
-  public: sdf::Sensor sdfSensor;
-
-  /// \brief The point cloud message.
-  public: msgs::PointCloudPacked pointMsg;
-
-  /// \brief Helper class that can fill a msgs::PointCloudPacked
-  /// image and depth data.
-  public: PointCloudUtil pointsUtil;
-
-  /// \brief publisher to publish point cloud
-  public: transport::Node::Publisher pointPub;
-};
-
-using namespace gz;
-using namespace sensors;
+using namespace custom;
 
 //////////////////////////////////////////////////
 bool MultibeamSonarSensorPrivate::ConvertDepthToImage(
@@ -173,19 +75,19 @@ bool MultibeamSonarSensorPrivate::ConvertDepthToImage(
 //////////////////////////////////////////////////
 bool MultibeamSonarSensorPrivate::SaveImage(const float *_data,
     unsigned int _width, unsigned int _height,
-    common::Image::PixelFormatType /*_format*/)
+    gz::common::Image::PixelFormatType /*_format*/)
 {
   // Attempt to create the directory if it doesn't exist
-  if (!common::isDirectory(this->saveImagePath))
+  if (!gz::common::isDirectory(this->saveImagePath))
   {
-    if (!common::createDirectories(this->saveImagePath))
+    if (!gz::common::createDirectories(this->saveImagePath))
       return false;
   }
 
   if (_width == 0 || _height == 0)
     return false;
 
-  common::Image localImage;
+  gz::common::Image localImage;
 
   unsigned int depthSamples = _width * _height;
   unsigned int depthBufferSize = depthSamples * 3;
@@ -199,9 +101,9 @@ bool MultibeamSonarSensorPrivate::SaveImage(const float *_data,
   ++this->saveImageCounter;
 
   localImage.SetFromData(imgDepthBuffer, _width, _height,
-      common::Image::RGB_INT8);
+      gz::common::Image::RGB_INT8);
   localImage.SavePNG(
-      common::joinPaths(this->saveImagePath, filename));
+      gz::common::joinPaths(this->saveImagePath, filename));
 
   delete[] imgDepthBuffer;
   return true;
@@ -209,7 +111,7 @@ bool MultibeamSonarSensorPrivate::SaveImage(const float *_data,
 
 //////////////////////////////////////////////////
 MultibeamSonarSensor::MultibeamSonarSensor()
-  : CameraSensor(), dataPtr(new MultibeamSonarSensorPrivate())
+  : gz::sensors::CameraSensor(), dataPtr(new MultibeamSonarSensorPrivate())
 {
 }
 
@@ -251,18 +153,18 @@ bool MultibeamSonarSensor::Load(const sdf::Sensor &_sdf)
   }
 
   // Check if this is the right type
-  if (_sdf.Type() != sdf::SensorType::DEPTH_CAMERA)
+  if (_sdf.Type() != sdf::SensorType::CUSTOM)
   {
-    gzerr << "Attempting to a load a Depth Camera sensor, but received "
+    gzerr << "Attempting to a load a custom sensor, but received "
       << "a " << _sdf.TypeStr() << std::endl;
   }
-
-  if (_sdf.CameraSensor() == nullptr)
-  {
-    gzerr << "Attempting to a load a Depth Camera sensor, but received "
-      << "a null sensor." << std::endl;
-    return false;
-  }
+  
+  // if (_sdf.CameraSensor() == nullptr)
+  // {
+  //   gzerr << "Attempting to a load a Depth Camera sensor, but received "
+  //     << "a null sensor." << std::endl;
+  //   return false;
+  // }
 
   this->dataPtr->sdfSensor = _sdf;
 
@@ -270,7 +172,7 @@ bool MultibeamSonarSensor::Load(const sdf::Sensor &_sdf)
     this->SetTopic("/camera/depth");
 
   this->dataPtr->pub =
-      this->dataPtr->node.Advertise<msgs::Image>(
+      this->dataPtr->node.Advertise<gz::msgs::Image>(
           this->Topic());
   if (!this->dataPtr->pub)
   {
@@ -287,7 +189,7 @@ bool MultibeamSonarSensor::Load(const sdf::Sensor &_sdf)
     std::string triggerTopic = _sdf.CameraSensor()->TriggerTopic();
     if (triggerTopic.empty())
     {
-      triggerTopic = transport::TopicUtils::AsValidTopic(this->Topic() +
+      triggerTopic = gz::transport::TopicUtils::AsValidTopic(this->Topic() +
                                                          "/trigger");
     }
     this->SetTriggered(true, triggerTopic);
@@ -298,7 +200,7 @@ bool MultibeamSonarSensor::Load(const sdf::Sensor &_sdf)
 
   // Create the point cloud publisher
   this->dataPtr->pointPub =
-      this->dataPtr->node.Advertise<msgs::PointCloudPacked>(
+      this->dataPtr->node.Advertise<gz::msgs::PointCloudPacked>(
           this->Topic() + "/points");
   if (!this->dataPtr->pointPub)
   {
@@ -316,7 +218,7 @@ bool MultibeamSonarSensor::Load(const sdf::Sensor &_sdf)
   }
 
   this->dataPtr->sceneChangeConnection =
-      RenderingEvents::ConnectSceneChangeCallback(
+      gz::sensors::RenderingEvents::ConnectSceneChangeCallback(
       std::bind(&MultibeamSonarSensor::SetScene, this, std::placeholders::_1));
 
   this->dataPtr->initialized = true;
@@ -353,8 +255,8 @@ bool MultibeamSonarSensor::CreateCamera()
   this->dataPtr->depthCamera->SetLocalPose(this->Pose());
   this->AddSensor(this->dataPtr->depthCamera);
 
-  const std::map<SensorNoiseType, sdf::Noise> noises = {
-    {CAMERA_NOISE, cameraSdf->ImageNoise()},
+  const std::map<gz::sensors::SensorNoiseType, sdf::Noise> noises = {
+    {gz::sensors::CAMERA_NOISE, cameraSdf->ImageNoise()},
   };
 
   for (const auto & [noiseType, noiseSdf] : noises)
@@ -366,13 +268,13 @@ bool MultibeamSonarSensor::CreateCamera()
       // doing an extra render pass in gz-rendering
       // Note ImageGaussianNoiseModel only uses mean and stddev and does not
       // use bias parameters.
-      if (!math::equal(noiseSdf.Mean(), 0.0) ||
-          !math::equal(noiseSdf.StdDev(), 0.0))
+      if (!gz::math::equal(noiseSdf.Mean(), 0.0) ||
+          !gz::math::equal(noiseSdf.StdDev(), 0.0))
       {
         this->dataPtr->noises[noiseType] =
-          ImageNoiseFactory::NewNoiseModel(noiseSdf, "depth");
+          gz::sensors::ImageNoiseFactory::NewNoiseModel(noiseSdf, "depth");
 
-        std::dynamic_pointer_cast<ImageGaussianNoiseModel>(
+        std::dynamic_pointer_cast<gz::sensors::ImageGaussianNoiseModel>(
              this->dataPtr->noises[noiseType])->SetCamera(
                this->dataPtr->depthCamera);
       }
@@ -392,7 +294,7 @@ bool MultibeamSonarSensor::CreateCamera()
   // \todo(nkoeng) these parameters via sdf
   this->dataPtr->depthCamera->SetAntiAliasing(2);
 
-  math::Angle angle = cameraSdf->HorizontalFov();
+  gz::math::Angle angle = cameraSdf->HorizontalFov();
   if (angle < 0.01 || angle > GZ_PI*2)
   {
     gzerr << "Invalid horizontal field of view [" << angle << "]\n";
@@ -435,12 +337,12 @@ bool MultibeamSonarSensor::CreateCamera()
   // the xyz and rgb fields to be aligned to memory boundaries. This is need
   // by ROS1: https://github.com/ros/common_msgs/pull/77. Ideally, memory
   // alignment should be configured.
-  msgs::InitPointCloudPacked(
+  gz::msgs::InitPointCloudPacked(
         this->dataPtr->pointMsg,
         this->OpticalFrameId(),
         true,
-        {{"xyz", msgs::PointCloudPacked::Field::FLOAT32},
-         {"rgb", msgs::PointCloudPacked::Field::FLOAT32}});
+        {{"xyz", gz::msgs::PointCloudPacked::Field::FLOAT32},
+         {"rgb", gz::msgs::PointCloudPacked::Field::FLOAT32}});
 
   // Set the values of the point message based on the camera information.
   this->dataPtr->pointMsg.set_width(this->ImageWidth());
@@ -462,8 +364,8 @@ void MultibeamSonarSensor::OnNewDepthFrame(const float *_scan,
   unsigned int depthSamples = _width * _height;
   unsigned int depthBufferSize = depthSamples * sizeof(float);
 
-  common::Image::PixelFormatType format =
-    common::Image::ConvertPixelFormat(_format);
+  gz::common::Image::PixelFormatType format =
+    gz::common::Image::ConvertPixelFormat(_format);
 
   if (!this->dataPtr->depthBuffer)
     this->dataPtr->depthBuffer = new float[depthSamples];
@@ -497,20 +399,20 @@ void MultibeamSonarSensor::OnNewRgbPointCloud(const float *_scan,
 }
 
 /////////////////////////////////////////////////
-rendering::DepthCameraPtr MultibeamSonarSensor::DepthCamera() const
+gz::rendering::DepthCameraPtr MultibeamSonarSensor::DepthCamera() const
 {
   return this->dataPtr->depthCamera;
 }
 
 /////////////////////////////////////////////////
-common::ConnectionPtr MultibeamSonarSensor::ConnectImageCallback(
-    std::function<void(const msgs::Image &)> _callback)
+gz::common::ConnectionPtr MultibeamSonarSensor::ConnectImageCallback(
+    std::function<void(const gz::msgs::Image &)> _callback)
 {
   return this->dataPtr->imageEvent.Connect(_callback);
 }
 
 /////////////////////////////////////////////////
-void MultibeamSonarSensor::SetScene(rendering::ScenePtr _scene)
+void MultibeamSonarSensor::SetScene(gz::rendering::ScenePtr _scene)
 {
   std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
   // APIs make it possible for the scene pointer to change
@@ -518,7 +420,7 @@ void MultibeamSonarSensor::SetScene(rendering::ScenePtr _scene)
   {
     // TODO(anyone) Remove camera from scene
     this->dataPtr->depthCamera = nullptr;
-    RenderingSensor::SetScene(_scene);
+    gz::sensors::RenderingSensor::SetScene(_scene);
 
     if (this->dataPtr->initialized)
       this->CreateCamera();
@@ -572,16 +474,16 @@ bool MultibeamSonarSensor::Update(
   unsigned int width = this->dataPtr->depthCamera->ImageWidth();
   unsigned int height = this->dataPtr->depthCamera->ImageHeight();
 
-  auto msgsFormat = msgs::PixelFormatType::R_FLOAT32;
+  auto msgsFormat = gz::msgs::PixelFormatType::R_FLOAT32;
 
   // create message
-  msgs::Image msg;
+  gz::msgs::Image msg;
   msg.set_width(width);
   msg.set_height(height);
-  msg.set_step(width * rendering::PixelUtil::BytesPerPixel(
-               rendering::PF_FLOAT32_R));
+  msg.set_step(width * gz::rendering::PixelUtil::BytesPerPixel(
+               gz::rendering::PF_FLOAT32_R));
   msg.set_pixel_format_type(msgsFormat);
-  *msg.mutable_header()->mutable_stamp() = msgs::Convert(_now);
+  *msg.mutable_header()->mutable_stamp() = gz::msgs::Convert(_now);
 
   auto* frame = msg.mutable_header()->add_data();
   frame->set_key("frame_id");
@@ -589,7 +491,7 @@ bool MultibeamSonarSensor::Update(
 
   std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
   msg.set_data(this->dataPtr->depthBuffer,
-      rendering::PixelUtil::MemorySize(rendering::PF_FLOAT32_R,
+      gz::rendering::PixelUtil::MemorySize(gz::rendering::PF_FLOAT32_R,
       width, height));
 
   this->AddSequence(msg.mutable_header(), "default");
@@ -614,7 +516,7 @@ bool MultibeamSonarSensor::Update(
   {
     // Set the time stamp
     *this->dataPtr->pointMsg.mutable_header()->mutable_stamp() =
-      msgs::Convert(_now);
+      gz::msgs::Convert(_now);
     this->dataPtr->pointMsg.set_is_dense(true);
 
     if (!this->dataPtr->xyzBuffer)
@@ -624,7 +526,7 @@ bool MultibeamSonarSensor::Update(
         || this->dataPtr->image.Height() != height)
     {
       this->dataPtr->image =
-          rendering::Image(width, height, rendering::PF_R8G8B8);
+          gz::rendering::Image(width, height, gz::rendering::PF_R8G8B8);
     }
 
     // extract image data from point cloud data
@@ -647,6 +549,7 @@ bool MultibeamSonarSensor::Update(
   }
   return true;
 }
+
 
 //////////////////////////////////////////////////
 unsigned int MultibeamSonarSensor::ImageWidth() const
