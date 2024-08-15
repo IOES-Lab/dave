@@ -80,6 +80,55 @@ ament_environment_hooks(
   "${CMAKE_CURRENT_SOURCE_DIR}/hooks/${PROJECT_NAME}.dsv.in"
 )
 
+# find_package(CUDAToolkit QUIET)
+# if (CUDAToolkit_FOUND)
+#   enable_language(CUDA)
+#   message(STATUS "CUDA found, enabling CUDA support.")
+#   include_directories(${CUDA_INCLUDE_DIRS})
+#   set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -arch=sm_60")
+
+#   find_package(cv_bridge REQUIRED)
+#   find_package(OpenCV REQUIRED)
+#   find_package(rosidl_default_generators REQUIRED)
+#   find_package(PCL REQUIRED)
+#   find_package(pcl_ros REQUIRED)
+#   find_package(marine_acoustic_msgs REQUIRED)
+#   find_package(gz-sensors${GZ_SIM_VER} REQUIRED)
+#   set(GZ_SENSORS_VER ${gz-sensors8_VERSION_MAJOR})
+
+#   add_library(MultibeamSonarSystem SHARED
+#               src/MultibeamSonarSystem.cc
+#   )
+
+#   set_target_properties(MultibeamSonarSystem
+#                         PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+
+#   target_include_directories(MultibeamSonarSystem PRIVATE include)
+#   target_link_libraries(MultibeamSonarSystem
+#                         gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
+#                         gz-sensors${GZ_SENSORS_VER}::gz-sensors${GZ_SENSORS_VER}
+#                         gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
+#                         ${CUDA_LIBRARIES}
+#                         ${PCL_LIBRARIES}
+#                         ${OpenCV_LIBRARIES}
+#   )
+
+#   ament_target_dependencies(MultibeamSonarSystem
+#                             rclcpp
+#                             std_msgs
+#                             sensor_msgs
+#                             geometry_msgs
+#                             PCL
+#                             OpenCV
+#                             marine_acoustic_msgs
+#   )
+#   install(TARGETS MultibeamSonarSystem
+#           DESTINATION lib/${PROJECT_NAME}
+#   )
+# else()
+#   message(STATUS "CUDA Toolkit not found: Skipping CUDA-specific targets")
+# endif()
+
 # Testing setup
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
