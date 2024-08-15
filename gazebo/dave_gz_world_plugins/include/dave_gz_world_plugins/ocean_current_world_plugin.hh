@@ -19,7 +19,6 @@
 
 namespace dave_gz_world_plugins
 {
-
 /// \brief Class for the underwater current plugin
 
 // typedef const boost::shared_ptr<const gz::msgs::Any> AnyPtr;

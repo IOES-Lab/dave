@@ -3,13 +3,12 @@
 
 #include <gz/msgs/vector3d.pb.h>
 #include <math.h>
+#include <ament_index_cpp/get_package_share_directory.hpp>  // TODO (235-239)
 #include <boost/algorithm/string.hpp>
 #include <boost/bind.hpp>
 #include <boost/bind/bind.hpp>
 #include <boost/shared_ptr.hpp>
 #include <chrono>
-#include <dave_gz_world_plugins/gauss_markov_process.hh>
-#include <dave_gz_world_plugins/tidal_oscillation.hh>
 #include <gz/math/Pose3.hh>
 #include <gz/math/Vector3.hh>
 #include <gz/math/Vector4.hh>
@@ -21,10 +20,11 @@
 #include <map>
 #include <sdf/sdf.hh>
 #include <string>
+#include "dave_gz_world_plugins/gauss_markov_process.hh"
+#include "dave_gz_world_plugins/tidal_oscillation.hh"
 #include "gz/plugin/Register.hh"
 #include "gz/sim/components/Model.hh"
 #include "gz/sim/components/World.hh"
-// #include <ament_index_cpp/get_package_share_directory.hpp> TODO (235-239)
 
 GZ_ADD_PLUGIN(
   dave_gz_world_plugins::UnderwaterCurrentPlugin, gz::sim::System,
@@ -197,12 +197,11 @@ void UnderwaterCurrentPlugin::LoadTidalOscillationDatabase()
       gzmsg << "Tidal harmonic constituents " << "configuration found" << std::endl;
       this->dataPtr->tidalHarmonicFlag = true;
     }
-    // else
-    // {
-    //   this->dataPtr->tidalFilePath =
-    //     ament_index_cpp::get_package_share_directory("dave_worlds") +
-    //     "/worlds/ACT1951_predictionMaxSlack_2021-02-24.csv";
-    // }  TODO
+    else
+    {
+      this->dataPtr->tidalFilePath = ament_index_cpp::get_package_share_directory("dave_worlds") +
+                                     "/worlds/ACT1951_predictionMaxSlack_2021-02-24.csv";
+    }
   }
 
   // Read the tidal oscillation direction from the SDF file

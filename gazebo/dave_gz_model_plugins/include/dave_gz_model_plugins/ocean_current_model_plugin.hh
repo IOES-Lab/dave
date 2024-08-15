@@ -3,6 +3,8 @@
 
 #include "dave_gz_world_plugins/gauss_markov_process.hh"
 #include "dave_gz_world_plugins/tidal_oscillation.hh"
+#include "dave_interfaces/msg/Stratified_Current_Database.hpp"
+#include "dave_interfaces/msg/Stratified_Current_Velocity.hpp"
 
 #include <gz/sim/System.hh>
 // #include <gz/utilise/ImplPtr.hh>
@@ -17,8 +19,6 @@
 #include <rclcpp/rclcpp.hpp>
 #include <sdf/sdf.hh>
 #include <string>
-#include "dave_interfaces/msg/Stratified_Current_Database.hpp"
-#include "dave_interfaces/msg/Stratified_Current_Velocity.hpp"
 
 namespace dave_gz_model_plugins
 {
@@ -45,8 +45,7 @@ public:
   // Function called after the simulation state updates
   void PostUpdate(const gz::sim::UpdateInfo & _info, const gz::sim::EntityComponentManager & _ecm);
 
-  void TransientCurrentPlugin::LoadCurrentVelocityParams(
-    sdf::ElementPtr _sdf, gz::sim::EntityComponentManager & _ecm);
+  void LoadCurrentVelocityParams(sdf::ElementPtr _sdf, gz::sim::EntityComponentManager & _ecm);
 
   gz::math::Pose3d GetModelPose(
     const gz::sim::Entity & modelEntity, gz::sim::EntityComponentManager & ecm);
@@ -69,13 +68,15 @@ public:
   /// \brief Calculate ocean current using database and vehicle state
   void CalculateOceanCurrent(double vehicleDepth);
 
-  void Gauss_Markov_process_initialize();
+  void Gauss_Markov_process_initialize(
+    const gz::sim::Entity & _entity, const std::shared_ptr<const sdf::Element> & _sdf,
+    gz::sim::EntityComponentManager & _ecm, gz::sim::EventManager & _eventMgr);
 
   /// \brief Convey model state from gazebo topic to outside
-  void UpdateDatabase();
+  void UpdateDatabase(const dave_interfaces::msg::StratifiedCurrentDatabase::ConstPtr & _msg);
 
   /// \brief Publish ocean current
-  void PublishCurrentVelocity();
+  void PublishCurrentVelocity(const gz::sim::UpdateInfo & _info);
 
 private:
   std::shared_ptr<rclcpp::Node> ros_node_;

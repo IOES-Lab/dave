@@ -1,4 +1,5 @@
 #include "dave_gz_model_plugins/ocean_current_model_plugin.hh"
+#include <gz/msgs/vector3d.pb.h>
 #include <algorithm>
 #include <array>
 #include <chrono>
@@ -23,10 +24,12 @@
 #include <vector>
 #include "dave_gz_world_plugins/gauss_markov_process.hh"
 #include "dave_gz_world_plugins/tidal_oscillation.hh"
+#include "dave_interfaces/msg/Stratified_Current_Database.hpp"
+#include "dave_interfaces/msg/Stratified_Current_Velocity.hpp"
 #include "gz/common/StringUtils.hh"
 #include "gz/plugin/Register.hh"
 
-// #include <ament_index_cpp/get_package_share_directory.hpp> //TODO
+#include <ament_index_cpp/get_package_share_directory.hpp>  //TODO
 #include <geometry_msgs/msg/twist_stamped.hpp>
 #include <geometry_msgs/msg/vector3.hpp>
 #include <sdf/sdf.hh>
@@ -43,14 +46,6 @@ namespace dave_gz_model_plugins
 {
 struct TransientCurrentPlugin::PrivateData
 {
-  // starts here
-
-  /// \brief Check if an entity is enabled or not.
-  /// \param[in] _entity Target entity
-  /// \param[in] _ecm Entity component manager
-  /// \return True if buoyancy should be applied.
-  // bool IsEnabled(Entity _entity, const EntityComponentManager & _ecm) const;
-
   // Initialize any necessary states before the plugin starts
   virtual void Init();
   std::string transientCurrentVelocityTopic;  // Declare the variable (updated)
@@ -76,9 +71,9 @@ struct TransientCurrentPlugin::PrivateData
   std::string modelName;
 
   /// \brief Gauss-Markov process instance for the velocity components // TODO
-  // gz::GaussMarkovProcess currentVelNorthModel; // TODO
-  // gz::GaussMarkovProcess currentVelEastModel; // TODO
-  // gz::GaussMarkovProcess currentVelDownModel; // TODO
+  dave_gz_world_plugins::GaussMarkovProcess currentVelNorthModel;  // TODO
+  dave_gz_world_plugins::GaussMarkovProcess currentVelEastModel;   // TODO
+  dave_gz_world_plugins::GaussMarkovProcess currentVelDownModel;   // TODO
 
   /// \brief Gauss-Markov noise
   double noiseAmp_North;
@@ -91,7 +86,7 @@ struct TransientCurrentPlugin::PrivateData
   std::vector<gz::math::Vector3d> database;
 
   /// \brief Tidal Oscillation interpolation model
-  // gz::TidalOscillation tide;
+  dave_gz_world_plugins::TidalOscillation tide;
 
   /// \brief Tidal Oscillation flag
   bool tideFlag;
@@ -123,9 +118,9 @@ struct TransientCurrentPlugin::PrivateData
   /// \brief Tidal oscillation world start time (GMT)
   std::array<int, 5> world_start_time;
   gz::sim::Entity modelEntity;
+  std::chrono::steady_clock::duration time;
 };
 
-// constructor
 TransientCurrentPlugin::TransientCurrentPlugin() : dataPtr(std::make_unique<PrivateData>()) {}
 
 TransientCurrentPlugin::~TransientCurrentPlugin() = default;
@@ -139,6 +134,12 @@ void TransientCurrentPlugin::Configure(
     rclcpp::init(0, nullptr);
   }
 
+  // Initialize the ROS 2 node
+  this->ros_node_ = std::make_shared<rclcpp::Node>("TransirentCurrentPlugin");
+
+  // Initializing the Gazebo transport node
+  this->dataPtr->gz_node = std::make_shared<gz::transport::Node>();
+
   gzdbg << "dave_gz_model_plugins::TransientCureentPlugin::Configure on entity: " << _entity
         << std::endl;
 
@@ -150,12 +151,16 @@ void TransientCurrentPlugin::Configure(
 
   auto model = gz::sim::Model(_entity);
   this->dataPtr->model = model;
-  this->dataPtr->modelName = model.Name(_ecm);
-  this->dataPtr->modelEntity = GetModelEntity(this->dataPtr->modelName, _ecm);
-
-  // this->dataPtr->sdf = _sdf; // not needed check
-
   gzmsg << "Loading transient ocean current model plugin..." << std::endl;
+
+  // Read the namespace for topics and services
+  if (!_sdf->HasElement("namespace"))
+  {
+    gzerr << "Missing required parameter <namespace>, "
+          << "plugin will not be initialized." << std::endl;
+    return;
+  }
+  this->dataPtr->modelName = _sdf->Get<std::string>("namespace");
 
   if (_sdf->HasElement("flow_velocity_topic"))
   {
@@ -170,27 +175,22 @@ void TransientCurrentPlugin::Configure(
   }
   gzmsg << "Transient velocity topic name for " << this->dataPtr->modelName << " : "
         << this->dataPtr->currentVelocityTopic << std::endl;
-  // Read the namespace for topics and services
-  this->dataPtr->ns = _sdf->Get<std::string>("namespace");
 
-  // Initialize the ROS 2 node
-  this->ros_node_ = std::make_shared<rclcpp::Node>("TransirentCurrentPlugin");
+  this->dataPtr->modelEntity = GetModelEntity(this->dataPtr->modelName, _ecm);
 
   // Advertise the ROS flow velocity as a stamped twist message
   this->dataPtr->flowVelocityPub =
     this->ros_node_->create_publisher<geometry_msgs::msg::TwistStamped>(
       this->dataPtr->currentVelocityTopic, rclcpp::QoS(10));
 
-  // Initializing the Gazebo transport node
-  this->dataPtr->gz_node = std::make_shared<gz::transport::Node>();
-
-  // Advertise the current velocity topic in ROS 2
+  // Advertise the current velocity topic in gazebo
   this->dataPtr->gz_current_vel_pub =
-    this->dataPtr->gz_node->Advertise<geometry_msgs::msg::Vector3>(
-      this->dataPtr->currentVelocityTopic);
+    this->dataPtr->gz_node->Advertise<gz::msgs::Vector3d>(this->dataPtr->currentVelocityTopic);
 
   // Read topic name of stratified ocean current from SDF
   LoadCurrentVelocityParams(sdfClone, _ecm);
+  Gauss_Markov_process_initialize(
+    _entity, _sdf, _ecm, _eventMgr);  // something is wrong here (check)
 }
 
 /////////////////////////////////////////////////
@@ -335,7 +335,6 @@ void TransientCurrentPlugin::CalculateOceanCurrent(double vehicleDepth)
     if (this->dataPtr->tideFlag)
     {
       // Update tide oscillation
-      this->dataPtr->time = this->dataPtr->lastUpdate;
 
       if (this->dataPtr->tide_Constituents)
       {
@@ -359,7 +358,7 @@ void TransientCurrentPlugin::CalculateOceanCurrent(double vehicleDepth)
       this->dataPtr->tide.worldStartTime = this->dataPtr->world_start_time;
       this->dataPtr->tide.Initiate(this->dataPtr->tide_Constituents);
       std::pair<double, double> currents =
-        this->dataPtr->tide.Update((this->dataPtr->time).Double(), northCurrent);
+        this->dataPtr->tide.Update((this->dataPtr->time).count(), northCurrent);
       this->dataPtr->currentVelNorthModel.mean = currents.first;
       this->dataPtr->currentVelEastModel.mean = currents.second;
       this->dataPtr->currentVelDownModel.mean = 0.0;
@@ -372,12 +371,18 @@ void TransientCurrentPlugin::CalculateOceanCurrent(double vehicleDepth)
     }
 
     // Change min max accordingly
-    currentVelNorthModel.max = currentVelNorthModel.mean + this->dataPtr->noiseAmp_North;
-    currentVelNorthModel.min = currentVelNorthModel.mean - this->dataPtr->noiseAmp_North;
-    currentVelEastModel.max = currentVelEastModel.mean + this->dataPtr->noiseAmp_East;
-    currentVelEastModel.min = currentVelEastModel.mean - this->dataPtr->noiseAmp_East;
-    currentVelDownModel.max = currentVelDownModel.mean + this->dataPtr->noiseAmp_Down;
-    currentVelDownModel.min = currentVelDownModel.mean - this->dataPtr->noiseAmp_Down;
+    this->dataPtr->currentVelNorthModel.max =
+      this->dataPtr->currentVelNorthModel.mean + this->dataPtr->noiseAmp_North;
+    this->dataPtr->currentVelNorthModel.min =
+      this->dataPtr->currentVelNorthModel.mean - this->dataPtr->noiseAmp_North;
+    this->dataPtr->currentVelEastModel.max =
+      this->dataPtr->currentVelEastModel.mean + this->dataPtr->noiseAmp_East;
+    this->dataPtr->currentVelEastModel.min =
+      this->dataPtr->currentVelEastModel.mean - this->dataPtr->noiseAmp_East;
+    this->dataPtr->currentVelDownModel.max =
+      this->dataPtr->currentVelDownModel.mean + this->dataPtr->noiseAmp_Down;
+    this->dataPtr->currentVelDownModel.min =
+      this->dataPtr->currentVelDownModel.mean - this->dataPtr->noiseAmp_Down;
 
     // Assign values to the model
     this->dataPtr->currentVelNorthModel.var = this->dataPtr->currentVelNorthModel.mean;
@@ -386,45 +391,48 @@ void TransientCurrentPlugin::CalculateOceanCurrent(double vehicleDepth)
 
     // Update current velocity
     double velocityNorth =
-      this->dataPtr->currentVelNorthModel.Update((this->dataPtr->time).Double());
+      this->dataPtr->currentVelNorthModel.Update((this->dataPtr->time).count());
 
     // Update current horizontal direction around z axis of flow frame
-    double velocityEast = this->dataPtr->currentVelEastModel.Update((this->dataPtr->time).Double());
+    double velocityEast = this->dataPtr->currentVelEastModel.Update((this->dataPtr->time).count());
 
     // Update current horizontal direction around z axis of flow frame
-    double velocityDown = this->dataPtr->currentVelDownModel.Update((this->dataPtr->time).Double());
+    double velocityDown = this->dataPtr->currentVelDownModel.Update((this->dataPtr->time).count());
 
     // Update current Velocity
     this->dataPtr->currentVelocity = gz::math::Vector3d(velocityNorth, velocityEast, velocityDown);
-
-    // Update time stamp
-    this->dataPtr->lastUpdate = (this->dataPtr->time).Double();
   }
 
   this->dataPtr->lock_.unlock();
 }
 /////////////////////////////////////////////////
-void TransientCurrentPlugin::PublishCurrentVelocity()
+void TransientCurrentPlugin::PublishCurrentVelocity(const gz::sim::UpdateInfo & _info)
 {
-  geometry_msgs::TwistStamped flowVelMsg;
-  flowVelMsg.header.stamp = rclcpp::Time().now();
+  geometry_msgs::msg::TwistStamped flowVelMsg;
+  flowVelMsg.header.stamp.sec =
+    std::chrono::duration_cast<std::chrono::seconds>(_info.simTime).count();
   flowVelMsg.header.frame_id = "/world";
   flowVelMsg.twist.linear.x = this->dataPtr->currentVelocity.X();
   flowVelMsg.twist.linear.y = this->dataPtr->currentVelocity.Y();
   flowVelMsg.twist.linear.z = this->dataPtr->currentVelocity.Z();
-  this->dataPtr->flowVelocityPub.publish(flowVelMsg);
+  this->dataPtr->flowVelocityPub->publish(flowVelMsg);
 
   // Generate and publish Gazebo topic according to the vehicle depth
-  msgs::Vector3d currentVel;
-  msgs::Set(
-    &currentVel, gz::math::Vector3d(
-                   this->dataPtr->currentVelocity.X(), this->dataPtr->currentVelocity.Y(),
-                   this->dataPtr->currentVelocity.Z()));
+  gz::msgs::Vector3d currentVel;
+  // msgs::Set(
+  //   &currentVel, gz::math::Vector3d(
+  //                  this->dataPtr->currentVelocity.X(), this->dataPtr->currentVelocity.Y(),
+  //                  this->dataPtr->currentVelocity.Z()));
+
+  currentVel.set_x(this->dataPtr->currentVelocity.X());
+  currentVel.set_y(this->dataPtr->currentVelocity.Y());
+  currentVel.set_z(this->dataPtr->currentVelocity.Z());
   this->dataPtr->gz_current_vel_pub.Publish(currentVel);
 }
 
 /////////////////////////////////////////////////
-TransientCurrentPlugin::UpdateDatabase()
+void TransientCurrentPlugin::UpdateDatabase(
+  const dave_interfaces::msg::StratifiedCurrentDatabase::ConstPtr & _msg)
 {
   this->dataPtr->lock_.lock();
 
@@ -438,79 +446,84 @@ TransientCurrentPlugin::UpdateDatabase()
   {
     this->dataPtr->timeGMT.clear();
     this->dataPtr->tideVelocities.clear();
-    if (_msg->tideConstituents == true)
+    if (_msg->tideconstituents == true)
     {
-      this->dataPtr->M2_amp = _msg->M2amp;
-      this->dataPtr->M2_phase = _msg->M2phase;
-      this->dataPtr->M2_speed = _msg->M2speed;
-      this->dataPtr->S2_amp = _msg->S2amp;
-      this->dataPtr->S2_phase = _msg->S2phase;
-      this->dataPtr->S2_speed = _msg->S2speed;
-      this->dataPtr->N2_amp = _msg->N2amp;
-      this->dataPtr->N2_phase = _msg->N2phase;
-      this->dataPtr->N2_speed = _msg->N2speed;
+      this->dataPtr->M2_amp = _msg->m2_amp;
+      this->dataPtr->M2_phase = _msg->m2_phase;
+      this->dataPtr->M2_speed = _msg->m2_speed;
+      this->dataPtr->S2_amp = _msg->s2_amp;
+      this->dataPtr->S2_phase = _msg->s2_phase;
+      this->dataPtr->S2_speed = _msg->s2_speed;
+      this->dataPtr->N2_amp = _msg->n2_amp;
+      this->dataPtr->N2_phase = _msg->n2_phase;
+      this->dataPtr->N2_speed = _msg->n2_speed;
       this->dataPtr->tide_Constituents = true;
     }
     else
     {
       std::array<int, 5> tmpDateVals;
-      for (int i = 0; i < _msg->timeGMTYear.size(); i++)
+      for (int i = 0; i < _msg->time_gmt_year.size(); i++)
       {
-        tmpDateVals[0] = _msg->timeGMTYear[i];
-        tmpDateVals[1] = _msg->timeGMTMonth[i];
-        tmpDateVals[2] = _msg->timeGMTDay[i];
-        tmpDateVals[3] = _msg->timeGMTHour[i];
-        tmpDateVals[4] = _msg->timeGMTMinute[i];
+        tmpDateVals[0] = _msg->time_gmt_year[i];
+        tmpDateVals[1] = _msg->time_gmt_month[i];
+        tmpDateVals[2] = _msg->time_gmt_day[i];
+        tmpDateVals[3] = _msg->time_gmt_hour[i];
+        tmpDateVals[4] = _msg->time_gmt_minute[i];
 
         this->dataPtr->timeGMT.push_back(tmpDateVals);
-        this->dataPtr->tideVelocities.push_back(_msg->tideVelocities[i]);
+        this->dataPtr->tideVelocities.push_back(_msg->tidevelocities[i]);
       }
       this->dataPtr->tide_Constituents = false;
     }
-    this->dataPtr->ebbDirection = _msg->ebbDirection;
-    this->dataPtr->floodDirection = _msg->floodDirection;
-    this->dataPtr->world_start_time[0] = _msg->worldStartTimeYear;
-    this->dataPtr->world_start_time[1] = _msg->worldStartTimeMonth;
-    this->dataPtr->world_start_time[2] = _msg->worldStartTimeDay;
-    this->dataPtr->world_start_time[3] = _msg->worldStartTimeHour;
-    this->dataPtr->world_start_time[4] = _msg->worldStartTimeMinute;
+    this->dataPtr->ebbDirection = _msg->ebb_direction;
+    this->dataPtr->floodDirection = _msg->flood_direction;
+    this->dataPtr->world_start_time[0] = _msg->world_start_time_year;
+    this->dataPtr->world_start_time[1] = _msg->world_start_time_month;
+    this->dataPtr->world_start_time[2] = _msg->world_start_time_day;
+    this->dataPtr->world_start_time[3] = _msg->world_start_time_hour;
+    this->dataPtr->world_start_time[4] = _msg->world_start_time_minute;
   }
 
   this->dataPtr->lock_.unlock();
 }
 
 ///////////////////////////////////////////////// (check this,dpr)
-void TransientCurrentPlugin::Gauss_Markov_process_initialize()
+void TransientCurrentPlugin::Gauss_Markov_process_initialize(
+  const gz::sim::Entity & _entity, const std::shared_ptr<const sdf::Element> & _sdf,
+  gz::sim::EntityComponentManager & _ecm, gz::sim::EventManager & _eventMgr)
 {
   // Read Gauss-Markov parameters
+  sdf::ElementPtr currentVelocityParams;
 
   // initialize velocity_north_model parameters
   if (currentVelocityParams->HasElement("velocity_north"))
   {
-    sdf::Element elem = currentVelocityParams->GetElement("velocity_north");
+    sdf::ElementPtr elem = currentVelocityParams->GetElement("velocity_north");
     if (elem->HasElement("mean"))
     {
-      this->currentVelNorthModel.mean = 0.0;
+      this->dataPtr->currentVelNorthModel.mean = 0.0;
     }
     if (elem->HasElement("mu"))
     {
-      this->currentVelNorthModel.mu = 0.0;
+      this->dataPtr->currentVelNorthModel.mu = 0.0;
     }
     if (elem->HasElement("noiseAmp"))
     {
-      this->noiseAmp_North = elem->Get<double>("noiseAmp");
+      this->dataPtr->noiseAmp_North = elem->Get<double>("noiseAmp");
     }
-    this->currentVelNorthModel.min = this->currentVelNorthModel.mean - this->noiseAmp_North;
-    this->currentVelNorthModel.max = this->currentVelNorthModel.mean + this->noiseAmp_North;
+    this->dataPtr->currentVelNorthModel.min =
+      this->dataPtr->currentVelNorthModel.mean - this->dataPtr->noiseAmp_North;
+    this->dataPtr->currentVelNorthModel.max =
+      this->dataPtr->currentVelNorthModel.mean + this->dataPtr->noiseAmp_North;
     if (elem->HasElement("noiseFreq"))
     {
-      this->noiseFreq_North = elem->Get<double>("noiseFreq");
+      this->dataPtr->noiseFreq_North = elem->Get<double>("noiseFreq");
     }
-    this->currentVelNorthModel.noiseAmp = this->noiseFreq_North;
+    this->dataPtr->currentVelNorthModel.noiseAmp = this->dataPtr->noiseFreq_North;
   }
 
   this->dataPtr->currentVelNorthModel.var = this->dataPtr->currentVelNorthModel.mean;
-  gzmsg << "For vehicle " << this->dataPtr->model->GetName()
+  gzmsg << "For vehicle " << this->dataPtr->modelName
         << " -> Current north-direction velocity [m/s] "
         << "Gauss-Markov process model:" << std::endl;
   this->dataPtr->currentVelNorthModel.Print();
@@ -518,30 +531,32 @@ void TransientCurrentPlugin::Gauss_Markov_process_initialize()
   // initialize velocity_east_model parameters
   if (currentVelocityParams->HasElement("velocity_east"))
   {
-    sdf::Element elem = currentVelocityParams->GetElement("velocity_east");
+    sdf::ElementPtr elem = currentVelocityParams->GetElement("velocity_east");
     if (elem->HasElement("mean"))
     {
-      this->currentVelEastModel.mean = 0.0;
+      this->dataPtr->currentVelEastModel.mean = 0.0;
     }
     if (elem->HasElement("mu"))
     {
-      this->currentVelEastModel.mu = 0.0;
+      this->dataPtr->currentVelEastModel.mu = 0.0;
     }
     if (elem->HasElement("noiseAmp"))
     {
-      this->noiseAmp_East = elem->Get<double>("noiseAmp");
+      this->dataPtr->noiseAmp_East = elem->Get<double>("noiseAmp");
     }
-    this->currentVelEastModel.min = this->currentVelEastModel.mean - this->noiseAmp_East;
-    this->currentVelEastModel.max = this->currentVelEastModel.mean + this->noiseAmp_East;
+    this->dataPtr->currentVelEastModel.min =
+      this->dataPtr->currentVelEastModel.mean - this->dataPtr->noiseAmp_East;
+    this->dataPtr->currentVelEastModel.max =
+      this->dataPtr->currentVelEastModel.mean + this->dataPtr->noiseAmp_East;
     if (elem->HasElement("noiseFreq"))
     {
-      this->noiseFreq_East = elem->Get<double>("noiseFreq");
+      this->dataPtr->noiseFreq_East = elem->Get<double>("noiseFreq");
     }
-    this->currentVelEastModel.noiseAmp = this->noiseFreq_East;
+    this->dataPtr->currentVelEastModel.noiseAmp = this->dataPtr->noiseFreq_East;
   }
 
   this->dataPtr->currentVelEastModel.var = this->dataPtr->currentVelEastModel.mean;
-  gzmsg << "For vehicle " << this->dataPtr->model->GetName()
+  gzmsg << "For vehicle " << this->dataPtr->modelName
         << " -> Current east-direction velocity [m/s] "
         << "Gauss-Markov process model:" << std::endl;
   this->dataPtr->currentVelEastModel.Print();
@@ -552,23 +567,25 @@ void TransientCurrentPlugin::Gauss_Markov_process_initialize()
     sdf::ElementPtr elem = currentVelocityParams->GetElement("velocity_down");
     if (elem->HasElement("mean"))
     {
-      this->currentVelDownModel.mean = 0.0;
+      this->dataPtr->currentVelDownModel.mean = 0.0;
     }
     if (elem->HasElement("mu"))
     {
-      this->currentVelDownModel.mu = 0.0;
+      this->dataPtr->currentVelDownModel.mu = 0.0;
     }
     if (elem->HasElement("noiseAmp"))
     {
-      this->noiseAmp_Down = elem->Get<double>("noiseAmp");
+      this->dataPtr->noiseAmp_Down = elem->Get<double>("noiseAmp");
     }
-    this->currentVelDownModel.min = this->currentVelDownModel.mean - this->noiseAmp_Down;
-    this->currentVelDownModel.max = this->currentVelDownModel.mean + this->noiseAmp_Down;
+    this->dataPtr->currentVelDownModel.min =
+      this->dataPtr->currentVelDownModel.mean - this->dataPtr->noiseAmp_Down;
+    this->dataPtr->currentVelDownModel.max =
+      this->dataPtr->currentVelDownModel.mean + this->dataPtr->noiseAmp_Down;
     if (elem->HasElement("noiseFreq"))
     {
-      this->noiseFreq_Down = elem->Get<double>("noiseFreq");
+      this->dataPtr->noiseFreq_Down = elem->Get<double>("noiseFreq");
     }
-    this->currentVelDownModel.noiseAmp = this->noiseFreq_Down;
+    this->dataPtr->currentVelDownModel.noiseAmp = this->dataPtr->noiseFreq_Down;
   }
 
   this->dataPtr->currentVelDownModel.var = this->dataPtr->currentVelDownModel.mean;
@@ -578,22 +595,20 @@ void TransientCurrentPlugin::Gauss_Markov_process_initialize()
 
   // this->dataPtr->lastUpdate = _info.simTime; This isn't needed because the last update is being
   // initialised to 0 and is being updated at postupdate
-  this->dataPtr->currentVelNorthModel.lastUpdate = this->dataPtr->lastUpdate.Double();
-  this->dataPtr->currentVelEastModel.lastUpdate = this->dataPtr->lastUpdate.Double();
-  this->dataPtr->currentVelDownModel.lastUpdate = this->dataPtr->lastUpdate.Double();
+  this->dataPtr->currentVelNorthModel.lastUpdate = this->dataPtr->lastUpdate.count();
+  this->dataPtr->currentVelEastModel.lastUpdate = this->dataPtr->lastUpdate.count();
+  this->dataPtr->currentVelDownModel.lastUpdate = this->dataPtr->lastUpdate.count();
 }
 /////////////////////////////////////////////////
 void TransientCurrentPlugin::PreUpdate(
   const gz::sim::UpdateInfo & _info, gz::sim::EntityComponentManager & _ecm)
 {
   this->dataPtr->time = _info.simTime;
-  this->dataPtr->Gauss_Markov_process_initialize();  // something is wrong here (check)
-
   // Subscribe stratified ocean current database
   this->dataPtr->databaseSub =
     this->ros_node_->create_subscription<dave_interfaces::msg::StratifiedCurrentDatabase>(
       this->dataPtr->transientCurrentVelocityTopic, 10,
-      std::bind(&TransientCurrentPlugin::UpdateDatabase, this, _1));
+      std::bind(&TransientCurrentPlugin::UpdateDatabase, this, std::placeholders::_1));
 
   // Connect the update event callback for ROS and ocean current calculation
   this->dataPtr->Connect();
@@ -608,6 +623,7 @@ void TransientCurrentPlugin::Update(
   // Update vehicle position
   gz::math::Pose3d vehicle_pos = GetModelPose(this->dataPtr->modelEntity, _ecm);
   double vehicleDepth = std::abs(vehicle_pos.Z());
+  this->dataPtr->time = this->dataPtr->lastUpdate;
   CalculateOceanCurrent(vehicleDepth);
 }
 /////////////////////////////////////////////////
@@ -621,7 +637,7 @@ void TransientCurrentPlugin::PostUpdate(
   //   PostPublishCurrentVelocity();
   // }
   this->dataPtr->lastUpdate = _info.simTime;
-  PublishCurrentVelocity();
+  PublishCurrentVelocity(_info);
   if (!_info.paused)
   {
     rclcpp::spin_some(this->ros_node_);

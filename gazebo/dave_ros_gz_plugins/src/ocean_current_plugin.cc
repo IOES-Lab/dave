@@ -54,7 +54,7 @@ struct UnderwaterCurrentROSPlugin::PrivateData
   std::string stratifiedCurrentVelocityTopic;
   std::string stratifiedCurrentVelocityDatabaseTopic;
   std::string currentVelocityTopic;
-  std::string ns;
+  std::string model_namespace;
   rclcpp::Publisher<geometry_msgs::msg::TwistStamped>::SharedPtr flowVelocityPub;
   rclcpp::Publisher<dave_interfaces::msg::StratifiedCurrentVelocity>::SharedPtr
     stratifiedCurrentVelocityPub;
@@ -76,20 +76,6 @@ void UnderwaterCurrentROSPlugin::Configure(
   const gz::sim::Entity & _entity, const std::shared_ptr<const sdf::Element> & _sdf,
   gz::sim::EntityComponentManager & _ecm, gz::sim::EventManager & _eventMgr)
 {
-  this->dataPtr->rosNode = std::make_shared<rclcpp::Node>("underwater_current_ros_plugin");
-  auto worldEntity = _ecm.EntityByComponents(gz::sim::components::World());
-  this->dataPtr->world = gz::sim::World(worldEntity);
-  this->dataPtr->entity = _entity;
-  this->dataPtr->model = gz::sim::Model(_entity);
-  this->dataPtr->modelName = this->dataPtr->model.Name(_ecm);
-  this->dataPtr->sdf = _sdf;
-  std::chrono::steady_clock::duration lastUpdate{0};
-
-  // auto lastUpdate = gz::sim::simTime;
-
-  this->dataPtr->stratifiedCurrentVelocityDatabaseTopic =
-    this->dataPtr->stratifiedCurrentVelocityTopic + "_database";
-
   if (!rclcpp::ok())
   {
     gzerr << "ROS 2 has not been properly initialized. Please make sure you have initialized your "
@@ -97,11 +83,25 @@ void UnderwaterCurrentROSPlugin::Configure(
     return;
   }
 
-  this->dataPtr->ns = _sdf->HasElement("namespace") ? _sdf->Get<std::string>("namespace") : "";
+  this->dataPtr->rosNode = std::make_shared<rclcpp::Node>("underwater_current_ros_plugin");
+  auto worldEntity = _ecm.EntityByComponents(gz::sim::components::World());
+  this->dataPtr->world = gz::sim::World(worldEntity);
+
+  this->dataPtr->entity = _entity;
+
+  this->dataPtr->model = gz::sim::Model(_entity);
+  this->dataPtr->modelName = this->dataPtr->model.Name(_ecm);
+  this->dataPtr->sdf = _sdf;
+
+  this->dataPtr->stratifiedCurrentVelocityDatabaseTopic =
+    this->dataPtr->stratifiedCurrentVelocityTopic + "_database";
+
+  this->dataPtr->model_namespace =
+    _sdf->HasElement("namespace") ? _sdf->Get<std::string>("namespace") : "";
 
   // Initialising ROS 2 node
   this->dataPtr->rosNode =
-    std::make_shared<rclcpp::Node>("underwater_current_ros_plugin", this->dataPtr->ns);
+    std::make_shared<rclcpp::Node>("underwater_current_ros_plugin", this->dataPtr->model_namespace);
 
   // Create and advertise Messages
   // Advertise the flow velocity as a stamped twist message
@@ -145,143 +145,9 @@ void UnderwaterCurrentROSPlugin::Configure(
   this->dataPtr->get_current_vert_angle_model =
     this->dataPtr->rosNode->create_service<dave_interfaces::srv::GetCurrentModel>(
       "get_current_vert_angle_model", std::bind(
-                                        &UnderwaterCurrentROSPlugin::GetCurrentHorzAngleModel, this,
-                                        std::placeholders::_1, std::placeholders::_2));
-
-  // Connect to the Gazebo Harmonic update event
-  // this->dataPtr->rosPublishConnection = _world->OnUpdateBegin([this](const gz::sim::UpdateInfo &
-  // info)
-  //                                                    { this->dataPtr->OnUpdateCurrentVel(info);
-  //                                                    });
-}
-
-/////////////////////////////////////////////////
-void UnderwaterCurrentROSPlugin::PreUpdate(
-  const gz::sim::UpdateInfo & _info, gz::sim::EntityComponentManager & _ecm)
-{
-  // Advertise the service to get the current velocity model
-  this->dataPtr->get_current_velocity_model =
-    this->dataPtr->rosNode->create_service<dave_interfaces::srv::GetCurrentModel>(
-      "get_current_velocity_model", std::bind(
-                                      &UnderwaterCurrentROSPlugin::GetCurrentVelocityModel, this,
-                                      std::placeholders::_1, std::placeholders::_2));
-
-  // Advertise the service to get the current horizontal angle model
-  this->dataPtr->get_current_horz_angle_model =
-    this->dataPtr->rosNode->create_service<dave_interfaces::srv::GetCurrentModel>(
-      "get_current_horz_angle_model", std::bind(
-                                        &UnderwaterCurrentROSPlugin::GetCurrentHorzAngleModel, this,
-                                        std::placeholders::_1, std::placeholders::_2));
-
-  // Advertise the service to get the current vertical angle model
-  this->dataPtr->get_current_vert_angle_model =
-    this->dataPtr->rosNode->create_service<dave_interfaces::srv::GetCurrentModel>(
-      "get_current_vert_angle_model", std::bind(
                                         &UnderwaterCurrentROSPlugin::GetCurrentVertAngleModel, this,
                                         std::placeholders::_1, std::placeholders::_2));
-}
-/////////////////////////////////////////////////
-void UnderwaterCurrentROSPlugin::Update(
-  const gz::sim::UpdateInfo & _info, const gz::sim::EntityComponentManager & _ecm)
-{
-  if (_info.simTime > this->dataPtr->lastUpdate)
-  {
-    // Generate and publish current velocity according to the vehicle depth
-    geometry_msgs::msg::TwistStamped flowVelMsg;
-    flowVelMsg.header.stamp = this->dataPtr->rosNode->get_clock()->now();
-    flowVelMsg.header.frame_id =
-      "world";  // Changed from "/world" to be consistent with ROS 2 TF2 conventions
 
-    flowVelMsg.twist.linear.x = this->dataPtr->currentVelocity.X();
-    flowVelMsg.twist.linear.y = this->dataPtr->currentVelocity.Y();
-    flowVelMsg.twist.linear.z = this->dataPtr->currentVelocity.Z();
-
-    this->dataPtr->flowVelocityPub->publish(flowVelMsg);
-
-    // Generate and publish stratified current velocity
-    dave_interfaces::msg::StratifiedCurrentVelocity stratCurrentVelocityMsg;
-    stratCurrentVelocityMsg.header.stamp = this->dataPtr->rosNode->get_clock()->now();
-    stratCurrentVelocityMsg.header.frame_id = "world";
-
-    // Updating for stratified behaviour of Ocean Currents
-    // What is the .size value over here, to be (checked)
-    {
-      for (size_t i = 0; i < this->dataPtr->currentStratifiedVelocity.size();
-           i++)  // need to check if the values are in sync with ocean_cureent_world_plugin.cc(TODO)
-      {
-        geometry_msgs::msg::Vector3 velocity;
-        velocity.x = this->dataPtr->currentStratifiedVelocity[i].X();
-        velocity.y = this->dataPtr->currentStratifiedVelocity[i].Y();
-        velocity.z = this->dataPtr->currentStratifiedVelocity[i].Z();
-        stratCurrentVelocityMsg.velocities.push_back(velocity);
-        stratCurrentVelocityMsg.depths.push_back(this->dataPtr->currentStratifiedVelocity[i].W());
-      }
-
-      this->dataPtr->stratifiedCurrentVelocityPub->publish(stratCurrentVelocityMsg);
-
-      // Generate and publish stratified current database
-      dave_interfaces::msg::StratifiedCurrentDatabase currentDatabaseMsg;
-      for (int i = 0; i < this->dataPtr->stratifiedDatabase
-                            .size();  // again check with ocean_cureent_world_plugin.cc (TODO)
-           i++)                       // read from csv file in ocean_cureent_world_plugin.cc
-      {
-        // Stratified current database entry preparation
-        geometry_msgs::msg::Vector3 velocity;
-        velocity.x = this->dataPtr->stratifiedDatabase[i].X();
-        velocity.y = this->dataPtr->stratifiedDatabase[i].Y();
-        velocity.z = 0.0;  // Assuming z is intentionally set to 0.0
-        currentDatabaseMsg.velocities.push_back(velocity);
-        currentDatabaseMsg.depths.push_back(this->dataPtr->stratifiedDatabase[i].Z());
-      }
-
-      if (this->dataPtr
-            ->tidalHarmonicFlag)  // again check with ocean_cureent_world_plugin.cc (TODO)
-      {
-        // Tidal harmonic constituents
-        currentDatabaseMsg.m2amp = this->dataPtr->M2_amp;
-        currentDatabaseMsg.m2phase = this->dataPtr->M2_phase;
-        currentDatabaseMsg.m2speed = this->dataPtr->M2_speed;
-        currentDatabaseMsg.s2amp = this->dataPtr->S2_amp;
-        currentDatabaseMsg.s2phase = this->dataPtr->S2_phase;
-        currentDatabaseMsg.s2speed = this->dataPtr->S2_speed;
-        currentDatabaseMsg.n2amp = this->dataPtr->N2_amp;
-        currentDatabaseMsg.n2phase = this->dataPtr->N2_phase;
-        currentDatabaseMsg.n2speed = this->dataPtr->N2_speed;
-        currentDatabaseMsg.tideConstituents = true;
-      }
-      else
-      {
-        for (int i = 0; i < this->dataPtr->dateGMT.size(); i++)
-        {
-          // Tidal oscillation database
-          currentDatabaseMsg.timegmtyear.push_back(this->dataPtr->dateGMT[i][0]);
-          currentDatabaseMsg.timegmtmonth.push_back(this->dataPtr->dateGMT[i][1]);
-          currentDatabaseMsg.timegmtday.push_back(this->dataPtr->dateGMT[i][2]);
-          currentDatabaseMsg.timegmthour.push_back(this->dataPtr->dateGMT[i][3]);
-          currentDatabaseMsg.timegmtminute.push_back(this->dataPtr->dateGMT[i][4]);
-
-          currentDatabaseMsg.tidevelocities.push_back(this->dataPtr->speedcmsec[i]);
-        }
-        currentDatabaseMsg.tideConstituents = false;
-      }
-
-      currentDatabaseMsg.ebbdirection = this->dataPtr->ebbDirection;
-      currentDatabaseMsg.flooddirection = this->dataPtr->floodDirection;
-
-      currentDatabaseMsg.worldstarttimeyear = this->dataPtr->world_start_time_year;
-      currentDatabaseMsg.worldstarttimemonth = this->dataPtr->world_start_time_month;
-      currentDatabaseMsg.worldstarttimeday = this->dataPtr->world_start_time_day;
-      currentDatabaseMsg.worldstarttimehour = this->dataPtr->world_start_time_hour;
-      currentDatabaseMsg.worldstarttimeminute = this->dataPtr->world_start_time_minute;
-
-      this->dataPtr->stratifiedCurrentDatabasePub->publish(currentDatabaseMsg);
-    }
-  }
-}
-/////////////////////////////////////////////////
-void UnderwaterCurrentROSPlugin::PostUpdate(
-  const gz::sim::UpdateInfo & _info, const gz::sim::EntityComponentManager & _ecm)
-{
   // Advertise the service to update the current velocity model
   this->dataPtr->set_current_velocity_model =
     this->dataPtr->rosNode->create_service<dave_interfaces::srv::SetCurrentModel>(
@@ -352,9 +218,29 @@ void UnderwaterCurrentROSPlugin::PostUpdate(
                                              &UnderwaterCurrentROSPlugin::UpdateStratVertAngle,
                                              this, std::placeholders::_1, std::placeholders::_2));
 
-  // Update the time tracking for publication
-  this->dataPtr->lastUpdate = _info.simTime;
+  // Connect to the Gazebo Harmonic update event
+  // this->dataPtr->rosPublishConnection = _world->OnUpdateBegin([this](const gz::sim::UpdateInfo &
+  // info)
+  //                                                    { this->dataPtr->OnUpdateCurrentVel(info);
+  //                                                    });
 }
+
+/////////////////////////////////////////////////
+// void UnderwaterCurrentROSPlugin::PreUpdate(
+//   const gz::sim::UpdateInfo & _info, gz::sim::EntityComponentManager & _ecm)
+// {
+// }
+// /////////////////////////////////////////////////
+// void UnderwaterCurrentROSPlugin::Update(
+//   const gz::sim::UpdateInfo & _info, const gz::sim::EntityComponentManager & _ecm)
+// {
+//   if (_info.simTime > this->dataPtr->lastUpdate)
+//   {
+//     // TODO put in postupdate
+//   }
+// }
+
+// namespace dave_ros_gz_plugins
 /////////////////////////////////////////////////
 bool UnderwaterCurrentROSPlugin::UpdateHorzAngle(
   const std::shared_ptr<dave_interfaces::srv::SetCurrentDirection::Request> _req,
@@ -568,6 +454,105 @@ bool UnderwaterCurrentROSPlugin::UpdateCurrentVertAngleModel(
         << "\tWARNING: Current velocity calculated in the ENU frame" << std::endl;
   this->dataPtr->currentVertAngleModel.Print();
   return true;
+}
+
+/////////////////////////////////////////////////
+void UnderwaterCurrentROSPlugin::PostUpdate(
+  const gz::sim::UpdateInfo & _info, const gz::sim::EntityComponentManager & _ecm)
+{
+  // Generate and publish current velocity according to the vehicle depth
+  geometry_msgs::msg::TwistStamped flowVelMsg;
+  flowVelMsg.header.stamp = this->dataPtr->rosNode->get_clock()->now();
+  flowVelMsg.header.frame_id =
+    "world";  // Changed from "/world" to be consistent with ROS 2 TF2 conventions
+
+  flowVelMsg.twist.linear.x = this->dataPtr->currentVelocity.X();
+  flowVelMsg.twist.linear.y = this->dataPtr->currentVelocity.Y();
+  flowVelMsg.twist.linear.z = this->dataPtr->currentVelocity.Z();
+
+  this->dataPtr->flowVelocityPub->publish(flowVelMsg);
+
+  //
+
+  // Generate and publish stratified current velocity
+  dave_interfaces::msg::StratifiedCurrentVelocity stratCurrentVelocityMsg;
+  stratCurrentVelocityMsg.header.stamp = this->dataPtr->rosNode->get_clock()->now();
+  stratCurrentVelocityMsg.header.frame_id = "world";
+
+  // Updating for stratified behaviour of Ocean Currents
+  // What is the .size value over here, to be (checked)
+
+  for (size_t i = 0; i < this->dataPtr->currentStratifiedVelocity.size();
+       i++)  // need to check if the values are in sync with ocean_cureent_world_plugin.cc(TODO)
+  {
+    geometry_msgs::msg::Vector3 velocity;
+    velocity.x = this->dataPtr->currentStratifiedVelocity[i].X();
+    velocity.y = this->dataPtr->currentStratifiedVelocity[i].Y();
+    velocity.z = this->dataPtr->currentStratifiedVelocity[i].Z();
+    stratCurrentVelocityMsg.velocities.push_back(velocity);
+    stratCurrentVelocityMsg.depths.push_back(this->dataPtr->currentStratifiedVelocity[i].W());
+  }
+
+  this->dataPtr->stratifiedCurrentVelocityPub->publish(stratCurrentVelocityMsg);
+
+  // Generate and publish stratified current database
+  dave_interfaces::msg::StratifiedCurrentDatabase currentDatabaseMsg;
+  for (int i = 0; i < this->dataPtr->stratifiedDatabase
+                        .size();  // again check with ocean_cureent_world_plugin.cc (TODO)
+       i++)                       // read from csv file in ocean_cureent_world_plugin.cc
+  {
+    // Stratified current database entry preparation
+    geometry_msgs::msg::Vector3 velocity;
+    velocity.x = this->dataPtr->stratifiedDatabase[i].X();
+    velocity.y = this->dataPtr->stratifiedDatabase[i].Y();
+    velocity.z = 0.0;  // Assuming z is intentionally set to 0.0
+    currentDatabaseMsg.velocities.push_back(velocity);
+    currentDatabaseMsg.depths.push_back(this->dataPtr->stratifiedDatabase[i].Z());
+  }
+
+  if (this->dataPtr->tidalHarmonicFlag)  // again check with ocean_cureent_world_plugin.cc (TODO)
+  {
+    // Tidal harmonic constituents
+    currentDatabaseMsg.m2amp = this->dataPtr->M2_amp;
+    currentDatabaseMsg.m2phase = this->dataPtr->M2_phase;
+    currentDatabaseMsg.m2speed = this->dataPtr->M2_speed;
+    currentDatabaseMsg.s2amp = this->dataPtr->S2_amp;
+    currentDatabaseMsg.s2phase = this->dataPtr->S2_phase;
+    currentDatabaseMsg.s2speed = this->dataPtr->S2_speed;
+    currentDatabaseMsg.n2amp = this->dataPtr->N2_amp;
+    currentDatabaseMsg.n2phase = this->dataPtr->N2_phase;
+    currentDatabaseMsg.n2speed = this->dataPtr->N2_speed;
+    currentDatabaseMsg.tideConstituents = true;
+  }
+  else
+  {
+    for (int i = 0; i < this->dataPtr->dateGMT.size(); i++)
+    {
+      // Tidal oscillation database
+      currentDatabaseMsg.timegmtyear.push_back(this->dataPtr->dateGMT[i][0]);
+      currentDatabaseMsg.timegmtmonth.push_back(this->dataPtr->dateGMT[i][1]);
+      currentDatabaseMsg.timegmtday.push_back(this->dataPtr->dateGMT[i][2]);
+      currentDatabaseMsg.timegmthour.push_back(this->dataPtr->dateGMT[i][3]);
+      currentDatabaseMsg.timegmtminute.push_back(this->dataPtr->dateGMT[i][4]);
+
+      currentDatabaseMsg.tidevelocities.push_back(this->dataPtr->speedcmsec[i]);
+    }
+    currentDatabaseMsg.tideConstituents = false;
+  }
+
+  currentDatabaseMsg.ebbdirection = this->dataPtr->ebbDirection;
+  currentDatabaseMsg.flooddirection = this->dataPtr->floodDirection;
+
+  currentDatabaseMsg.worldstarttimeyear = this->dataPtr->world_start_time_year;
+  currentDatabaseMsg.worldstarttimemonth = this->dataPtr->world_start_time_month;
+  currentDatabaseMsg.worldstarttimeday = this->dataPtr->world_start_time_day;
+  currentDatabaseMsg.worldstarttimehour = this->dataPtr->world_start_time_hour;
+  currentDatabaseMsg.worldstarttimeminute = this->dataPtr->world_start_time_minute;
+
+  this->dataPtr->stratifiedCurrentDatabasePub->publish(currentDatabaseMsg);
+
+  // Update the time tracking for publication
+  this->dataPtr->lastUpdate = _info.simTime;
 }
 
 /////////////////////////////////////////////////

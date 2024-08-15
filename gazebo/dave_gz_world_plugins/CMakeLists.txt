@@ -74,6 +74,7 @@ ament_target_dependencies(ocean_current_world_plugin
   std_msgs
   geometry_msgs
   dave_interfaces
+  ament_index_cpp
 )
 
 ament_target_dependencies(gauss_markov_process

@@ -1,7 +1,3 @@
-/// \file ocean_current_plugin.hh
-/// \brief Publishes the ocean current velocity in ROS messages and cxreates a
-/// service to alter the flow model in runtime
-
 #ifndef DAVE_ROS_GZ_PLUGINS__OCEAN_CURRENT_PLUGIN_HH_
 #define DAVE_ROS_GZ_PLUGINS__OCEAN_CURRENT_PLUGIN_HH_
 
@@ -44,17 +40,16 @@ public:
     const gz::sim::Entity & _entity, const std::shared_ptr<const sdf::Element> & _sdf,
     gz::sim::EntityComponentManager & _ecm, gz::sim::EventManager & _eventMgr);
 
-  void Update(const gz::sim::UpdateInfo & _info, const gz::sim::EntityComponentManager & _ecm);
+  // void Update(const gz::sim::UpdateInfo & _info, const gz::sim::EntityComponentManager & _ecm);
+
+  // // Documentation inherited
+  // void PreUpdate(
+  //   const gz::sim::UpdateInfo & _info, gz::sim::EntityComponentManager & _ecm) override;
 
   // Documentation inherited
-  void PreUpdate(
-    const gz::sim::UpdateInfo & _info, gz::sim::EntityComponentManager & _ecm) override;
+  void PostUpdate(const gz::sim::UpdateInfo & _info, const gz::sim::EntityComponentManager & _ecm);
 
-  // Documentation inherited
-  void PostUpdate(
-    const gz::sim::UpdateInfo & _info, const gz::sim::EntityComponentManager & _ecm) override;
-
-  void UpdateHorzAngle(
+  bool UpdateHorzAngle(
     const std::shared_ptr<dave_interfaces::srv::SetCurrentDirection::Request> _req,
     std::shared_ptr<dave_interfaces::srv::SetCurrentDirection::Response> _res);
 
