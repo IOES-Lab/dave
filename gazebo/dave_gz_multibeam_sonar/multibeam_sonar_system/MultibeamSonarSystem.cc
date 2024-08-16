@@ -49,9 +49,9 @@
 #include <gz/rendering/RenderingIface.hh>
 #include <gz/rendering/Scene.hh>
 
-#include <gz/sensors/DopplerVelocityLog.hh>
 #include <gz/sensors/Manager.hh>
 
+#include "./../multibeam_sonar/MultibeamSonarSensor.hh"
 #include "MultibeamSonarSystem.hh"
 
 namespace gz
@@ -100,7 +100,7 @@ using SomeRequest = std::variant<
 }
 
 /// \brief Private data class.
-class gz::sim::systems::DopplerVelocityLogSystem::Implementation
+class gz::sim::systems::MultibeamSonarSystem::Implementation
 {
   /// \brief Callback invoked in the rendering thread before a rendering update
   public: void OnPreRender();
@@ -230,7 +230,7 @@ using namespace sim;
 using namespace systems;
 
 //////////////////////////////////////////////////
-void DopplerVelocityLogSystem::Implementation::DoConfigure(
+void MultibeamSonarSystem::Implementation::DoConfigure(
     const gz::sim::Entity &,
     const std::shared_ptr<const sdf::Element> &,
     gz::sim::EntityComponentManager &,
@@ -256,7 +256,7 @@ void DopplerVelocityLogSystem::Implementation::DoConfigure(
 }
 
 //////////////////////////////////////////////////
-void DopplerVelocityLogSystem::Implementation::DoPreUpdate(
+void MultibeamSonarSystem::Implementation::DoPreUpdate(
   const gz::sim::UpdateInfo &,
   gz::sim::EntityComponentManager &_ecm)
 {
@@ -304,7 +304,7 @@ void DopplerVelocityLogSystem::Implementation::DoPreUpdate(
         return true;
       }
       auto type = root->Get<std::string>("gz:type");
-      if (type != "dvl")
+      if (type != "multibeam_sonar")
       {
         gzdbg << "Found custom sensor [" << sensorScopedName << "]"
                << " of '" << type << "' type. Ignoring." << std::endl;
@@ -318,7 +318,7 @@ void DopplerVelocityLogSystem::Implementation::DoPreUpdate(
       if (sdf.Topic().empty())
       {
         // Default to scoped name as topic
-        sdf.SetTopic(scopedName(_entity, _ecm) + "/dvl/velocity");
+        sdf.SetTopic(scopedName(_entity, _ecm) + "/multibeam_sonar/velocity");
       }
 
       auto parentName =
@@ -337,7 +337,7 @@ void DopplerVelocityLogSystem::Implementation::DoPreUpdate(
 }
 
 //////////////////////////////////////////////////
-void DopplerVelocityLogSystem::Implementation::DoPostUpdate(
+void MultibeamSonarSystem::Implementation::DoPostUpdate(
   const gz::sim::UpdateInfo &_info,
   const gz::sim::EntityComponentManager &_ecm)
 {
@@ -412,7 +412,7 @@ void DopplerVelocityLogSystem::Implementation::DoPostUpdate(
 
 //////////////////////////////////////////////////
 gz::rendering::VisualPtr
-    DopplerVelocityLogSystem::Implementation::FindEntityVisual(
+    MultibeamSonarSystem::Implementation::FindEntityVisual(
     gz::rendering::ScenePtr _scene, gz::sim::Entity _entity)
 {
   for (unsigned int i = 0; i < _scene->VisualCount(); ++i)
@@ -431,12 +431,12 @@ gz::rendering::VisualPtr
 }
 
 //////////////////////////////////////////////////
-void DopplerVelocityLogSystem::Implementation::Handle(
+void MultibeamSonarSystem::Implementation::Handle(
     requests::CreateSensor _request)
 {
   auto *sensor =
       this->sensorManager.CreateSensor<
-          gz::sensors::DopplerVelocityLog>(_request.sdf);
+          gz::sensors::MultibeamSonarSensor>(_request.sdf);
   if (nullptr == sensor)
   {
     gzerr << "Failed to create sensor "
@@ -489,13 +489,13 @@ void DopplerVelocityLogSystem::Implementation::Handle(
 }
 
 //////////////////////////////////////////////////
-void DopplerVelocityLogSystem::Implementation::Handle(
+void MultibeamSonarSystem::Implementation::Handle(
     requests::DestroySensor _request)
 {
   auto it = this->sensorIdPerEntity.find(_request.entity);
   if (it != this->sensorIdPerEntity.end())
   {
-    auto *sensor = dynamic_cast<gz::sensors::DopplerVelocityLog *>(
+    auto *sensor = dynamic_cast<gz::sensors::MultibeamSonarSensor *>(
         this->sensorManager.Sensor(it->second));
     if (sensor)
     {
@@ -515,13 +515,13 @@ void DopplerVelocityLogSystem::Implementation::Handle(
 }
 
 //////////////////////////////////////////////////
-void DopplerVelocityLogSystem::Implementation::Handle(
+void MultibeamSonarSystem::Implementation::Handle(
     requests::SetWorldState _request)
 {
   this->latestWorldState = std::move(_request.worldState);
   for (const auto& [_, sensorId] : this->sensorIdPerEntity)
   {
-    auto *sensor = dynamic_cast<gz::sensors::DopplerVelocityLog *>(
+    auto *sensor = dynamic_cast<gz::sensors::MultibeamSonarSensor *>(
         this->sensorManager.Sensor(sensorId));
     sensor->SetWorldState(*this->latestWorldState);
   }
@@ -529,13 +529,13 @@ void DopplerVelocityLogSystem::Implementation::Handle(
 }
 
 //////////////////////////////////////////////////
-void DopplerVelocityLogSystem::Implementation::Handle(
+void MultibeamSonarSystem::Implementation::Handle(
     requests::SetEnvironmentalData _request)
 {
   this->latestEnvironmentalData = std::move(_request.environmentalData);
   for (const auto& [_, sensorId] : this->sensorIdPerEntity)
   {
-    auto *sensor = dynamic_cast<gz::sensors::DopplerVelocityLog *>(
+    auto *sensor = dynamic_cast<gz::sensors::MultibeamSonarSensor *>(
         this->sensorManager.Sensor(sensorId));
     sensor->SetEnvironmentalData(*this->latestEnvironmentalData);
   }
@@ -543,9 +543,9 @@ void DopplerVelocityLogSystem::Implementation::Handle(
 }
 
 //////////////////////////////////////////////////
-void DopplerVelocityLogSystem::Implementation::OnPreRender()
+void MultibeamSonarSystem::Implementation::OnPreRender()
 {
-  GZ_PROFILE("DopplerVelocityLogSystem::Implementation::OnPreRender");
+  GZ_PROFILE("MultibeamSonarSystem::Implementation::OnPreRender");
 
   if (!this->scene)
   {
@@ -585,9 +585,9 @@ void DopplerVelocityLogSystem::Implementation::OnPreRender()
 }
 
 //////////////////////////////////////////////////
-void DopplerVelocityLogSystem::Implementation::OnRender()
+void MultibeamSonarSystem::Implementation::OnRender()
 {
-  GZ_PROFILE("DopplerVelocityLogSystem::Implementation::OnRender");
+  GZ_PROFILE("MultibeamSonarSystem::Implementation::OnRender");
   if (!this->scene->IsInitialized() ||
       this->scene->SensorCount() == 0)
   {
@@ -640,16 +640,16 @@ void DopplerVelocityLogSystem::Implementation::OnRender()
 }
 
 //////////////////////////////////////////////////
-void DopplerVelocityLogSystem::Implementation::OnPostRender()
+void MultibeamSonarSystem::Implementation::OnPostRender()
 {
-  GZ_PROFILE("DopplerVelocityLogSystem::Implementation::OnPostRender");
+  GZ_PROFILE("MultibeamSonarSystem::Implementation::OnPostRender");
 
   std::lock_guard<std::mutex> timeLock(this->timeMutex);
 
   for (const auto & sensorId : this->updatedSensorIds)
   {
     auto *sensor =
-        dynamic_cast<gz::sensors::DopplerVelocityLog *>(
+        dynamic_cast<gz::sensors::MultibeamSonarSensor *>(
             this->sensorManager.Sensor(sensorId));
     sensor->PostUpdate(this->simTime);
   }
@@ -657,12 +657,12 @@ void DopplerVelocityLogSystem::Implementation::OnPostRender()
 }
 
 //////////////////////////////////////////////////
-void DopplerVelocityLogSystem::Implementation::OnRenderTeardown()
+void MultibeamSonarSystem::Implementation::OnRenderTeardown()
 {
-  GZ_PROFILE("DopplerVelocityLogSystem::Implementation::OnRenderTeardown");
+  GZ_PROFILE("MultibeamSonarSystem::Implementation::OnRenderTeardown");
   for (const auto & [entityId, sensorId] : this->sensorIdPerEntity)
   {
-    auto *sensor = dynamic_cast<gz::sensors::DopplerVelocityLog *>(
+    auto *sensor = dynamic_cast<gz::sensors::MultibeamSonarSensor *>(
         this->sensorManager.Sensor(sensorId));
     if (sensor)
     {
@@ -682,52 +682,52 @@ void DopplerVelocityLogSystem::Implementation::OnRenderTeardown()
 }
 
 //////////////////////////////////////////////////
-DopplerVelocityLogSystem::DopplerVelocityLogSystem()
+MultibeamSonarSystem::MultibeamSonarSystem()
   : dataPtr(gz::utils::MakeUniqueImpl<Implementation>())
 {
 }
 
 //////////////////////////////////////////////////
-DopplerVelocityLogSystem::~DopplerVelocityLogSystem()
+MultibeamSonarSystem::~MultibeamSonarSystem()
 {
 }
 
 //////////////////////////////////////////////////
-void DopplerVelocityLogSystem::Configure(
+void MultibeamSonarSystem::Configure(
     const gz::sim::Entity &_entity,
     const std::shared_ptr<const sdf::Element> &_sdf,
     gz::sim::EntityComponentManager &_ecm,
     gz::sim::EventManager &_eventMgr)
 {
-  GZ_PROFILE("DopplerVelocityLogSystem::Configure");
+  GZ_PROFILE("MultibeamSonarSystem::Configure");
   this->dataPtr->DoConfigure(_entity, _sdf, _ecm, _eventMgr);
 }
 
 //////////////////////////////////////////////////
-void DopplerVelocityLogSystem::PreUpdate(
+void MultibeamSonarSystem::PreUpdate(
   const gz::sim::UpdateInfo &_info,
   gz::sim::EntityComponentManager &_ecm)
 {
-  GZ_PROFILE("DopplerVelocityLogSystem::PreUpdate");
+  GZ_PROFILE("MultibeamSonarSystem::PreUpdate");
   this->dataPtr->DoPreUpdate(_info, _ecm);
 }
 
 //////////////////////////////////////////////////
-void DopplerVelocityLogSystem::PostUpdate(
+void MultibeamSonarSystem::PostUpdate(
   const gz::sim::UpdateInfo &_info,
   const gz::sim::EntityComponentManager &_ecm)
 {
-  GZ_PROFILE("DopplerVelocityLogSystem::PostUpdate");
+  GZ_PROFILE("MultibeamSonarSystem::PostUpdate");
   this->dataPtr->DoPostUpdate(_info, _ecm);
 }
 
-GZ_ADD_PLUGIN(DopplerVelocityLogSystem,
+GZ_ADD_PLUGIN(MultibeamSonarSystem,
   System,
-  DopplerVelocityLogSystem::ISystemConfigure,
-  DopplerVelocityLogSystem::ISystemPreUpdate,
-  DopplerVelocityLogSystem::ISystemPostUpdate
+  MultibeamSonarSystem::ISystemConfigure,
+  MultibeamSonarSystem::ISystemPreUpdate,
+  MultibeamSonarSystem::ISystemPostUpdate
 )
 
-GZ_ADD_PLUGIN_ALIAS(DopplerVelocityLogSystem,
+GZ_ADD_PLUGIN_ALIAS(MultibeamSonarSystem,
   "gz::sim::systems::MultibeamSonarSystem"
 )

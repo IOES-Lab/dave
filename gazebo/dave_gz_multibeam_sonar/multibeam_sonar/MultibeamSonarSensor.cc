@@ -46,7 +46,7 @@
 #include <gz/rendering/GpuRays.hh>
 #include <gz/rendering/RayQuery.hh>
 
-#include <gz/sensors/DopplerVelocityLog.hh>
+#include "MultibeamSonarSensor.hh"
 #include <gz/sensors/GaussianNoiseModel.hh>
 #include <gz/sensors/Manager.hh>
 #include <gz/sensors/Noise.hh>
@@ -419,8 +419,8 @@ namespace gz
 
     using namespace gz::msgs;
 
-    /// \brief Implementation for DopplerVelocityLog
-    class DopplerVelocityLog::Implementation
+    /// \brief Implementation for MultibeamSonarSensor
+    class MultibeamSonarSensor::Implementation
     {
       /// \brief SDF DOM object
       public: sdf::ElementPtr sensorSdf;
@@ -442,17 +442,17 @@ namespace gz
       public: bool initialized = false;
 
       /// \brief Initialize DVL sensor
-      public: bool Initialize(DopplerVelocityLog *_sensor);
+      public: bool Initialize(MultibeamSonarSensor *_sensor);
 
       /// \brief Initialize beam arrangement for DVL sensor
       ///
       /// This primarily creates rendering sensors.
-      public: bool InitializeBeamArrangement(DopplerVelocityLog *_sensor);
+      public: bool InitializeBeamArrangement(MultibeamSonarSensor *_sensor);
 
       /// \brief Initialize tracking modes for DVL sensor
       ///
       /// This sets up bottom and/or water-mass tracking modes, as needed.
-      public: bool InitializeTrackingModes(DopplerVelocityLog *_sensor);
+      public: bool InitializeTrackingModes(MultibeamSonarSensor *_sensor);
 
       /// \brief Maximum range for DVL beams.
       public: double maximumRange;
@@ -584,7 +584,7 @@ namespace gz
       /// \param[in] _namespace Namespace to tell markers apart.
       /// \return tracking mode beam markers
       public: gz::msgs::Marker_V SetupBeamMarkers(
-          DopplerVelocityLog *_sensor,
+          MultibeamSonarSensor *_sensor,
           const std::string &_namespace);
 
       /// \brief Update beam markers based on tracking output
@@ -597,7 +597,7 @@ namespace gz
       /// \param[in] _trackingMessage Velocity estimate message.
       /// \param[inout] _beamMarkers Beam markers to update.
       public: void UpdateBeamMarkers(
-          DopplerVelocityLog *_sensor,
+          MultibeamSonarSensor *_sensor,
           const DVLVelocityTracking &_trackingMessage,
           gz::msgs::Marker_V *_beamMarkers);
 
@@ -615,20 +615,20 @@ namespace gz
     };
 
     //////////////////////////////////////////////////
-    DopplerVelocityLog::DopplerVelocityLog()
+    MultibeamSonarSensor::MultibeamSonarSensor()
       : dataPtr(new Implementation())
     {
     }
 
     //////////////////////////////////////////////////
-    DopplerVelocityLog::~DopplerVelocityLog()
+    MultibeamSonarSensor::~MultibeamSonarSensor()
     {
       this->dataPtr->depthConnection.reset();
       this->dataPtr->sceneChangeConnection.reset();
     }
 
     //////////////////////////////////////////////////
-    bool DopplerVelocityLog::Load(const sdf::Sensor &_sdf)
+    bool MultibeamSonarSensor::Load(const sdf::Sensor &_sdf)
     {
       if (!gz::sensors::RenderingSensor::Load(_sdf))
       {
@@ -653,21 +653,21 @@ namespace gz
         return false;
       }
       const auto type = elem->Get<std::string>("gz:type");
-      if (type != "dvl")
+      if (type != "multibeam_sonar")
       {
         gzerr << "Expected sensor [" << this->Name() << "] to be a "
                << "DVL but it is of '" << type << "' type. Aborting load."
                << std::endl;
         return false;
       }
-      if (!elem->HasElement("gz:dvl"))
+      if (!elem->HasElement("gz:multibeam_sonar"))
       {
-        gzerr << "Missing 'gz:dvl' configuration for "
+        gzerr << "Missing 'gz:multibeam_sonar' configuration for "
                << "sensor [" << this->Name() << "]. "
                << "Aborting load." << std::endl;
         return false;
       }
-      this->dataPtr->sensorSdf = elem->GetElement("gz:dvl");
+      this->dataPtr->sensorSdf = elem->GetElement("gz:multibeam_sonar");
 
       // Instantiate interfaces
       this->dataPtr->pub =
@@ -691,17 +691,17 @@ namespace gz
         }
       }
 
-      gzmsg << "Loaded [" << this->Name() << "] DVL sensor." << std::endl;
+      gzmsg << "Loaded [" << this->Name() << "] Multibeam Sonar sensor." << std::endl;
       this->dataPtr->sceneChangeConnection =
           gz::sensors::RenderingEvents::ConnectSceneChangeCallback(
-          std::bind(&DopplerVelocityLog::SetScene,
+          std::bind(&MultibeamSonarSensor::SetScene,
                     this, std::placeholders::_1));
 
       return true;
     }
 
     //////////////////////////////////////////////////
-    bool DopplerVelocityLog::Load(sdf::ElementPtr _sdf)
+    bool MultibeamSonarSensor::Load(sdf::ElementPtr _sdf)
     {
       sdf::Sensor sdfSensor;
       sdfSensor.Load(_sdf);
@@ -710,7 +710,7 @@ namespace gz
 
     //////////////////////////////////////////////////
     bool
-    DopplerVelocityLog::Implementation::Initialize(DopplerVelocityLog *_sensor)
+    MultibeamSonarSensor::Implementation::Initialize(MultibeamSonarSensor *_sensor)
     {
       gzmsg << "Initializing [" << _sensor->Name() << "] sensor." << std::endl;
       const auto dvlTypeName =
@@ -751,8 +751,8 @@ namespace gz
     }
 
     bool
-    DopplerVelocityLog::Implementation::
-    InitializeTrackingModes(DopplerVelocityLog *_sensor)
+    MultibeamSonarSensor::Implementation::
+    InitializeTrackingModes(MultibeamSonarSensor *_sensor)
     {
       sdf::ElementPtr trackingElement =
           this->sensorSdf->GetElement("tracking");
@@ -962,8 +962,8 @@ namespace gz
 
     //////////////////////////////////////////////////
     gz::msgs::Marker_V
-    DopplerVelocityLog::Implementation::SetupBeamMarkers(
-        DopplerVelocityLog *_sensor, const std::string &_namespace)
+    MultibeamSonarSensor::Implementation::SetupBeamMarkers(
+        MultibeamSonarSensor *_sensor, const std::string &_namespace)
     {
       constexpr double epsilon = std::numeric_limits<double>::epsilon();
       const std::chrono::steady_clock::duration lifetime =
@@ -1038,8 +1038,8 @@ namespace gz
 
     //////////////////////////////////////////////////
     bool
-    DopplerVelocityLog::Implementation::
-    InitializeBeamArrangement(DopplerVelocityLog *_sensor)
+    MultibeamSonarSensor::Implementation::
+    InitializeBeamArrangement(MultibeamSonarSensor *_sensor)
     {
       this->beams.clear();
       this->beamTargets.clear();
@@ -1222,7 +1222,7 @@ namespace gz
 
       this->depthConnection =
           this->depthSensor->ConnectNewGpuRaysFrame(
-              std::bind(&DopplerVelocityLog::Implementation::OnNewFrame, this,
+              std::bind(&MultibeamSonarSensor::Implementation::OnNewFrame, this,
                         std::placeholders::_1, std::placeholders::_2,
                         std::placeholders::_3, std::placeholders::_4,
                         std::placeholders::_5));
@@ -1232,13 +1232,13 @@ namespace gz
 
     //////////////////////////////////////////////////
     std::vector<gz::rendering::SensorPtr>
-    DopplerVelocityLog::RenderingSensors() const
+    MultibeamSonarSensor::RenderingSensors() const
     {
       return {this->dataPtr->depthSensor, this->dataPtr->imageSensor};
     }
 
     //////////////////////////////////////////////////
-    void DopplerVelocityLog::Implementation::OnNewFrame(
+    void MultibeamSonarSensor::Implementation::OnNewFrame(
         const float *_scan, unsigned int _width,
         unsigned int _height, unsigned int _channels,
         const std::string & /*_format*/)
@@ -1308,7 +1308,7 @@ namespace gz
     }
 
     /////////////////////////////////////////////////
-    void DopplerVelocityLog::SetScene(gz::rendering::ScenePtr _scene)
+    void MultibeamSonarSensor::SetScene(gz::rendering::ScenePtr _scene)
     {
       // APIs make it possible for the scene pointer to change
       if (this->Scene() != _scene)
@@ -1330,14 +1330,14 @@ namespace gz
     }
 
     //////////////////////////////////////////////////
-    void DopplerVelocityLog::SetWorldState(const WorldState &_state)
+    void MultibeamSonarSensor::SetWorldState(const WorldState &_state)
     {
       this->dataPtr->worldState = &_state;
     }
 
     //////////////////////////////////////////////////
     void
-    DopplerVelocityLog::SetEnvironmentalData(const EnvironmentalData &_data)
+    MultibeamSonarSensor::SetEnvironmentalData(const EnvironmentalData &_data)
     {
       if (this->dataPtr->waterMassModeSwitch)
       {
@@ -1393,16 +1393,16 @@ namespace gz
     }
 
     //////////////////////////////////////////////////
-    void DopplerVelocityLog::SetEntity(uint64_t _entityId)
+    void MultibeamSonarSensor::SetEntity(uint64_t _entityId)
     {
       this->dataPtr->entityId = _entityId;
     }
 
     //////////////////////////////////////////////////
     bool
-    DopplerVelocityLog::Update(const std::chrono::steady_clock::duration &)
+    MultibeamSonarSensor::Update(const std::chrono::steady_clock::duration &)
     {
-      GZ_PROFILE("DopplerVelocityLog::Update");
+      GZ_PROFILE("MultibeamSonarSensor::Update");
       if (!this->dataPtr->initialized || this->dataPtr->entityId == 0)
       {
         gzerr << "Not initialized, update ignored." << std::endl;
@@ -1451,7 +1451,7 @@ namespace gz
 
     //////////////////////////////////////////////////
     DVLVelocityTracking
-    DopplerVelocityLog::Implementation::TrackBottom(
+    MultibeamSonarSensor::Implementation::TrackBottom(
         const std::chrono::steady_clock::duration &_now,
         TrackingModeInfo *_info)
     {
@@ -1624,7 +1624,7 @@ namespace gz
 
     //////////////////////////////////////////////////
     DVLVelocityTracking
-    DopplerVelocityLog::Implementation::TrackWaterMass(
+    MultibeamSonarSensor::Implementation::TrackWaterMass(
         const std::chrono::steady_clock::duration &_now,
         TrackingModeInfo *_info)
     {
@@ -1853,10 +1853,10 @@ namespace gz
     }
 
     //////////////////////////////////////////////////
-    void DopplerVelocityLog::PostUpdate(
+    void MultibeamSonarSensor::PostUpdate(
         const std::chrono::steady_clock::duration &_now)
     {
-      GZ_PROFILE("DopplerVelocityLog::PostUpdate");
+      GZ_PROFILE("MultibeamSonarSensor::PostUpdate");
 
       if (!this->dataPtr->worldState)
       {
@@ -1981,8 +1981,8 @@ namespace gz
     }
 
     //////////////////////////////////////////////////
-    void DopplerVelocityLog::Implementation::UpdateBeamMarkers(
-        DopplerVelocityLog *_sensor,
+    void MultibeamSonarSensor::Implementation::UpdateBeamMarkers(
+        MultibeamSonarSensor *_sensor,
         const DVLVelocityTracking &_trackingMessage,
         gz::msgs::Marker_V *_beamMarkersMessage)
     {
@@ -2092,7 +2092,7 @@ namespace gz
     }
 
     //////////////////////////////////////////////////
-    bool DopplerVelocityLog::HasConnections() const
+    bool MultibeamSonarSensor::HasConnections() const
     {
       return this->dataPtr->pub && this->dataPtr->pub.HasConnections();
     }

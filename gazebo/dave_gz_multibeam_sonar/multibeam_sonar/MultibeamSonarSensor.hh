@@ -193,14 +193,14 @@ namespace gz
     /// reference frame in which all measurements are reported. Defaults to
     /// the identity transform.
     ///
-    /// Note the tethys::DopplerVelocityLogSystem plugin must be
+    /// Note the tethys::MultibeamSonarSensorSystem plugin must be
     /// loaded for these custom sensors to be picked up and setup.
-    class GZ_SENSORS_DVL_VISIBLE DopplerVelocityLog
+    class GZ_SENSORS_DVL_VISIBLE MultibeamSonarSensor
       : public gz::sensors::RenderingSensor
     {
-      public: DopplerVelocityLog();
+      public: MultibeamSonarSensor();
 
-      public: ~DopplerVelocityLog();
+      public: ~MultibeamSonarSensor();
 
       /// Inherits documentation from parent class
       public: virtual bool Load(const sdf::Sensor &_sdf) override;

@@ -32,18 +32,18 @@ inline namespace GZ_SIM_VERSION_NAMESPACE {
 namespace systems
 {
 
-/// \brief System that creates and updates DopplerVelocityLog (DVL) sensors.
-class DopplerVelocityLogSystem :
+/// \brief System that creates and updates MultibeamSonarSensor (DVL) sensors.
+class MultibeamSonarSystem :
   public System,
   public ISystemConfigure,
   public ISystemPreUpdate,
   public ISystemPostUpdate
 {
   /// \brief Constructor
-  public: explicit DopplerVelocityLogSystem();
+  public: explicit MultibeamSonarSystem();
 
   /// \brief Destructor
-  public: ~DopplerVelocityLogSystem();
+  public: ~MultibeamSonarSystem();
 
   // Documentation inherited
   public: void Configure(
