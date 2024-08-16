@@ -7,6 +7,7 @@
 #include "dave_gz_world_plugins_msgs/msgs/StratifiedCurrentVelocity.pb.h"
 
 // #include <cmath>
+#include <gz/math/Vector4.hh>
 #include <map>
 #include <string>
 #include <vector>
@@ -32,7 +33,6 @@ class UnderwaterCurrentPlugin : public gz::sim::System,
 // public gz::sim::WorldPlugin
 
 {
-  /// \brief Class constructor
 public:
   UnderwaterCurrentPlugin();
   ~UnderwaterCurrentPlugin();
@@ -69,6 +69,52 @@ public:
 
   /// \brief Publish stratified oceqan current velocity
   void PublishStratifiedCurrentVelocity();
+
+  struct SharedData
+  {
+    dave_gz_world_plugins::GaussMarkovProcess currentHorzAngleModel;
+    /// \brief Gauss-Markov process instance for the current velocity
+    dave_gz_world_plugins::GaussMarkovProcess currentVelModel;
+    dave_gz_world_plugins::GaussMarkovProcess currentVertAngleModel;
+
+    /// \brief Vector for read stratified current database values
+    std::vector<gz::math::Vector3d> stratifiedDatabase;  // check
+    std::vector<std::vector<dave_gz_world_plugins::GaussMarkovProcess>> stratifiedCurrentModels;
+    bool tidalHarmonicFlag;
+
+    /// \brief Current linear velocity vector
+    gz::math::Vector3d currentVelocity;
+
+    /// \brief Vector of current depth-specific linear velocity vectors
+    std::vector<gz::math::Vector4d> currentStratifiedVelocity;
+
+    double M2_amp;
+    double M2_phase;
+    double M2_speed;
+    double S2_amp;
+    double S2_phase;
+    double S2_speed;
+    double N2_amp;
+    double N2_phase;
+    double N2_speed;
+
+    /// \brief Tidal oscillation mean ebb direction
+    double ebbDirection;
+
+    /// \brief Tidal oscillation mean flood direction
+    double floodDirection;
+
+    /// \brief Tidal oscillation world start time (GMT)
+    int world_start_time_day;
+    int world_start_time_month;
+    int world_start_time_year;
+    int world_start_time_hour;
+    int world_start_time_minute;
+
+    std::vector<std::array<int, 5>> dateGMT;
+    std::vector<double> speedcmsec;
+  };
+  std::unique_ptr<SharedData> sharedDataPtr;
 
 private:
   // std::shared_ptr<rclcpp::Node> ros_node_;

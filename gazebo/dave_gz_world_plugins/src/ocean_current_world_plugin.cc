@@ -34,6 +34,7 @@ GZ_ADD_PLUGIN(
 
 namespace dave_gz_world_plugins
 {
+
 struct UnderwaterCurrentPlugin::PrivateData
 {
   gz::sim::World world{gz::sim::kNullEntity};
@@ -65,45 +66,8 @@ struct UnderwaterCurrentPlugin::PrivateData
   /// \brief Tidal Oscillation Database file path for txt file
   std::string tidalFilePath;
 
-  /// \brief Vector for read stratified current database values
-  std::vector<gz::math::Vector3d> stratifiedDatabase;
-
   /// \brief Namespace for topics and services
   std::string ns;
-
-  /// \brief Gauss-Markov process instance for the current velocity
-  dave_gz_world_plugins::GaussMarkovProcess currentVelModel;
-
-  /// \brief Gauss-Markov process instance for horizontal angle model
-  dave_gz_world_plugins::GaussMarkovProcess currentHorzAngleModel;
-  dave_gz_world_plugins::GaussMarkovProcess currentVertAngleModel;
-  std::vector<std::vector<dave_gz_world_plugins::GaussMarkovProcess>> stratifiedCurrentModels;
-  std::vector<std::array<int, 5>> dateGMT;
-  std::vector<double> speedcmsec;
-  bool tidalHarmonicFlag;
-
-  double M2_amp;
-  double M2_phase;
-  double M2_speed;
-  double S2_amp;
-  double S2_phase;
-  double S2_speed;
-  double N2_amp;
-  double N2_phase;
-  double N2_speed;
-
-  /// \brief Tidal oscillation mean ebb direction
-  double ebbDirection;
-
-  /// \brief Tidal oscillation mean flood direction
-  double floodDirection;
-
-  /// \brief Tidal oscillation world start time (GMT)
-  int world_start_time_day;
-  int world_start_time_month;
-  int world_start_time_year;
-  int world_start_time_hour;
-  int world_start_time_minute;
 
   /// \brief Tidal Oscillation flag
   bool tideFlag;
@@ -114,12 +78,6 @@ struct UnderwaterCurrentPlugin::PrivateData
   /// \brief Last update time stamp
   std::chrono::steady_clock::duration lastUpdate{0};
 
-  /// \brief Current linear velocity vector
-  gz::math::Vector3d currentVelocity;
-
-  /// \brief Vector of current depth-specific linear velocity vectors
-  std::vector<gz::math::Vector4d> currentStratifiedVelocity;
-
   /// \brief File path for stratified current database
   std::string db_path;
 
@@ -127,7 +85,11 @@ struct UnderwaterCurrentPlugin::PrivateData
 };
 
 /////////////////////////////////////////////////
-UnderwaterCurrentPlugin::UnderwaterCurrentPlugin() : dataPtr(std::make_unique<PrivateData>()) {}
+UnderwaterCurrentPlugin::UnderwaterCurrentPlugin()
+: dataPtr(std::make_unique<PrivateData>()), sharedDataPtr(std::make_unique<SharedData>())
+{
+  // this->sharedDataPtr = std::make_unique<SharedData>();
+}
 
 /////////////////////////////////////////////////
 UnderwaterCurrentPlugin::~UnderwaterCurrentPlugin() { this->dataPtr->rosNode.reset(); }
@@ -159,9 +121,12 @@ void UnderwaterCurrentPlugin::Configure(
 
   LoadGlobalCurrentConfig();
   LoadStratifiedCurrentDatabase();
-  if (this->dataPtr->sdf->HasElement("tidal_oscillation"))
+  if (_sdf->HasElement("tidal_oscillation"))
   {
-    LoadTidalOscillationDatabase();
+    if (_sdf->Get<bool>("tidal_oscillation"))
+    {
+      LoadTidalOscillationDatabase();
+    }
   }
 
   // Connect the update event. This isn't needed it seems (check)
@@ -177,7 +142,7 @@ void UnderwaterCurrentPlugin::Configure(
 void UnderwaterCurrentPlugin::LoadTidalOscillationDatabase()
 {
   this->dataPtr->tideFlag = true;
-  this->dataPtr->tidalHarmonicFlag = false;
+  this->sharedDataPtr->tidalHarmonicFlag = false;
 
   sdf::ElementPtr tidalOscillationParams =
     this->dataPtr->sdf->GetElement("tidal_oscillation");  // include this xml/ (TODO)
@@ -195,7 +160,7 @@ void UnderwaterCurrentPlugin::LoadTidalOscillationDatabase()
     {
       tidalHarmonicParams = tidalOscillationParams->GetElement("harmonic_constituents");
       gzmsg << "Tidal harmonic constituents " << "configuration found" << std::endl;
-      this->dataPtr->tidalHarmonicFlag = true;
+      this->sharedDataPtr->tidalHarmonicFlag = true;
     }
     else
     {
@@ -211,8 +176,8 @@ void UnderwaterCurrentPlugin::LoadTidalOscillationDatabase()
   {
     sdf::ElementPtr elem = tidalOscillationParams->GetElement("mean_direction");
     GZ_ASSERT(elem->HasElement("ebb"), "Tidal mean ebb direction not defined");
-    this->dataPtr->ebbDirection = elem->Get<double>("ebb");
-    this->dataPtr->floodDirection = elem->Get<double>("flood");
+    this->sharedDataPtr->ebbDirection = elem->Get<double>("ebb");
+    this->sharedDataPtr->floodDirection = elem->Get<double>("flood");
     GZ_ASSERT(elem->HasElement("flood"), "Tidal mean flood direction not defined");
   }
 
@@ -224,48 +189,51 @@ void UnderwaterCurrentPlugin::LoadTidalOscillationDatabase()
   {
     sdf::ElementPtr elem = tidalOscillationParams->GetElement("world_start_time_GMT");
     GZ_ASSERT(elem->HasElement("day"), "World start time (day) not defined");
-    this->dataPtr->world_start_time_day = elem->Get<double>("day");
+    this->sharedDataPtr->world_start_time_day = elem->Get<double>("day");
     GZ_ASSERT(elem->HasElement("month"), "World start time (month) not defined");
-    this->dataPtr->world_start_time_month = elem->Get<double>("month");
+    this->sharedDataPtr->world_start_time_month = elem->Get<double>("month");
     GZ_ASSERT(elem->HasElement("year"), "World start time (year) not defined");
-    this->dataPtr->world_start_time_year = elem->Get<double>("year");
+    this->sharedDataPtr->world_start_time_year = elem->Get<double>("year");
     GZ_ASSERT(elem->HasElement("hour"), "World start time (hour) not defined");
-    this->dataPtr->world_start_time_hour = elem->Get<double>("hour");
+    this->sharedDataPtr->world_start_time_hour = elem->Get<double>("hour");
     if (elem->HasElement("minute"))
     {
-      this->dataPtr->world_start_time_minute = elem->Get<double>("minute");
+      this->sharedDataPtr->world_start_time_minute = elem->Get<double>("minute");
     }
     else
     {
-      this->dataPtr->world_start_time_minute = 0;
+      this->sharedDataPtr->world_start_time_minute = 0;
     }
   }
 
-  if (this->dataPtr->tidalHarmonicFlag)
+  if (this->sharedDataPtr->tidalHarmonicFlag)
   {
     // Read harmonic constituents
     GZ_ASSERT(tidalHarmonicParams->HasElement("M2"), "Harcomnic constituents M2 not found");
     sdf::ElementPtr M2Params = tidalHarmonicParams->GetElement("M2");
-    this->dataPtr->M2_amp = M2Params->Get<double>("amp");
-    this->dataPtr->M2_phase = M2Params->Get<double>("phase");
-    this->dataPtr->M2_speed = M2Params->Get<double>("speed");
+    this->sharedDataPtr->M2_amp = M2Params->Get<double>("amp");
+    this->sharedDataPtr->M2_phase = M2Params->Get<double>("phase");
+    this->sharedDataPtr->M2_speed = M2Params->Get<double>("speed");
     GZ_ASSERT(tidalHarmonicParams->HasElement("S2"), "Harcomnic constituents S2 not found");
     sdf::ElementPtr S2Params = tidalHarmonicParams->GetElement("S2");
-    this->dataPtr->S2_amp = S2Params->Get<double>("amp");
-    this->dataPtr->S2_phase = S2Params->Get<double>("phase");
-    this->dataPtr->S2_speed = S2Params->Get<double>("speed");
+    this->sharedDataPtr->S2_amp = S2Params->Get<double>("amp");
+    this->sharedDataPtr->S2_phase = S2Params->Get<double>("phase");
+    this->sharedDataPtr->S2_speed = S2Params->Get<double>("speed");
     GZ_ASSERT(tidalHarmonicParams->HasElement("N2"), "Harcomnic constituents N2 not found");
     sdf::ElementPtr N2Params = tidalHarmonicParams->GetElement("N2");
-    this->dataPtr->N2_amp = N2Params->Get<double>("amp");
-    this->dataPtr->N2_phase = N2Params->Get<double>("phase");
-    this->dataPtr->N2_speed = N2Params->Get<double>("speed");
+    this->sharedDataPtr->N2_amp = N2Params->Get<double>("amp");
+    this->sharedDataPtr->N2_phase = N2Params->Get<double>("phase");
+    this->sharedDataPtr->N2_speed = N2Params->Get<double>("speed");
     gzmsg << "Tidal harmonic constituents loaded : " << std::endl;
-    gzmsg << "M2 amp: " << this->dataPtr->M2_amp << " phase: " << this->dataPtr->M2_phase
-          << " speed: " << this->dataPtr->M2_speed << std::endl;
-    gzmsg << "S2 amp: " << this->dataPtr->S2_amp << " phase: " << this->dataPtr->S2_phase
-          << " speed: " << this->dataPtr->S2_speed << std::endl;
-    gzmsg << "N2 amp: " << this->dataPtr->N2_amp << " phase: " << this->dataPtr->N2_phase
-          << " speed: " << this->dataPtr->N2_speed << std::endl;
+    gzmsg << "M2 amp: " << this->sharedDataPtr->M2_amp
+          << " phase: " << this->sharedDataPtr->M2_phase
+          << " speed: " << this->sharedDataPtr->M2_speed << std::endl;
+    gzmsg << "S2 amp: " << this->sharedDataPtr->S2_amp
+          << " phase: " << this->sharedDataPtr->S2_phase
+          << " speed: " << this->sharedDataPtr->S2_speed << std::endl;
+    gzmsg << "N2 amp: " << this->sharedDataPtr->N2_amp
+          << " phase: " << this->sharedDataPtr->N2_phase
+          << " speed: " << this->sharedDataPtr->N2_speed << std::endl;
   }
   else
   {
@@ -307,21 +275,22 @@ void UnderwaterCurrentPlugin::LoadTidalOscillationDatabase()
         tmpDateArray[2] = std::stoi(row[0].substr(8, 10));
         tmpDateArray[3] = std::stoi(row[0].substr(11, 13));
         tmpDateArray[4] = std::stoi(row[0].substr(14, 16));
-        this->dataPtr->dateGMT.push_back(tmpDateArray);
+        this->sharedDataPtr->dateGMT.push_back(tmpDateArray);
 
-        this->dataPtr->speedcmsec.push_back(stold(row[2], &sz));
+        this->sharedDataPtr->speedcmsec.push_back(stold(row[2], &sz));
       }
     }
     csvFile.close();
 
     // Eliminate data with same consecutive type
     std::vector<int> duplicated;
-    for (int i = 0; i < this->dataPtr->dateGMT.size() - 1; i++)
+    for (int i = 0; i < this->sharedDataPtr->dateGMT.size() - 1; i++)
     {
       // delete latter if same sign
       if (
-        ((this->dataPtr->speedcmsec[i] > 0) - (this->dataPtr->speedcmsec[i] < 0)) ==
-        ((this->dataPtr->speedcmsec[i + 1] > 0) - (this->dataPtr->speedcmsec[i + 1] < 0)))
+        ((this->sharedDataPtr->speedcmsec[i] > 0) - (this->sharedDataPtr->speedcmsec[i] < 0)) ==
+        ((this->sharedDataPtr->speedcmsec[i + 1] > 0) -
+         (this->sharedDataPtr->speedcmsec[i + 1] < 0)))
       {
         duplicated.push_back(i + 1);
       }
@@ -329,9 +298,10 @@ void UnderwaterCurrentPlugin::LoadTidalOscillationDatabase()
     int eraseCount = 0;
     for (int i = 0; i < duplicated.size(); i++)
     {
-      this->dataPtr->dateGMT.erase(this->dataPtr->dateGMT.begin() + duplicated[i] - eraseCount);
-      this->dataPtr->speedcmsec.erase(
-        this->dataPtr->speedcmsec.begin() + duplicated[i] - eraseCount);
+      this->sharedDataPtr->dateGMT.erase(
+        this->sharedDataPtr->dateGMT.begin() + duplicated[i] - eraseCount);
+      this->sharedDataPtr->speedcmsec.erase(
+        this->sharedDataPtr->speedcmsec.begin() + duplicated[i] - eraseCount);
       eraseCount++;
     }
   }
@@ -417,7 +387,7 @@ void UnderwaterCurrentPlugin::LoadStratifiedCurrentDatabase()
     read.X() = row[0];
     read.Y() = row[1];
     read.Z() = row[2];
-    this->dataPtr->stratifiedDatabase.push_back(read);
+    this->sharedDataPtr->stratifiedDatabase.push_back(read);
 
     // Create Gauss-Markov processes for the stratified currents
     // Means are the database-specified magnitudes & angles, and
@@ -426,10 +396,10 @@ void UnderwaterCurrentPlugin::LoadStratifiedCurrentDatabase()
     dave_gz_world_plugins::GaussMarkovProcess magnitudeModel;
     magnitudeModel.mean = hypot(row[1], row[0]);
     magnitudeModel.var = magnitudeModel.mean;
-    magnitudeModel.max = this->dataPtr->currentVelModel.max;
+    magnitudeModel.max = this->sharedDataPtr->currentVelModel.max;
     magnitudeModel.min = 0.0;
-    magnitudeModel.mu = this->dataPtr->currentVelModel.mu;
-    magnitudeModel.noiseAmp = this->dataPtr->currentVelModel.noiseAmp;
+    magnitudeModel.mu = this->sharedDataPtr->currentVelModel.mu;
+    magnitudeModel.noiseAmp = this->sharedDataPtr->currentVelModel.noiseAmp;
     // magnitudeModel.lastUpdate = this->dataPtr->lastUpdate;
     magnitudeModel.lastUpdate = std::chrono::duration<double>(this->dataPtr->lastUpdate).count();
 
@@ -438,8 +408,8 @@ void UnderwaterCurrentPlugin::LoadStratifiedCurrentDatabase()
     hAngleModel.var = hAngleModel.mean;
     hAngleModel.max = M_PI;
     hAngleModel.min = -M_PI;
-    hAngleModel.mu = this->dataPtr->currentHorzAngleModel.mu;
-    hAngleModel.noiseAmp = this->dataPtr->currentHorzAngleModel.noiseAmp;
+    hAngleModel.mu = this->sharedDataPtr->currentHorzAngleModel.mu;
+    hAngleModel.noiseAmp = this->sharedDataPtr->currentHorzAngleModel.noiseAmp;
     hAngleModel.lastUpdate = std::chrono::duration<double>(this->dataPtr->lastUpdate).count();
 
     dave_gz_world_plugins::GaussMarkovProcess vAngleModel;
@@ -447,15 +417,15 @@ void UnderwaterCurrentPlugin::LoadStratifiedCurrentDatabase()
     vAngleModel.var = vAngleModel.mean;
     vAngleModel.max = M_PI / 2.0;
     vAngleModel.min = -M_PI / 2.0;
-    vAngleModel.mu = this->dataPtr->currentVertAngleModel.mu;
-    vAngleModel.noiseAmp = this->dataPtr->currentVertAngleModel.noiseAmp;
+    vAngleModel.mu = this->sharedDataPtr->currentVertAngleModel.mu;
+    vAngleModel.noiseAmp = this->sharedDataPtr->currentVertAngleModel.noiseAmp;
     vAngleModel.lastUpdate = std::chrono::duration<double>(this->dataPtr->lastUpdate).count();
 
     std::vector<dave_gz_world_plugins::GaussMarkovProcess> depthModels;
     depthModels.push_back(magnitudeModel);
     depthModels.push_back(hAngleModel);
     depthModels.push_back(vAngleModel);
-    this->dataPtr->stratifiedCurrentModels.push_back(depthModels);
+    this->sharedDataPtr->stratifiedCurrentModels.push_back(depthModels);
   }
   csvFile.close();
 
@@ -497,45 +467,46 @@ void UnderwaterCurrentPlugin::LoadGlobalCurrentConfig()
     sdf::ElementPtr elem = currentVelocityParams->GetElement("velocity");
     if (elem->HasElement("mean"))
     {
-      this->dataPtr->currentVelModel.mean = elem->Get<double>("mean");
+      this->sharedDataPtr->currentVelModel.mean = elem->Get<double>("mean");
     }
     if (elem->HasElement("min"))
     {
-      this->dataPtr->currentVelModel.min = elem->Get<double>("min");
+      this->sharedDataPtr->currentVelModel.min = elem->Get<double>("min");
     }
     if (elem->HasElement("max"))
     {
-      this->dataPtr->currentVelModel.max = elem->Get<double>("max");
+      this->sharedDataPtr->currentVelModel.max = elem->Get<double>("max");
     }
     if (elem->HasElement("mu"))
     {
-      this->dataPtr->currentVelModel.mu = elem->Get<double>("mu");
+      this->sharedDataPtr->currentVelModel.mu = elem->Get<double>("mu");
     }
     if (elem->HasElement("noiseAmp"))
     {
-      this->dataPtr->currentVelModel.noiseAmp = elem->Get<double>("noiseAmp");
+      this->sharedDataPtr->currentVelModel.noiseAmp = elem->Get<double>("noiseAmp");
     }
 
     GZ_ASSERT(
-      this->dataPtr->currentVelModel.min < this->dataPtr->currentVelModel.max,
+      this->sharedDataPtr->currentVelModel.min < this->sharedDataPtr->currentVelModel.max,
       "Invalid current velocity limits");
     GZ_ASSERT(
-      this->dataPtr->currentVelModel.mean >= this->dataPtr->currentVelModel.min,
+      this->sharedDataPtr->currentVelModel.mean >= this->sharedDataPtr->currentVelModel.min,
       "Mean velocity must be greater than minimum");
     GZ_ASSERT(
-      this->dataPtr->currentVelModel.mean <= this->dataPtr->currentVelModel.max,
+      this->sharedDataPtr->currentVelModel.mean <= this->sharedDataPtr->currentVelModel.max,
       "Mean velocity must be smaller than maximum");
     GZ_ASSERT(
-      this->dataPtr->currentVelModel.mu >= 0 && this->dataPtr->currentVelModel.mu < 1,
+      this->sharedDataPtr->currentVelModel.mu >= 0 && this->sharedDataPtr->currentVelModel.mu < 1,
       "Invalid process constant");
     GZ_ASSERT(
-      this->dataPtr->currentVelModel.noiseAmp < 1 && this->dataPtr->currentVelModel.noiseAmp >= 0,
+      this->sharedDataPtr->currentVelModel.noiseAmp < 1 &&
+        this->sharedDataPtr->currentVelModel.noiseAmp >= 0,
       "Noise amplitude has to be smaller than 1");
   }
 
-  this->dataPtr->currentVelModel.var = this->dataPtr->currentVelModel.mean;
+  this->sharedDataPtr->currentVelModel.var = this->sharedDataPtr->currentVelModel.mean;
   gzmsg << "Current velocity [m/s] Gauss-Markov process model:" << std::endl;
-  this->dataPtr->currentVelModel.Print();
+  this->sharedDataPtr->currentVelModel.Print();
 
   if (currentVelocityParams->HasElement("horizontal_angle"))
   {
@@ -543,46 +514,50 @@ void UnderwaterCurrentPlugin::LoadGlobalCurrentConfig()
 
     if (elem->HasElement("mean"))
     {
-      this->dataPtr->currentHorzAngleModel.mean = elem->Get<double>("mean");
+      this->sharedDataPtr->currentHorzAngleModel.mean = elem->Get<double>("mean");
     }
     if (elem->HasElement("min"))
     {
-      this->dataPtr->currentHorzAngleModel.min = elem->Get<double>("min");
+      this->sharedDataPtr->currentHorzAngleModel.min = elem->Get<double>("min");
     }
     if (elem->HasElement("max"))
     {
-      this->dataPtr->currentHorzAngleModel.max = elem->Get<double>("max");
+      this->sharedDataPtr->currentHorzAngleModel.max = elem->Get<double>("max");
     }
     if (elem->HasElement("mu"))
     {
-      this->dataPtr->currentHorzAngleModel.mu = elem->Get<double>("mu");
+      this->sharedDataPtr->currentHorzAngleModel.mu = elem->Get<double>("mu");
     }
     if (elem->HasElement("noiseAmp"))
     {
-      this->dataPtr->currentHorzAngleModel.noiseAmp = elem->Get<double>("noiseAmp");
+      this->sharedDataPtr->currentHorzAngleModel.noiseAmp = elem->Get<double>("noiseAmp");
     }
 
     GZ_ASSERT(
-      this->dataPtr->currentHorzAngleModel.min < this->dataPtr->currentHorzAngleModel.max,
+      this->sharedDataPtr->currentHorzAngleModel.min <
+        this->sharedDataPtr->currentHorzAngleModel.max,
       "Invalid current horizontal angle limits");
     GZ_ASSERT(
-      this->dataPtr->currentHorzAngleModel.mean >= this->dataPtr->currentHorzAngleModel.min,
+      this->sharedDataPtr->currentHorzAngleModel.mean >=
+        this->sharedDataPtr->currentHorzAngleModel.min,
       "Mean horizontal angle must be greater than minimum");
     GZ_ASSERT(
-      this->dataPtr->currentHorzAngleModel.mean <= this->dataPtr->currentHorzAngleModel.max,
+      this->sharedDataPtr->currentHorzAngleModel.mean <=
+        this->sharedDataPtr->currentHorzAngleModel.max,
       "Mean horizontal angle must be smaller than maximum");
     GZ_ASSERT(
-      this->dataPtr->currentHorzAngleModel.mu >= 0 && this->dataPtr->currentHorzAngleModel.mu < 1,
+      this->sharedDataPtr->currentHorzAngleModel.mu >= 0 &&
+        this->sharedDataPtr->currentHorzAngleModel.mu < 1,
       "Invalid process constant");
     GZ_ASSERT(
-      this->dataPtr->currentHorzAngleModel.noiseAmp < 1 &&
-        this->dataPtr->currentHorzAngleModel.noiseAmp >= 0,
+      this->sharedDataPtr->currentHorzAngleModel.noiseAmp < 1 &&
+        this->sharedDataPtr->currentHorzAngleModel.noiseAmp >= 0,
       "Noise amplitude for horizontal angle has to be between 0 and 1");
   }
 
-  this->dataPtr->currentHorzAngleModel.var = this->dataPtr->currentHorzAngleModel.mean;
+  this->sharedDataPtr->currentHorzAngleModel.var = this->sharedDataPtr->currentHorzAngleModel.mean;
   gzmsg << "Current velocity horizontal angle [rad] Gauss-Markov process model:" << std::endl;
-  this->dataPtr->currentHorzAngleModel.Print();
+  this->sharedDataPtr->currentHorzAngleModel.Print();
 
   if (currentVelocityParams->HasElement("vertical_angle"))
   {
@@ -590,52 +565,56 @@ void UnderwaterCurrentPlugin::LoadGlobalCurrentConfig()
 
     if (elem->HasElement("mean"))
     {
-      this->dataPtr->currentVertAngleModel.mean = elem->Get<double>("mean");
+      this->sharedDataPtr->currentVertAngleModel.mean = elem->Get<double>("mean");
     }
     if (elem->HasElement("min"))
     {
-      this->dataPtr->currentVertAngleModel.min = elem->Get<double>("min");
+      this->sharedDataPtr->currentVertAngleModel.min = elem->Get<double>("min");
     }
     if (elem->HasElement("max"))
     {
-      this->dataPtr->currentVertAngleModel.max = elem->Get<double>("max");
+      this->sharedDataPtr->currentVertAngleModel.max = elem->Get<double>("max");
     }
     if (elem->HasElement("mu"))
     {
-      this->dataPtr->currentVertAngleModel.mu = elem->Get<double>("mu");
+      this->sharedDataPtr->currentVertAngleModel.mu = elem->Get<double>("mu");
     }
     if (elem->HasElement("noiseAmp"))
     {
-      this->dataPtr->currentVertAngleModel.noiseAmp = elem->Get<double>("noiseAmp");
+      this->sharedDataPtr->currentVertAngleModel.noiseAmp = elem->Get<double>("noiseAmp");
     }
 
     GZ_ASSERT(
-      this->dataPtr->currentVertAngleModel.min < this->dataPtr->currentVertAngleModel.max,
+      this->sharedDataPtr->currentVertAngleModel.min <
+        this->sharedDataPtr->currentVertAngleModel.max,
       "Invalid current vertical angle limits");
     GZ_ASSERT(
-      this->dataPtr->currentVertAngleModel.mean >= this->dataPtr->currentVertAngleModel.min,
+      this->sharedDataPtr->currentVertAngleModel.mean >=
+        this->sharedDataPtr->currentVertAngleModel.min,
       "Mean vertical angle must be greater than minimum");
     GZ_ASSERT(
-      this->dataPtr->currentVertAngleModel.mean <= this->dataPtr->currentVertAngleModel.max,
+      this->sharedDataPtr->currentVertAngleModel.mean <=
+        this->sharedDataPtr->currentVertAngleModel.max,
       "Mean vertical angle must be smaller than maximum");
     GZ_ASSERT(
-      this->dataPtr->currentVertAngleModel.mu >= 0 && this->dataPtr->currentVertAngleModel.mu < 1,
+      this->sharedDataPtr->currentVertAngleModel.mu >= 0 &&
+        this->sharedDataPtr->currentVertAngleModel.mu < 1,
       "Invalid process constant");
     GZ_ASSERT(
-      this->dataPtr->currentVertAngleModel.noiseAmp < 1 &&
-        this->dataPtr->currentVertAngleModel.noiseAmp >= 0,
+      this->sharedDataPtr->currentVertAngleModel.noiseAmp < 1 &&
+        this->sharedDataPtr->currentVertAngleModel.noiseAmp >= 0,
       "Noise amplitude for vertical angle has to be between 0 and 1");
   }
 
-  this->dataPtr->currentVertAngleModel.var = this->dataPtr->currentVertAngleModel.mean;
+  this->sharedDataPtr->currentVertAngleModel.var = this->sharedDataPtr->currentVertAngleModel.mean;
   gzmsg << "Current velocity vertical angle [rad] Gauss-Markov process model:" << std::endl;
-  this->dataPtr->currentVertAngleModel.Print();
+  this->sharedDataPtr->currentVertAngleModel.Print();
 
-  this->dataPtr->currentVelModel.lastUpdate =
+  this->sharedDataPtr->currentVelModel.lastUpdate =
     std::chrono::duration<double>(this->dataPtr->lastUpdate).count();
-  this->dataPtr->currentHorzAngleModel.lastUpdate =
+  this->sharedDataPtr->currentHorzAngleModel.lastUpdate =
     std::chrono::duration<double>(this->dataPtr->lastUpdate).count();
-  this->dataPtr->currentVertAngleModel.lastUpdate =
+  this->sharedDataPtr->currentVertAngleModel.lastUpdate =
     std::chrono::duration<double>(this->dataPtr->lastUpdate).count();
 
   // Advertise the current velocity & stratified current velocity topics
@@ -650,9 +629,10 @@ void UnderwaterCurrentPlugin::PublishCurrentVelocity()
 {
   gz::msgs::Vector3d currentVel;
   gz::msgs::Set(
-    &currentVel, gz::math::Vector3d(
-                   this->dataPtr->currentVelocity.X(), this->dataPtr->currentVelocity.Y(),
-                   this->dataPtr->currentVelocity.Z()));
+    &currentVel,
+    gz::math::Vector3d(
+      this->sharedDataPtr->currentVelocity.X(), this->sharedDataPtr->currentVelocity.Y(),
+      this->sharedDataPtr->currentVelocity.Z()));
   this->dataPtr->gz_node_cvel_world_pub.Publish(currentVel);
 }
 
@@ -661,8 +641,8 @@ void UnderwaterCurrentPlugin::PublishStratifiedCurrentVelocity()
 {
   dave_gz_world_plugins_msgs::msgs::StratifiedCurrentVelocity currentVel;  // check
   for (std::vector<gz::math::Vector4d>::iterator it =
-         this->dataPtr->currentStratifiedVelocity.begin();
-       it != this->dataPtr->currentStratifiedVelocity.end();
+         this->sharedDataPtr->currentStratifiedVelocity.begin();
+       it != this->sharedDataPtr->currentStratifiedVelocity.end();
        ++it)  // currentStratifiedVelocity values defined where ? (TODO)
   {
     gz::msgs::Set(currentVel.add_velocity(), gz::math::Vector3d(it->X(), it->Y(), it->Z()));
@@ -692,30 +672,30 @@ void UnderwaterCurrentPlugin::Update(
   // model
 
   // Update current velocity
-  double currentVelMag = this->dataPtr->currentVelModel.Update(time);
+  double currentVelMag = this->sharedDataPtr->currentVelModel.Update(time);
   // Update current horizontal direction around z axis of flow frame
-  double horzAngle = this->dataPtr->currentHorzAngleModel.Update(time);
+  double horzAngle = this->sharedDataPtr->currentHorzAngleModel.Update(time);
 
   // Update current horizontal direction around z axis of flow frame
-  double vertAngle = this->dataPtr->currentVertAngleModel.Update(time);
+  double vertAngle = this->sharedDataPtr->currentVertAngleModel.Update(time);
 
   // Generating the current velocity vector as in the North-East-Down frame
-  this->dataPtr->currentVelocity = gz::math::Vector3d(
+  this->sharedDataPtr->currentVelocity = gz::math::Vector3d(
     currentVelMag * cos(horzAngle) * cos(vertAngle),
     currentVelMag * sin(horzAngle) * cos(vertAngle), currentVelMag * sin(vertAngle));
 
   // Generate the depth-specific velocities
-  this->dataPtr->currentStratifiedVelocity.clear();
-  for (int i = 0; i < this->dataPtr->stratifiedDatabase.size(); i++)
+  this->sharedDataPtr->currentStratifiedVelocity.clear();
+  for (int i = 0; i < this->sharedDataPtr->stratifiedDatabase.size(); i++)
   {
-    double depth = this->dataPtr->stratifiedDatabase[i].Z();
-    currentVelMag = this->dataPtr->stratifiedCurrentModels[i][0].Update(time);
-    horzAngle = this->dataPtr->stratifiedCurrentModels[i][1].Update(time);
-    vertAngle = this->dataPtr->stratifiedCurrentModels[i][2].Update(time);
+    double depth = this->sharedDataPtr->stratifiedDatabase[i].Z();
+    currentVelMag = this->sharedDataPtr->stratifiedCurrentModels[i][0].Update(time);
+    horzAngle = this->sharedDataPtr->stratifiedCurrentModels[i][1].Update(time);
+    vertAngle = this->sharedDataPtr->stratifiedCurrentModels[i][2].Update(time);
     gz::math::Vector4d depthVel(
       currentVelMag * cos(horzAngle) * cos(vertAngle),
       currentVelMag * sin(horzAngle) * cos(vertAngle), currentVelMag * sin(vertAngle), depth);
-    this->dataPtr->currentStratifiedVelocity.push_back(depthVel);
+    this->sharedDataPtr->currentStratifiedVelocity.push_back(depthVel);
   }
 }
 

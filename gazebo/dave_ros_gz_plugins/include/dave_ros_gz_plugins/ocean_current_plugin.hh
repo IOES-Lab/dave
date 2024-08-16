@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 
+#include "dave_gz_world_plugins/ocean_current_world_plugin.hh"
 #include "dave_interfaces/msg/Stratified_Current_Database.hpp"
 #include "dave_interfaces/msg/Stratified_Current_Velocity.hpp"
 #include "dave_interfaces/srv/Get_Current_Model.hpp"
@@ -19,7 +20,6 @@
 #include "dave_interfaces/srv/Set_Origin_Spherical_Coord.hpp"
 #include "dave_interfaces/srv/Set_Stratified_Current_Direction.hpp"
 #include "dave_interfaces/srv/Set_Stratified_Current_Velocity.hpp"
-// #include <dave_gz_world_plugins/ocean_current_world_plugin.hh>
 
 // #include "dave_interfaces/srv/Stratified_Current_Database.hpp"
 // #include "dave_interfaces/srv/Stratified_Current_Velocity.hpp"
@@ -28,7 +28,6 @@ namespace dave_ros_gz_plugins
 {
 class UnderwaterCurrentROSPlugin : public gz::sim::System,
                                    public gz::sim::ISystemConfigure,
-                                   public gz::sim::ISystemPreUpdate,
                                    public gz::sim::ISystemPostUpdate
 {
 public:
