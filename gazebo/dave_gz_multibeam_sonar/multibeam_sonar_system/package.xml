@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?><package format="3">
-  <name>multibeam_sonar_system_plugin</name>
+  <name>multibeam_sonar_system</name>
   <version>0.0.0</version>
   <description>DAVE sensor plugins</description>
+  <maintainer email="woensug.choi@gmail.com">Woen-Sug Choi</maintainer>
   <maintainer email="gaurav.og.9920@gmail.com">Gaurav kumar</maintainer>
   <maintainer email="helenamoyen@gmail.com">Helena Moyen</maintainer>
   <license>Apache 2.0</license>
