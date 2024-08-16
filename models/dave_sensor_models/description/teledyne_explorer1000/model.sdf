@@ -4,12 +4,12 @@
   <include>
     <pose degrees="true">0 0 0 0 0 0</pose>
     <uri>https://fuel.gazebosim.org/1.0/hmoyen/models/teledyne_explorer1000_bare_model</uri>
+
     <experimental:params>
       <sensor
           element_id="explorer_base_link" action="add"
-          name="teledyne_pathfinder_dvl"
+          name="teledyne_explorer1000"
           type="custom" gz:type="dvl">
-        <pose degrees="true">-0.60 0 -0.16 0 0 180</pose>
         <always_on>1</always_on>
         <update_rate>1</update_rate>
         <topic>/dvl/velocity</topic>
@@ -56,7 +56,10 @@
         </gz:dvl>
       </sensor>
     </experimental:params>
-
+		<!-- <plugin
+			filename="gz-sim-sensors-system"
+			name="gz::sim::systems::Sensors">
+    	</plugin> -->
     <plugin
       filename="DVLBridge"
       name="dave_ros_gz_plugins::DVLBridge">

@@ -18,7 +18,71 @@
       <velocity_decay/>
       <gravity>1</gravity>
       <velocity_decay/>
-      <!-- Removed sensor -->
+
+      <sensor
+        name="nortek_dvl500_300" type="custom"
+        gz:type="dvl">
+        <pose>0 0 0 0 0 0</pose>
+        <always_on>1</always_on>
+        <update_rate>8</update_rate>
+        <topic>/dvl/velocity</topic>
+        <gz:dvl>
+          <type>phased_array</type>
+          <arrangement degrees="true">
+            <beam id="1">
+              <aperture>3</aperture>
+              <rotation>-135</rotation>
+              <tilt>25</tilt>
+            </beam>
+            <beam>
+              <aperture>3</aperture>
+              <rotation>135</rotation>
+              <tilt>25</tilt>
+            </beam>
+            <beam>
+              <aperture>3</aperture>
+              <rotation>45</rotation>
+              <tilt>25</tilt>
+            </beam>
+            <beam>
+              <aperture>3</aperture>
+              <rotation>-45</rotation>
+              <tilt>25</tilt>
+            </beam>
+          </arrangement>
+          <tracking>
+            <!-- <water_mass_mode>
+              <when>best</when>
+              <water_velocity>
+                <x>0.</x>
+                <y>0.</y>
+                <z>0.</z>
+              </water_velocity>
+              <boundaries>
+                <near>20.</near>
+                <far>60.</far>
+              </boundaries>
+              <bins>10</bins>
+              <noise type="gaussian">
+                <stddev>0.015</stddev>
+              </noise>
+              <visualize>false</visualize>
+            </water_mass_mode> -->
+            <bottom_mode>
+              <when>best</when>
+              <noise type="gaussian">
+                <stddev>0.015</stddev>
+              </noise>
+              <visualize>true</visualize>
+            </bottom_mode>
+          </tracking>
+          <maximum_range>200.</maximum_range>
+          <minimum_range>0.3</minimum_range>
+          <!-- ENU to SFM -->
+          <reference_frame>0 0 0 0 0 -1.570796</reference_frame>
+        </gz:dvl>
+      </sensor>
+
       <self_collide>0</self_collide>
       <enable_wind>0</enable_wind>
       <kinematic>0</kinematic>
@@ -91,7 +155,12 @@
         </surface>
       </collision>
     </link>
-    <static>0</static>
-    <allow_auto_disable>1</allow_auto_disable>
+
+    <plugin
+      filename="DVLBridge"
+      name="dave_ros_gz_plugins::DVLBridge">
+      <topic>/dvl/velocity</topic>
+    </plugin>
+
   </model>
 </sdf>
