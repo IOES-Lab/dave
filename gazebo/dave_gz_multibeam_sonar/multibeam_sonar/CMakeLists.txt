@@ -13,15 +13,26 @@ set(GZ_RENDERING_VER ${gz-rendering8_VERSION_MAJOR})
 set(GZ_SENSORS_VER ${gz-sensors8_VERSION_MAJOR})
 set(GZ_TRANSPORT_VER ${gz-transport13_VERSION_MAJOR})
 
+if (TARGET gz-rendering${GZ_RENDERING_VER}::ogre)
+  set(HAVE_OGRE TRUE)
+  add_definitions(-DWITH_OGRE)
+endif()
+
+if (TARGET gz-rendering${GZ_RENDERING_VER}::ogre2)
+  set(HAVE_OGRE2 TRUE)
+  add_definitions(-DWITH_OGRE2)
+endif()
+
 set (gz_sensor_sources
-  gz_sensor/PointCloudUtil.cc
   gz_sensor/CameraSensor.cc
-  gz_sensor/RenderingSensor.cc
-  gz_sensor/RenderingEvents.cc
+  gz_sensor/CameraSensorUtil.cc
   gz_sensor/ImageBrownDistortionModel.cc
   gz_sensor/ImageDistortion.cc
   gz_sensor/ImageGaussianNoiseModel.cc
   gz_sensor/ImageNoise.cc
+  gz_sensor/PointCloudUtil.cc
+  gz_sensor/RenderingEvents.cc
+  gz_sensor/RenderingSensor.cc
 )
 
 add_library(${PROJECT_NAME}

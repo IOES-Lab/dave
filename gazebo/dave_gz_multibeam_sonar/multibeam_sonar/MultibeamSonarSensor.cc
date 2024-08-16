@@ -29,13 +29,17 @@
 #include <gz/math/Helpers.hh>
 
 #include <gz/msgs/Utility.hh>
+#include <gz/rendering/Utils.hh>
 #include <gz/transport/Node.hh>
 
-#include "gz/sensors/Manager.hh"
-#include "gz/sensors/SensorFactory.hh"
-#include "gz/sensors/ImageGaussianNoiseModel.hh"
-#include "gz/sensors/ImageNoise.hh"
-#include "gz/sensors/RenderingEvents.hh"
+#include <gz/sensors/DepthCameraSensor.hh>
+#include <gz/sensors/Manager.hh>
+#include <gz/sensors/SensorFactory.hh>
+#include <gz/sensors/ImageGaussianNoiseModel.hh>
+#include <gz/sensors/ImageNoise.hh>
+#include <gz/sensors/RenderingEvents.hh>
+#include <gz/sensors/Noise.hh>
+#include <gz/sensors/Util.hh>
 
 #include "MultibeamSonarSensor.hh"
 
@@ -152,21 +156,79 @@ bool MultibeamSonarSensor::Load(const sdf::Sensor &_sdf)
     return false;
   }
 
+  if (_sdf.CameraSensor() == nullptr)
+  {
+    gzerr << "_sdf.CameraSensor() == nullptr" << std::endl;
+  }
+
   // Check if this is the right type
   if (_sdf.Type() != sdf::SensorType::CUSTOM)
   {
     gzerr << "Attempting to a load a custom sensor, but received "
       << "a " << _sdf.TypeStr() << std::endl;
   }
-  
-  // if (_sdf.CameraSensor() == nullptr)
-  // {
-  //   gzerr << "Attempting to a load a Depth Camera sensor, but received "
-  //     << "a null sensor." << std::endl;
-  //   return false;
-  // }
 
-  this->dataPtr->sdfSensor = _sdf;
+  auto type = gz::sensors::customType(_sdf);
+  if ("multibeam_sonar" != type)
+  {
+    gzerr << "Trying to load [multibeam_sonar] sensor, but got type ["
+           << type << "] instead." << std::endl;
+    return false;
+  }
+
+  // Additional debug information
+  sdf::ElementPtr cameraSensorSDFElementPtr = _sdf.Element();
+  sdf::Sensor depthCameraSDF;
+  if (!_sdf.Element()->HasElement("camera"))
+  {
+    gzerr << "The <camera> element is not found in the SDF." << std::endl;
+  }
+  else
+  {
+    gzerr << "The <camera> element is found in the SDF." << std::endl;
+    // Create an sdf::Camera object and populate it with the camera element
+    sdf::ElementPtr cameraElem = _sdf.Element()->GetElement("camera");
+    // Ensure the camera element is valid before loading
+    if (cameraElem == nullptr)
+    {
+        gzerr << "Camera element is null." << std::endl;
+        return false;
+    }
+
+    // Now create a CameraSensor using the sdf::Camera object
+
+    gzerr << "---------------------1-------------------------" << std::endl;
+    // auto cameraSensor = std::make_shared<gz::sensors::Sensor>();
+    sdf::ElementPtr cameraSensorSDFElementPtr = _sdf.Element();
+    gzerr << "----------------------2------------------------" << std::endl;
+    cameraSensorSDFElementPtr->GetAttribute("type")->SetFromString("depth_camera");
+    // auto depthCamera = std::dynamic_pointer_cast<gz::sensors::Sensor>(cameraSensorSDFElementPtr);
+    // Initialize the sdf::Sensor object
+    sdf::Errors errors = depthCameraSDF.Load(cameraSensorSDFElementPtr);
+    if (!errors.empty())
+    {
+        for (const auto &err : errors)
+        {
+            gzerr << "Error: " << err.Message() << std::endl;
+        }
+        gzerr << "Failed to load CameraSensor." << std::endl;
+        return false;
+    }
+    gzerr << "----------------------3------------------------" << std::endl;
+
+    if (depthCameraSDF.CameraSensor() == nullptr)
+    {
+      gzerr << "depthCameraSDF.CameraSensor() == nullptr" << std::endl;
+    }
+
+    // cameraSensor->GetAttribute("type")->SetFromString("depth_camera");
+    // auto depthCamera = std::dynamic_pointer_cast<gz::sensors::CameraSensor>(cameraSensor);
+    gzerr << "----------------------4------------------------" << std::endl;
+  }
+
+  gzerr << "----------------------4------------------------" << std::endl;
+  
+  this->dataPtr->sdfSensor = depthCameraSDF;
 
   if (this->Topic().empty())
     this->SetTopic("/camera/depth");
@@ -184,9 +246,10 @@ bool MultibeamSonarSensor::Load(const sdf::Sensor &_sdf)
   gzdbg << "Depth images for [" << this->Name() << "] advertised on ["
          << this->Topic() << "]" << std::endl;
 
-  if (_sdf.CameraSensor()->Triggered())
+    gzerr << "----------------------5------------------------" << std::endl;
+  if (depthCameraSDF.CameraSensor()->Triggered())
   {
-    std::string triggerTopic = _sdf.CameraSensor()->TriggerTopic();
+    std::string triggerTopic = depthCameraSDF.CameraSensor()->TriggerTopic();
     if (triggerTopic.empty())
     {
       triggerTopic = gz::transport::TopicUtils::AsValidTopic(this->Topic() +
@@ -195,6 +258,7 @@ bool MultibeamSonarSensor::Load(const sdf::Sensor &_sdf)
     this->SetTriggered(true, triggerTopic);
   }
 
+  gzerr << "----------------------6------------------------" << std::endl;
   if (!this->AdvertiseInfo())
     return false;
 
@@ -209,19 +273,30 @@ bool MultibeamSonarSensor::Load(const sdf::Sensor &_sdf)
     return false;
   }
 
+  gzerr << "----------------------7------------------------" << std::endl;
   gzdbg << "Points for [" << this->Name() << "] advertised on ["
          << this->Topic() << "/points]" << std::endl;
 
+
+  gzerr << this->Scene() << std::endl;
+  gzerr << this->RenderingCamera() << std::endl;
+  gzerr << gz::sensors::RenderingSensor::Scene() << std::endl;
+
+
   if (this->Scene())
+  // if (this->dataPtr->scene)
   {
+    gzerr << "----------------------77777777------------------------" << std::endl;
     this->CreateCamera();
   }
 
+    gzerr << "----------------------8------------------------" << std::endl;
   this->dataPtr->sceneChangeConnection =
       gz::sensors::RenderingEvents::ConnectSceneChangeCallback(
       std::bind(&MultibeamSonarSensor::SetScene, this, std::placeholders::_1));
 
   this->dataPtr->initialized = true;
+    gzerr << "----------------------9------------------------" << std::endl;
 
   return true;
 }
@@ -229,23 +304,25 @@ bool MultibeamSonarSensor::Load(const sdf::Sensor &_sdf)
 //////////////////////////////////////////////////
 bool MultibeamSonarSensor::CreateCamera()
 {
+    gzerr << "----------------------7---------1---------------" << std::endl;
   sdf::Camera *cameraSdf = this->dataPtr->sdfSensor.CameraSensor();
 
+    gzerr << "----------------------7---------2---------------" << std::endl;
   if (!cameraSdf)
   {
     gzerr << "Unable to access camera SDF element\n";
     return false;
   }
 
+    gzerr << "----------------------7---------3---------------" << std::endl;
   int width = cameraSdf->ImageWidth();
   int height = cameraSdf->ImageHeight();
 
   double far = cameraSdf->FarClip();
   double near = cameraSdf->NearClip();
 
-
-  this->dataPtr->depthCamera = this->Scene()->CreateDepthCamera(
-      this->Name());
+    gzerr << "----------------------7-----------4-------------" << std::endl;
+  this->dataPtr->depthCamera = this->Scene()->CreateDepthCamera(this->Name());
   this->dataPtr->depthCamera->SetImageWidth(width);
   this->dataPtr->depthCamera->SetImageHeight(height);
   this->dataPtr->depthCamera->SetNearClipPlane(near);
@@ -254,10 +331,12 @@ bool MultibeamSonarSensor::CreateCamera()
       cameraSdf->VisibilityMask());
   this->dataPtr->depthCamera->SetLocalPose(this->Pose());
   this->AddSensor(this->dataPtr->depthCamera);
+    gzerr << "----------------------7--------5----------------" << std::endl;
 
   const std::map<gz::sensors::SensorNoiseType, sdf::Noise> noises = {
     {gz::sensors::CAMERA_NOISE, cameraSdf->ImageNoise()},
   };
+    gzerr << "----------------------7---------6---------------" << std::endl;
 
   for (const auto & [noiseType, noiseSdf] : noises)
   {
@@ -287,6 +366,7 @@ bool MultibeamSonarSensor::CreateCamera()
     }
   }
 
+    gzerr << "----------------------7----------7--------------" << std::endl;
   // Near clip plane not set because we need to be able to detect occlusion
   // from objects before near clip plane
   this->dataPtr->near = near;
@@ -323,6 +403,7 @@ bool MultibeamSonarSensor::CreateCamera()
     this->dataPtr->saveImagePrefix = this->Name() + "_";
     this->dataPtr->saveImage = true;
   }
+    gzerr << "----------------------7----------8--------------" << std::endl;
 
   this->PopulateInfo(cameraSdf);
 
@@ -438,11 +519,11 @@ bool MultibeamSonarSensor::Update(
     return false;
   }
 
-  if (!this->dataPtr->depthCamera)
-  {
-    gzerr << "Camera doesn't exist.\n";
-    return false;
-  }
+  // if (!this->dataPtr->depthCamera)
+  // {
+  //   gzerr << "Camera doesn't exist.\n";
+  //   return false;
+  // }
 
   if (this->HasInfoConnections())
   {

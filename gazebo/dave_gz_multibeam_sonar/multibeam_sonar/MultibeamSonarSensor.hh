@@ -41,13 +41,17 @@
 #include "gz/sensors/CameraSensor.hh"
 #include "gz/sensors/Export.hh"
 #include "gz/sensors/Sensor.hh"
+
 #include <gz/sensors/SensorTypes.hh>
 #include <gz/transport/Node.hh>
 
 #include "./gz_sensor/PointCloudUtil.hh"
+#include "./gz_sensor/CameraSensorUtil.hh"
 
 namespace custom
 {
+
+  inline namespace GZ_SENSORS_VERSION_NAMESPACE {
   /// \brief Private data for MultibeamSonarSensor
   class MultibeamSonarSensorPrivate
   {
@@ -146,7 +150,8 @@ namespace custom
 
   /// \brief Example sensor that publishes the total distance travelled by a
   /// robot, with noise.
-  class MultibeamSonarSensor : public gz::sensors::CameraSensor
+  class GZ_SENSORS_DEPTH_CAMERA_VISIBLE MultibeamSonarSensor
+    : public gz::sensors::CameraSensor
   {
     /// \brief constructor
     public: MultibeamSonarSensor();
@@ -260,6 +265,7 @@ namespace custom
     private: std::unique_ptr<MultibeamSonarSensorPrivate> dataPtr;
     GZ_UTILS_WARN_RESUME__DLL_INTERFACE_MISSING
   };
+  }
 }
 
 #endif

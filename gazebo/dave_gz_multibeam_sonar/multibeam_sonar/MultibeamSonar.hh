@@ -25,7 +25,7 @@ namespace custom
 {
   /// \brief Example sensor that publishes the total distance travelled by a
   /// robot, with noise.
-  class MultibeamSonar : public gz::sensors::Sensor
+  class MultibeamSonar : public gz::sensors::CameraSensor
   {
     /// \brief Load the sensor with SDF parameters.
     /// \param[in] _sdf SDF Sensor parameters.
