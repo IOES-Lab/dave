@@ -15,10 +15,6 @@
       name="gz::sim::systems::Sensors">
       <render_engine>ogre2</render_engine>
     </plugin>
-    <!-- <plugin
-      filename="MultibeamSonarSystem"
-      name="custom::MultibeamSonarSystem">
-    </plugin> -->
     <plugin
       filename="multibeam_sonar_system_plugin"
       name="custom::MultibeamSonar">
@@ -271,7 +267,7 @@
       </link>
     </model>
 
-    <model name="depth_camera_alone">
+    <model name="depth_camera">
       <pose>2.5 0 1.5 0 0.0 3.14</pose>
       <link name="link">
         <pose>0.05 0.05 0.05 0 0 0</pose>
@@ -297,24 +293,6 @@
             </box>
           </geometry>
         </visual>
-        <sensor name="cameras_alone" type="camera">
-          <camera>
-            <horizontal_fov>1.047</horizontal_fov>
-            <image>
-              <width>320</width>
-              <height>240</height>
-            </image>
-            <clip>
-              <near>0.1</near>
-              <far>100</far>
-            </clip>
-          </camera>
-          <always_on>1</always_on>
-          <update_rate>30</update_rate>
-          <visualize>true</visualize>
-          <topic>camera_alone</topic>
-          <enable_metrics>true</enable_metrics>
-        </sensor>
         <sensor name="depth_camera" type="depth_camera">
           <update_rate>10</update_rate>
           <topic>depth_camera</topic>
@@ -345,23 +323,38 @@
           </gz:multibeam_sonar>
         </sensor> -->
 
-        <sensor name="multibeam_sonar" type="custom" gz:type="multibeam_sonar">
-          <update_rate>10</update_rate>
-          <topic>sonar</topic>
-          <enable_metrics>true</enable_metrics>
-          <camera>
-            <horizontal_fov>1.05</horizontal_fov>
-            <image>
-              <width>320</width>
-              <height>240</height>
-              <format>R_FLOAT32</format>
-            </image>
-            <clip>
-              <near>0.1</near>
-              <far>10.0</far>
-            </clip>
-          </camera>
+        <sensor name="an_odometer" type="custom" gz:type="odometer">
+          <always_on>1</always_on>
+          <update_rate>30</update_rate>
+          <visualize>true</visualize>
+          <gz:odometer>
+            <noise type="gaussian">
+              <mean>0.00001</mean>
+              <stddev>0.00001</stddev>
+            </noise>
+          </gz:odometer>
         </sensor>
+
+        <!-- <sensor name="multibeam_sonar" type="custom" gz:type="multibeam_sonar">
+          <gz:multibeam_sonar>
+            <update_rate>10</update_rate>
+            <topic>sonar</topic>
+            <enable_metrics>true</enable_metrics>
+            <camera>
+              <horizontal_fov>1.05</horizontal_fov>
+              <image>
+                <width>320</width>
+                <height>240</height>
+                <format>R_FLOAT32</format>
+              </image>
+              <clip>
+                <near>0.1</near>
+                <far>10.0</far>
+              </clip>
+            </camera>
+          </gz:multibeam_sonar>
+        </sensor> -->
+        
       </link>
       <static>true</static>
     </model>

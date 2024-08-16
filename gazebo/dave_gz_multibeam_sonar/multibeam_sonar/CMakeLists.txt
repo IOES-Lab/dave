@@ -3,61 +3,57 @@ project(multibeam_sonar)
 
 find_package(ament_cmake REQUIRED)
 find_package(gz-cmake3 REQUIRED)
+find_package(gz-sim8 REQUIRED)
 find_package(gz-sensors8 REQUIRED)
-gz_find_package(gz-rendering8 REQUIRED OPTIONAL_COMPONENTS ogre ogre2)
-gz_find_package(gz-transport13 REQUIRED)
+find_package(gz-rendering8 REQUIRED OPTIONAL_COMPONENTS ogre ogre2)
+find_package(gz-transport13 REQUIRED)
 
 # Set version variables
 set(GZ_MSGS_VER ${gz-msgs10_VERSION_MAJOR})
 set(GZ_RENDERING_VER ${gz-rendering8_VERSION_MAJOR})
 set(GZ_SENSORS_VER ${gz-sensors8_VERSION_MAJOR})
 set(GZ_TRANSPORT_VER ${gz-transport13_VERSION_MAJOR})
+set(GZ_SIM_VER ${gz-sim8_VERSION_MAJOR})
 
 if (TARGET gz-rendering${GZ_RENDERING_VER}::ogre)
   set(HAVE_OGRE TRUE)
+  set(GZ_RENDERING_TARGET gz-rendering${GZ_RENDERING_VER}-ogre)
   add_definitions(-DWITH_OGRE)
 endif()
 
 if (TARGET gz-rendering${GZ_RENDERING_VER}::ogre2)
   set(HAVE_OGRE2 TRUE)
+  set(GZ_RENDERING_TARGET gz-rendering${GZ_RENDERING_VER}-ogre2)
   add_definitions(-DWITH_OGRE2)
 endif()
-
-set (gz_sensor_sources
-  gz_sensor/CameraSensor.cc
-  gz_sensor/CameraSensorUtil.cc
-  gz_sensor/ImageBrownDistortionModel.cc
-  gz_sensor/ImageDistortion.cc
-  gz_sensor/ImageGaussianNoiseModel.cc
-  gz_sensor/ImageNoise.cc
-  gz_sensor/PointCloudUtil.cc
-  gz_sensor/RenderingEvents.cc
-  gz_sensor/RenderingSensor.cc
-)
 
 add_library(${PROJECT_NAME}
   SHARED 
     MultibeamSonarSensor.cc
-    ${gz_sensor_sources}
 )
 
-target_link_libraries(${PROJECT_NAME}
-  PUBLIC
-    gz-sensors${GZ_SENSORS_VER}::gz-sensors${GZ_SENSORS_VER}
-    gz-rendering${GZ_RENDERING_VER}::gz-rendering${GZ_RENDERING_VER}
-    gz-msgs${GZ_MSGS_VER}::gz-msgs${GZ_MSGS_VER}
-    gz-transport${GZ_TRANSPORT_VER}::gz-transport${GZ_TRANSPORT_VER}
-  )
-
 # Ensure that the CameraSensor class is available
-target_include_directories(${PROJECT_NAME} PUBLIC ${gz-sensors${GZ_SENSORS_VER}_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME} 
+  PUBLIC
+  ${gz-sensors${GZ_SENSORS_VER}_INCLUDE_DIRS}
+  ${gz-rendering${GZ_RENDERING_VER}_INCLUDE_DIRS}
+  ${gz-msgs${GZ_MSGS_VER}_INCLUDE_DIRS}
+  ${gz-transport${GZ_TRANSPORT_VER}_INCLUDE_DIRS}
+  ${gz-sim${GZ_SIM_VER}_INCLUDE_DIRS}
+)
 
 # Install targets
 install(TARGETS ${PROJECT_NAME}
   DESTINATION lib/${PROJECT_NAME}
 )
 
-ament_target_dependencies(${PROJECT_NAME})
+ament_target_dependencies(${PROJECT_NAME}
+  gz-sensors${GZ_SENSORS_VER}
+  ${GZ_RENDERING_TARGET}
+  gz-msgs${GZ_MSGS_VER}
+  gz-transport${GZ_TRANSPORT_VER}
+  gz-sim${GZ_SIM_VER}
+)
 
 # Environment hooks
 ament_environment_hooks(

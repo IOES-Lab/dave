@@ -65,7 +65,7 @@ void MultibeamSonarSystemPlugin::PreUpdate(const gz::sim::UpdateInfo &,
         }
 
         gz::sensors::SensorFactory sensorFactory;
-        auto sensor = sensorFactory.CreateSensor<custom::MultibeamSonarSensor>(data);
+        auto sensor = sensorFactory.CreateSensor<custom::MirroredCamera>(data);
         if (nullptr == sensor)
         {
           gzerr << "Failed to create Multibeam Sonar Sensor [" << sensorScopedName << "]"
