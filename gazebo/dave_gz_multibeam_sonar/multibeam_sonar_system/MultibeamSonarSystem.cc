@@ -722,12 +722,12 @@ void MultibeamSonarSystem::PostUpdate(
 }
 
 GZ_ADD_PLUGIN(MultibeamSonarSystem,
-  System,
+  gz::sim::System,
   MultibeamSonarSystem::ISystemConfigure,
   MultibeamSonarSystem::ISystemPreUpdate,
   MultibeamSonarSystem::ISystemPostUpdate
 )
 
 GZ_ADD_PLUGIN_ALIAS(MultibeamSonarSystem,
-  "gz::sim::systems::MultibeamSonarSystem"
+  "custom::MultibeamSonarSystem"
 )

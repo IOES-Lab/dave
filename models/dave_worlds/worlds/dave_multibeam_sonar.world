@@ -25,7 +25,7 @@
     </plugin>
     <plugin
       filename="multibeam_sonar_system"
-      name="gz::sim::systems::MultibeamSonarSystem">
+      name="custom::MultibeamSonarSystem">
     </plugin>
 
     <gui fullscreen="0">
@@ -265,6 +265,7 @@
           <topic>camera</topic>
         </sensor>
       </link>
+      <static>true</static>
     </model>
 
     <model name="depth_camera">
