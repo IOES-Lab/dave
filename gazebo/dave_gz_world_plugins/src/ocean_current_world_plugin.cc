@@ -128,11 +128,10 @@ void UnderwaterCurrentPlugin::Configure(
       LoadTidalOscillationDatabase();
     }
   }
-
-  // Connect the update event. This isn't needed it seems (check)
-  //   this->dataPtr->updateConnection = event::Events::ConnectWorldUpdateBegin(
-  //     boost::bind(&UnderwaterCurrentPlugin::Update,
-  //     this, _1));
+  else
+  {
+    gzmsg << "Tidal oscillation not enabled" << std::endl;
+  }
 
   gzmsg << "Underwater current plugin loaded!" << std::endl
         << "\tWARNING: Current velocity calculated in the ENU frame" << std::endl;
@@ -148,7 +147,7 @@ void UnderwaterCurrentPlugin::LoadTidalOscillationDatabase()
     this->dataPtr->sdf->GetElement("tidal_oscillation");  // include this xml/ (TODO)
   sdf::ElementPtr tidalHarmonicParams;
 
-  // Read the tidal oscillation parameter from the SDF file // (TO DO)(TO UNDERSTAND)
+  // Read the tidal oscillation parameter from the SDF file // (TODO)(TO UNDERSTAND)
   if (tidalOscillationParams->HasElement("databasefilePath"))
   {
     this->dataPtr->tidalFilePath = tidalOscillationParams->Get<std::string>("databasefilePath");

@@ -24,7 +24,6 @@ namespace dave_gz_model_plugins
 {
 class TransientCurrentPlugin : public gz::sim::System,
                                public gz::sim::ISystemConfigure,
-                               public gz::sim::ISystemPreUpdate,
                                public gz::sim::ISystemUpdate,
                                public gz::sim::ISystemPostUpdate
 {
@@ -36,9 +35,6 @@ public:
   void Configure(
     const gz::sim::Entity & _entity, const std::shared_ptr<const sdf::Element> & _sdf,
     gz::sim::EntityComponentManager & _ecm, gz::sim::EventManager & _eventMgr);
-
-  // Function called before the simulation state updates
-  void PreUpdate(const gz::sim::UpdateInfo & _info, gz::sim::EntityComponentManager & _ecm);
 
   void Update(const gz::sim::UpdateInfo & _info, gz::sim::EntityComponentManager & _ecm);
 
@@ -68,9 +64,7 @@ public:
   /// \brief Calculate ocean current using database and vehicle state
   void CalculateOceanCurrent(double vehicleDepth);
 
-  void Gauss_Markov_process_initialize(
-    const gz::sim::Entity & _entity, const std::shared_ptr<const sdf::Element> & _sdf,
-    gz::sim::EntityComponentManager & _ecm, gz::sim::EventManager & _eventMgr);
+  void Gauss_Markov_process_initialize(const std::shared_ptr<const sdf::Element> & _sdf);
 
   /// \brief Convey model state from gazebo topic to outside
   void UpdateDatabase(const dave_interfaces::msg::StratifiedCurrentDatabase::ConstPtr & _msg);

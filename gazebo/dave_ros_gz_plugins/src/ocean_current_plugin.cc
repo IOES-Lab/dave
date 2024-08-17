@@ -1,8 +1,4 @@
 #include "dave_ros_gz_plugins/ocean_current_plugin.hh"
-#include "dave_gz_world_plugins/gauss_markov_process.hh"
-#include "dave_gz_world_plugins/ocean_current_world_plugin.hh"
-// #include "dave_gz_world_plugins/UnderwaterCurrentPlugin.hh"
-// #include <dave_gz_world_plugins_msgs/msgs/StratifiedCurrentVelocity.pb.h>
 #include <algorithm>
 #include <boost/shared_ptr.hpp>
 #include <chrono>
@@ -17,6 +13,8 @@
 #include <rclcpp/service.hpp>
 #include <std_msgs/msg/string.hpp>
 #include <vector>
+#include "dave_gz_world_plugins/gauss_markov_process.hh"
+#include "dave_gz_world_plugins/ocean_current_world_plugin.hh"
 
 #include "gz/plugin/Register.hh"
 #include "gz/sim/components/World.hh"
@@ -28,7 +26,6 @@ GZ_ADD_PLUGIN(
 
 namespace dave_ros_gz_plugins
 {
-;
 struct UnderwaterCurrentROSPlugin::PrivateData
 {
   // std::string db_path;  (check)(TODO)
