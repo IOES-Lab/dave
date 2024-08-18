@@ -213,7 +213,7 @@
         </visual>
       </link>
     </model>
-    
+
     <include>
       <pose>0 1 3 0.0 0.0 1.57</pose>
       <uri>
@@ -361,40 +361,24 @@
           <topic>/sensor/multibeam_sonar</topic>
           <visualize>true</visualize>
           <gz:multibeam_sonar>
-            <arrangement degrees="true">
-              <beam id="1">
-                <aperture>90</aperture>
-                <rotation>0</rotation>
-                <tilt>5</tilt>
-              </beam>
-              <beam id="2">
-                <aperture>90</aperture>
-                <rotation>90</rotation>
-                <tilt>5</tilt>
-              </beam>
-              <beam id="3">
-                <aperture>90</aperture>
-                <rotation>180</rotation>
-                <tilt>5</tilt>
-              </beam>
-              <beam id="4">
-                <aperture>90</aperture>
-                <rotation>270</rotation>
-                <tilt>5</tilt>
-              </beam>
-            </arrangement>
-            <tracking>
-              <bottom_mode>
-                <when>always</when>
-                <noise type="gaussian">
-                  <stddev>0.01</stddev>
-                </noise>
-                <visualize>true</visualize>
-              </bottom_mode>
-            </tracking>
-            <minimum_range>0.1</minimum_range>
-            <maximum_range>100.0</maximum_range>
-            <resolution>0.01</resolution>
+            <ray degrees="true">
+              <scan>
+                  <horizontal>
+                    <samples>256</samples>
+                    <min_angle>-0.78539816339</min_angle>
+                    <max_angle>0.78539816339</max_angle>
+                  </horizontal>
+                  <vertical>
+                    <rays>3</rays>
+                    <min_angle>-0.349066</min_angle>
+                    <max_angle>0.349066</max_angle>
+                  </vertical>
+              </scan>
+              <range>
+                  <min>0.1</min>
+                  <max>5.0</max>
+              </range>
+            </ray>
           </gz:multibeam_sonar>
         </sensor>
 

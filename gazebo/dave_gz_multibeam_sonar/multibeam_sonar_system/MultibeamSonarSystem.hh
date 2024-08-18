@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
 
-#ifndef GZ_SIM_SYSTEMS_DOPPLERVELOCITYLOGSYSTEM_HH_
-#define GZ_SIM_SYSTEMS_DOPPLERVELOCITYLOGSYSTEM_HH_
+#ifndef GZ_SIM_SYSTEMS_MULTIBEAMSONARSYSTEM_HH_
+#define GZ_SIM_SYSTEMS_MULTIBEAMSONARSYSTEM_HH_
 
 #include <memory>
 
@@ -28,40 +28,38 @@ namespace gz
 namespace sim
 {
 // Inline bracket to help doxygen filtering
-inline namespace GZ_SIM_VERSION_NAMESPACE {
+inline namespace GZ_SIM_VERSION_NAMESPACE
+{
 namespace systems
 {
 
 /// \brief System that creates and updates MultibeamSonarSensor (DVL) sensors.
-class MultibeamSonarSystem :
-  public System,
-  public ISystemConfigure,
-  public ISystemPreUpdate,
-  public ISystemPostUpdate
+class MultibeamSonarSystem : public System,
+                             public ISystemConfigure,
+                             public ISystemPreUpdate,
+                             public ISystemPostUpdate
 {
   /// \brief Constructor
-  public: explicit MultibeamSonarSystem();
+public:
+  explicit MultibeamSonarSystem();
 
   /// \brief Destructor
-  public: ~MultibeamSonarSystem();
+public:
+  ~MultibeamSonarSystem();
 
   // Documentation inherited
-  public: void Configure(
-      const Entity &_entity,
-      const std::shared_ptr<const sdf::Element> &_sdf,
-      EntityComponentManager &_ecm,
-      EventManager &_eventMgr
-  ) override;
+public:
+  void Configure(
+    const Entity & _entity, const std::shared_ptr<const sdf::Element> & _sdf,
+    EntityComponentManager & _ecm, EventManager & _eventMgr) override;
 
   // Documentation inherited
-  public: void PreUpdate(
-      const UpdateInfo &_info,
-      EntityComponentManager &_ecm) override;
+public:
+  void PreUpdate(const UpdateInfo & _info, EntityComponentManager & _ecm) override;
 
   // Documentation inherited
-  public: void PostUpdate(
-      const UpdateInfo &_info,
-      const EntityComponentManager &_ecm) override;
+public:
+  void PostUpdate(const UpdateInfo & _info, const EntityComponentManager & _ecm) override;
 
   /// \brief Pointer to private data
   GZ_UTILS_UNIQUE_IMPL_PTR(dataPtr)
