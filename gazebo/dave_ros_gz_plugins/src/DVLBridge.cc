@@ -33,6 +33,7 @@ namespace dave_ros_gz_plugins
 struct DVLBridge::PrivateData
 {
   // Add any private data members here.
+  std::mutex mutex_;
   gz::transport::Node gz_node;
   std::string dvl_topic;
   rclcpp::Publisher<dave_interfaces::msg::DVL>::SharedPtr dvl_pub;
@@ -64,10 +65,23 @@ void DVLBridge::Configure(
     this->dataPtr->dvl_topic = _sdf->Get<std::string>("topic");
     gzmsg << "dvl topic: " << this->dataPtr->dvl_topic << std::endl;
   }
+
+  // Gazebo subscriber
+  std::function<void(const gz::msgs::DVLVelocityTracking &)> callback =
+    std::bind(&DVLBridge::receiveGazeboCallback, this, std::placeholders::_1);
+
+  this->dataPtr->gz_node.Subscribe(this->dataPtr->dvl_topic, callback);
+
+  // ROS2 publisher
+  this->dataPtr->dvl_pub =
+    this->ros_node_->create_publisher<dave_interfaces::msg::DVL>(this->dataPtr->dvl_topic, 1);
+
 }
 
 void DVLBridge::receiveGazeboCallback(const gz::msgs::DVLVelocityTracking & msg)
 {
+  std::lock_guard<std::mutex> lock(this->dataPtr->mutex_);
+
   gzmsg << "dave_ros_gz_plugins::DVLBridge::receiveGazeboCallback" << std::endl;
 
   auto dvl_msg = dave_interfaces::msg::DVL();
@@ -174,15 +188,9 @@ void DVLBridge::PostUpdate(
   {
     rclcpp::spin_some(this->ros_node_);
 
-    // Gazebo subscriber
-    std::function<void(const gz::msgs::DVLVelocityTracking &)> callback =
-      std::bind(&DVLBridge::receiveGazeboCallback, this, std::placeholders::_1);
-
-    this->dataPtr->gz_node.Subscribe(this->dataPtr->dvl_topic, callback);
-
-    // ROS2 publisher
-    this->dataPtr->dvl_pub =
-      this->ros_node_->create_publisher<dave_interfaces::msg::DVL>(this->dataPtr->dvl_topic, 1);
+    if (_info.iterations % 1000 == 0){
+      gzmsg << "dave_ros_gz_plugins::DVLBridge::PostUpdate" << std::endl;
+    }
   }
 }
 

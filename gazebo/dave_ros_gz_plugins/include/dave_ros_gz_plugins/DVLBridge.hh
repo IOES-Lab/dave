@@ -18,13 +18,13 @@
 #ifndef DAVE_ROS_GZ_PLUGINS__DVLBRIDGE_HH_
 #define DAVE_ROS_GZ_PLUGINS__DVLBRIDGE_HH_
 
-#include <memory>
-
 #include <gz/msgs/dvl_velocity_tracking.pb.h>
 #include <gz/sim/System.hh>
 #include <rclcpp/rclcpp.hpp>
 #include "dave_interfaces/msg/dvl.hpp"
 #include "dave_interfaces/msg/dvl_beam.hpp"
+#include <memory>
+#include <mutex>
 
 namespace dave_ros_gz_plugins
 
