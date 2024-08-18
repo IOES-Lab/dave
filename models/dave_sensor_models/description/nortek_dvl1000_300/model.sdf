@@ -1,18 +1,18 @@
-<?xml version="1.0"?>
-<sdf version="1.7">
-  <model name="dvl500_300">
-    <link name="dvl500_base_link">
+<?xml version='1.0'?>
+<sdf version='1.7'>
+  <model name='nortek_dvl1000_300'>
+    <link name='dvl1000_base_link'>
       <pose>0 0 0 0 0 0</pose>
       <inertial>
         <pose>0 0 0 0 0 0</pose>
-        <mass>3.5</mass>
+        <mass>1.3</mass>
         <inertia>
-          <ixx>0.0195872</ixx>
+          <ixx>0.00376036</ixx>
           <ixy>0</ixy>
           <ixz>0</ixz>
-          <iyy>0.0195872</iyy>
+          <iyy>0.00376036</iyy>
           <iyz>0</iyz>
-          <izz>0.0151357</izz>
+          <izz>0.00211185</izz>
         </inertia>
       </inertial>
       <velocity_decay/>
@@ -20,7 +20,7 @@
       <velocity_decay/>
 
       <sensor
-        name="nortek_dvl500_300" type="custom"
+        name="nortek_dvl1000_300" type="custom"
         gz:type="dvl">
         <pose>0 0 0 0 0 0</pose>
         <always_on>1</always_on>
@@ -71,13 +71,13 @@
             <bottom_mode>
               <when>best</when>
               <noise type="gaussian">
-                <stddev>0.005</stddev>
+                <stddev>0.015</stddev>
               </noise>
               <visualize>true</visualize>
             </bottom_mode>
           </tracking>
-          <maximum_range>200.</maximum_range>
-          <minimum_range>0.3</minimum_range>
+          <maximum_range>75.</maximum_range>
+          <minimum_range>0.2</minimum_range>
           <!-- ENU to SFM -->
           <reference_frame>0 0 0 0 0 -1.570796</reference_frame>
         </gz:dvl>
@@ -86,26 +86,26 @@
       <self_collide>0</self_collide>
       <enable_wind>0</enable_wind>
       <kinematic>0</kinematic>
-      <visual name="dvl500_base_link_visual">
+      <visual name='dvl1000_base_link_visual'>
         <pose>0 0 0 0 0 3.14159</pose>
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
             <!-- Mesh is actually for a Nortek DVL1000-4000m for now -->
-            <uri>model://meshes/nortek_dvl500_300/DVL500-300m.dae</uri>
+            <uri>model://meshes/nortek_dvl1000_300/DVL1000-300m.dae</uri>
           </mesh>
         </geometry>
         <transparency>0</transparency>
         <cast_shadows>1</cast_shadows>
       </visual>
-      <collision name="dvl500_base_link_collision">
+      <collision name='dvl1000_base_link_collision'>
         <laser_retro>0</laser_retro>
         <max_contacts>10</max_contacts>
         <pose>0 0 0 3.14159 0 0</pose>
         <geometry>
           <cylinder>
-            <radius>0.093</radius>
-            <length>0.203</length>
+            <radius>0.057</radius>
+            <length>0.158</length>
           </cylinder>
         </geometry>
         <surface>

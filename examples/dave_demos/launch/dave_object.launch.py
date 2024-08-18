@@ -58,14 +58,14 @@ def launch_setup(context, *args, **kwargs):
         condition=IfCondition(gui),
     )
 
-    sensor_launch = IncludeLaunchDescription(
+    object_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             [
                 PathJoinSubstitution(
                     [
-                        FindPackageShare("dave_sensor_models"),
+                        FindPackageShare("dave_object_models"),
                         "launch",
-                        "upload_sensor_world.launch.py",
+                        "upload_object.launch.py",
                     ]
                 )
             ]
@@ -84,7 +84,7 @@ def launch_setup(context, *args, **kwargs):
         }.items(),
     )
 
-    return [gz_sim_launch, sensor_launch]
+    return [gz_sim_launch, object_launch]
 
 
 def generate_launch_description():

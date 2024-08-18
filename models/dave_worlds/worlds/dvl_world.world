@@ -43,10 +43,6 @@
 			name="gz::sim::systems::SceneBroadcaster">
 		</plugin>
 		<plugin
-			filename="ignition-gazebo-contact-system"
-			name="ignition::gazebo::systems::Contact">
-		</plugin>
-		<plugin
 			filename="gz-sim-sensors-system"
 			name="gz::sim::systems::Sensors">
     	</plugin>

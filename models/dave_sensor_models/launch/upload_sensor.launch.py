@@ -8,25 +8,32 @@ from launch_ros.actions import Node
 
 
 def generate_launch_description():
-    sensor_name = LaunchConfiguration("sensor_name")
-    use_sim = LaunchConfiguration("use_sim")
+    gui = LaunchConfiguration("gui")
+    use_sim_time = LaunchConfiguration("use_sim_time")
+    namespace = LaunchConfiguration("namespace")
     x = LaunchConfiguration("x")
     y = LaunchConfiguration("y")
     z = LaunchConfiguration("z")
-    roll = LaunchConfiguration("R")
-    pitch = LaunchConfiguration("P")
-    yaw = LaunchConfiguration("Y")
+    roll = LaunchConfiguration("roll")
+    pitch = LaunchConfiguration("pitch")
+    yaw = LaunchConfiguration("yaw")
+    use_ned_frame = LaunchConfiguration("use_ned_frame")
 
     args = [
         DeclareLaunchArgument(
-            "sensor_name",
-            default_value="",
-            description="Name of the sensor to load",
-        ),
-        DeclareLaunchArgument(
-            "use_sim",
+            "gui",
             default_value="true",
             description="Flag to indicate whether to use simulation",
+        ),
+        DeclareLaunchArgument(
+            "use_sim_time",
+            default_value="true",
+            description="Flag to indicate whether to use sim time",
+        ),
+        DeclareLaunchArgument(
+            "namespace",
+            default_value="",
+            description="Namespace",
         ),
         DeclareLaunchArgument(
             "x",
@@ -44,19 +51,24 @@ def generate_launch_description():
             description="Initial z position",
         ),
         DeclareLaunchArgument(
-            "R",
+            "roll",
             default_value="0.0",
             description="Initial roll",
         ),
         DeclareLaunchArgument(
-            "P",
+            "pitch",
             default_value="0.0",
             description="Initial pitch",
         ),
         DeclareLaunchArgument(
-            "Y",
+            "yaw",
             default_value="0.0",
             description="Initial yaw",
+        ),
+        DeclareLaunchArgument(
+            "use_ned_frame",
+            default_value="false",
+            description="Use North-East-Down frame",
         ),
     ]
 
@@ -64,9 +76,28 @@ def generate_launch_description():
         [
             FindPackageShare("dave_sensor_models"),
             "description",
-            sensor_name,
+            namespace,
             "model.sdf",
         ]
+    )
+
+    tf2_spawner = Node(
+        package="tf2_ros",
+        executable="static_transform_publisher",
+        name="world_to_world_ned",
+        arguments=[
+            "--roll",
+            "1.57",
+            "--yaw",
+            "3.14",
+            "--frame_id",
+            "world",
+            "--child_frame_id",
+            "world_ned",
+        ],
+        output="both",
+        condition=IfCondition(use_ned_frame),
+        parameters=[{"use_sim_time": use_sim_time}],
     )
 
     gz_spawner = Node(
@@ -74,7 +105,7 @@ def generate_launch_description():
         executable="create",
         arguments=[
             "-name",
-            sensor_name,
+            namespace,
             "-file",
             description_file,
             "-x",
@@ -83,23 +114,23 @@ def generate_launch_description():
             y,
             "-z",
             z,
-            "-R",
+            "-roll",
             roll,
-            "-P",
+            "-pitch",
             pitch,
-            "-Y",
+            "-yaw",
             yaw,
         ],
         output="both",
-        condition=IfCondition(use_sim),
-        parameters=[{"use_sim_time": use_sim}],
+        condition=IfCondition(gui),
+        parameters=[{"use_sim_time": use_sim_time}],
     )
 
-    nodes = [gz_spawner]
+    nodes = [tf2_spawner, gz_spawner]
 
     event_handlers = [
         RegisterEventHandler(
-            OnProcessExit(target_action=gz_spawner, on_exit=LogInfo(msg="Model Uploaded"))
+            OnProcessExit(target_action=gz_spawner, on_exit=LogInfo(msg="Sensor Model Uploaded"))
         )
     ]
 

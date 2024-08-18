@@ -13,7 +13,7 @@ To launch a Dave model directly from a Fuel URI, follow these steps:
 2. Launch the model using the specified launch file:
 
    ```bash
-   ros2 launch dave_demos object_in_empty_world.launch.py object_name:='mossy_cinder_block'
+   ros2 launch dave_demos dave_object.launch.py namespace:='mossy_cinder_block' paused:=false
    ```
 
 This method simplifies the process by pulling the model directly from Fuel, ensuring you always have the latest version without needing to manage local files.
@@ -47,7 +47,7 @@ If you prefer to use model files downloaded from Fuel, proceed as follows:
 4. Launch the model using the provided launch file:
 
    ```bash
-   ros2 launch dave_demos sensor_in_empty_world.launch.py sensor_name:='nortek_dvl500_300'
+   ros2 launch dave_demos dave_sensor.launch.py namespace:='nortek_dvl500_300' world_name:=dvl_world paused:=false
    ```
 
 This approach gives you more control over the models you use, allowing for offline use and customization. It's especially useful when working in environments with limited internet connectivity or when specific model versions are required.
