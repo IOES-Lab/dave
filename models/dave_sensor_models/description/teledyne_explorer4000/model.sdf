@@ -51,7 +51,7 @@
             </beam>
           </arrangement>
           <tracking>
-            <!-- <water_mass_mode>
+            <water_mass_mode>
               <when>best</when>
               <water_velocity>
                 <x>0.</x>
@@ -59,15 +59,15 @@
                 <z>0.</z>
               </water_velocity>
               <boundaries>
-                <near>20.</near>
-                <far>60.</far>
+                <near>10.</near>
+                <far>100.</far>
               </boundaries>
               <bins>10</bins>
               <noise type="gaussian">
                 <stddev>0.025</stddev>
               </noise>
-              <visualize>false</visualize>
-            </water_mass_mode> -->
+              <visualize>true</visualize>
+            </water_mass_mode>
             <bottom_mode>
               <when>best</when>
               <noise type="gaussian">
@@ -78,8 +78,8 @@
           </tracking>
           <maximum_range>66.</maximum_range>
           <minimum_range>0.5</minimum_range>
-          <!-- ENU to SFM -->
-          <reference_frame>0 0 0 0 0 -1.570796</reference_frame>
+          <!-- ENU to FSD -->
+          <reference_frame>0 0 0 3.14 0 -1.57</reference_frame>
         </gz:dvl>
       </sensor>
 
