@@ -75,7 +75,6 @@ void DVLBridge::Configure(
   // ROS2 publisher
   this->dataPtr->dvl_pub =
     this->ros_node_->create_publisher<dave_interfaces::msg::DVL>(this->dataPtr->dvl_topic, 1);
-
 }
 
 void DVLBridge::receiveGazeboCallback(const gz::msgs::DVLVelocityTracking & msg)
@@ -188,7 +187,8 @@ void DVLBridge::PostUpdate(
   {
     rclcpp::spin_some(this->ros_node_);
 
-    if (_info.iterations % 1000 == 0){
+    if (_info.iterations % 1000 == 0)
+    {
       gzmsg << "dave_ros_gz_plugins::DVLBridge::PostUpdate" << std::endl;
     }
   }

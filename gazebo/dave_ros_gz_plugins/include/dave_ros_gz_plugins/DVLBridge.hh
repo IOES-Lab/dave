@@ -20,11 +20,11 @@
 
 #include <gz/msgs/dvl_velocity_tracking.pb.h>
 #include <gz/sim/System.hh>
+#include <memory>
+#include <mutex>
 #include <rclcpp/rclcpp.hpp>
 #include "dave_interfaces/msg/dvl.hpp"
 #include "dave_interfaces/msg/dvl_beam.hpp"
-#include <memory>
-#include <mutex>
 
 namespace dave_ros_gz_plugins
 
