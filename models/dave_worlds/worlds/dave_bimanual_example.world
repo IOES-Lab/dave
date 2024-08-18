@@ -33,11 +33,9 @@
 			filename="gz-sim-scene-broadcaster-system"
 			name="gz::sim::systems::SceneBroadcaster">
 		</plugin>
-		<plugin
-			filename="ignition-gazebo-contact-system"
-			name="ignition::gazebo::systems::Contact">
+		<plugin filename="gz-sim-contact-system"
+				name="gz::sim::systems::Contact">
 		</plugin>
-
 		<!-- Origin placed somewhere in the middle of the North Sea -->
 		<spherical_coordinates>
 			<latitude_deg>56.71897669633431</latitude_deg>
