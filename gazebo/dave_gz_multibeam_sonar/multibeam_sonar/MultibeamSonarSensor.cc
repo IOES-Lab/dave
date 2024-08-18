@@ -31,9 +31,12 @@
 #include <gz/math/Vector2.hh>
 #include <gz/math/Vector3.hh>
 
-#include <gz/math/TimeVaryingVolumetricGrid.hh>
-
+#include <gz/msgs/float_v.pb.h>
+#include <gz/msgs/pointcloud_packed.pb.h>
+#include <gz/msgs/PointCloudPackedUtils.hh>
 #include <gz/msgs/Utility.hh>
+
+#include <gz/math/TimeVaryingVolumetricGrid.hh>
 
 #include <gz/rendering/Camera.hh>
 #include <gz/rendering/GpuRays.hh>
@@ -491,6 +494,10 @@ public:
 public:
   gz::transport::Node::Publisher pointPub;
 
+  /// \brief Publisher for messages.
+public:
+  gz::transport::Node::Publisher pointFloatPub;
+
   /// \brief Flag to indicate if sensor should be publishing estimates.
 public:
   bool publishingEstimates = false;
@@ -561,7 +568,9 @@ bool MultibeamSonarSensor::Load(const sdf::Sensor & _sdf)
   // Instantiate interfaces
   // Create the point cloud publisher
   this->dataPtr->pointPub =
-    this->dataPtr->node.Advertise<gz::msgs::PointCloudPacked>(this->Topic());
+    this->dataPtr->node.Advertise<gz::msgs::PointCloudPacked>(this->Topic() + "/point_cloud");
+  this->dataPtr->pointFloatPub =
+    this->dataPtr->node.Advertise<gz::msgs::Float_V>(this->Topic() + "/point_cloud_float_vector");
   if (!this->dataPtr->pointPub)
   {
     gzerr << "Unable to create publisher on topic "
@@ -659,22 +668,13 @@ bool MultibeamSonarSensor::Implementation::InitializeBeamArrangement(MultibeamSo
   sdf::ElementPtr horizontalElement = rayElement->GetElement("scan")->GetElement("horizontal");
   const double horizAngleMin = horizontalElement->Get<double>("min_angle", -M_PI / 4.0).first;
   const double horizAngleMax = horizontalElement->Get<double>("max_angle", M_PI / 4.0).first;
-  // this->dataPtr->depthSensor->SetAngleMin(useDegrees ? horizAngleMin : horizAngleMin *
-  // angleUnit); this->dataPtr->depthSensor->SetAngleMax(useDegrees ? horizAngleMax : horizAngleMax
-  // * angleUnit);
 
   sdf::ElementPtr verticalElement = rayElement->GetElement("scan")->GetElement("vertical");
   const double verticalAngleMin = verticalElement->Get<double>("min_angle", -M_PI / 8.0).first;
   const double verticalAngleMax = verticalElement->Get<double>("max_angle", M_PI / 8.0).first;
-  // this->dataPtr->depthSensor->SetVerticalAngleMin(useDegrees ? verticalAngleMin :
-  // verticalAngleMin * angleUnit); this->dataPtr->depthSensor->SetVerticalAngleMax(useDegrees ?
-  // verticalAngleMax : verticalAngleMax * angleUnit);
 
   const int beamCount = horizontalElement->Get<int>("beams", 256).first;
   const int rayCount = verticalElement->Get<int>("rays", 3).first;
-  // this->dataPtr->depthSensor->SetRayCount(beamCount);
-  // this->dataPtr->depthSensor->SetVerticalRayCount(rayCount);
-  // this->dataPtr->depthSensor->SetLocalPose(this->Pose());
 
   // ---- Construct AcousticBeam
   // Initialize beamId
@@ -740,6 +740,21 @@ bool MultibeamSonarSensor::Implementation::InitializeBeamArrangement(MultibeamSo
 
   this->depthSensor->SetVerticalRayCount(verticalRayCount);
 
+  auto & intrinsics = this->depthSensorIntrinsics;
+  intrinsics.offset.X(beamsSphericalFootprint.XMin());
+  intrinsics.offset.Y(beamsSphericalFootprint.YMin());
+  intrinsics.step.X(beamsSphericalFootprint.XSize() / (horizontalRayCount - 1));
+  intrinsics.step.Y(beamsSphericalFootprint.YSize() / (verticalRayCount - 1));
+
+  // Pre-compute scan indices covered by beam spherical
+  // footprints for speed during scan iteration
+  this->beamScanPatches.clear();
+  for (const auto & beam : this->beams)
+  {
+    this->beamScanPatches.push_back(
+      AxisAlignedPatch2i{(beam.SphericalFootprint() - intrinsics.offset) / intrinsics.step});
+  }
+
   // _sensor->Scene()->RootVisual()->AddChild(this->depthSensor);
 
   this->depthSensor->SetVisibilityMask(GZ_VISIBILITY_ALL);
@@ -791,10 +806,6 @@ void MultibeamSonarSensor::Implementation::OnNewFrame(
   const float * _scan, unsigned int _width, unsigned int _height, unsigned int _channels,
   const std::string & /*_format*/)
 {
-  gzerr << "-----------------OnNewFrame----------------------- " << std::endl;
-  gzerr << "-----------------OnNewFrame----------------------- " << std::endl;
-  gzerr << "-----------------OnNewFrame----------------------- " << std::endl;
-  gzerr << "-----------------OnNewFrame----------------------- " << std::endl;
   // From GPU Lidar sensor
   std::lock_guard<std::mutex> lock(this->rayMutex);
 
@@ -860,10 +871,10 @@ void MultibeamSonarSensor::Implementation::OnNewFrame(
           {
             beamTarget = {gz::math::Pose3d{point, gz::math::Quaterniond::Identity}, 0};
           }
-        }
-      }
-    }
-  }
+        }  // End of aperture angle loop
+      }  // End of beamScanPatch X loop
+    }  // End of beamScanPatch Y loop
+  }  // End of beam loop
 }
 
 /////////////////////////////////////////////////
@@ -927,7 +938,7 @@ bool MultibeamSonarSensor::Update(const std::chrono::steady_clock::duration & _n
   // Generate sensor data
   this->Render();
 
-  if (!this->dataPtr->pointPub.HasConnections())
+  if (this->dataPtr->pointPub.HasConnections())
   {
     // Set the time stamp
     *this->dataPtr->pointMsg.mutable_header()->mutable_stamp() = msgs::Convert(_now);
@@ -943,6 +954,35 @@ bool MultibeamSonarSensor::Update(const std::chrono::steady_clock::duration & _n
     }
 
     this->dataPtr->FillPointCloudMsg(this->dataPtr->rayBuffer);
+
+    // For the point cloud visualization in gazebo
+    // https://github.com/gazebosim/gz-gui/pull/346
+    // What is this? doesn't look right
+    gz::msgs::Float_V floatVMsg;
+    gz::msgs::PointCloudPackedIterator<float> xIter(this->dataPtr->pointMsg, "x");
+    gz::msgs::PointCloudPackedIterator<float> yIter(this->dataPtr->pointMsg, "y");
+    gz::msgs::PointCloudPackedIterator<float> zIter(this->dataPtr->pointMsg, "z");
+
+    for (float x = 0.0, y = 0.0, z = 0.0; xIter != xIter.End(); ++xIter, ++yIter, ++zIter)
+    {
+      *xIter = x;
+      *yIter = y;
+      *zIter = z;
+      floatVMsg.add_data(1);
+
+      x += 1.0;
+      if (x > 9)
+      {
+        x = 0.0;
+        y += 1.0;
+      }
+      if (y > 9)
+      {
+        y = 0.0;
+        z += 1.0;
+      }
+    }
+    this->dataPtr->pointFloatPub.Publish(floatVMsg);
 
     {
       this->AddSequence(this->dataPtr->pointMsg.mutable_header());
