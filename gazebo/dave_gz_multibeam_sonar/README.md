@@ -6,5 +6,5 @@
 
 - To test
   ```
-  ros2 launch dave_demos dave_world.launch.py world_name:=dave_multibeam_sonar verbose:=true
+  ros2 launch dave_demos dave_sensor.launch.py namespace:=nortek_dvl500_300_with_multibeam_sonar world_name:=dave_multibeam_sonar paused:=false
   ```
