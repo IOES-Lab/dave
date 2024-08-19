@@ -93,13 +93,13 @@ void DVLBridge::receiveGazeboCallback(const gz::msgs::DVLVelocityTracking & msg)
 
   switch (msg.type())
   {
-    case DVLType::DVL_TYPE_UNSPECIFIED:
+    case gz::msgs::DVLVelocityTracking::DVL_TYPE_UNSPECIFIED:
       dvl_type = "DVL_TYPE_UNSPECIFIED";
       break;
-    case DVLType::DVL_TYPE_PISTON:
+    case gz::msgs::DVLVelocityTracking::DVL_TYPE_PISTON:
       dvl_type = "DVL_TYPE_PISTON";
       break;
-    case DVLType::DVL_TYPE_PHASED_ARRAY:
+    case gz::msgs::DVLVelocityTracking::DVL_TYPE_PHASED_ARRAY:
       dvl_type = "DVL_TYPE_PHASED_ARRAY";
       break;
     default:
@@ -108,14 +108,14 @@ void DVLBridge::receiveGazeboCallback(const gz::msgs::DVLVelocityTracking & msg)
 
   switch (msg.target().type())
   {
-    case DVLTargetType::DVL_TARGET_UNSPECIFIED:
+    case gz::msgs::DVLTrackingTarget::DVL_TARGET_UNSPECIFIED:
       target_type = "DVL_TARGET_UNSPECIFIED";
       break;
-    case DVLTargetType::DVL_TARGET_BOTTOM:
+    case gz::msgs::DVLTrackingTarget::DVL_TARGET_BOTTOM:
       target_type = "DVL_TARGET_BOTTOM";
       break;
-    case DVLTargetType::DVL_TARGET_WATER:
-      target_type = "DVL_TARGET_WATER";
+    case gz::msgs::DVLTrackingTarget::DVL_TARGET_WATER_MASS:
+      target_type = "DVL_TARGET_WATER_MASS";
       break;
     default:
       target_type = "DVL_TARGET_UNSPECIFIED";
@@ -146,13 +146,13 @@ void DVLBridge::receiveGazeboCallback(const gz::msgs::DVLVelocityTracking & msg)
 
     switch (msg.beams()[i].velocity().reference())
     {
-      case ReferenceType::DVL_REFERENCE_UNSPECIFIED:
+      case gz::msgs::DVLKinematicEstimate::DVL_REFERENCE_UNSPECIFIED:
         reference_type = "DVL_REFERENCE_UNSPECIFIED";
         break;
-      case ReferenceType::DVL_REFERENCE_EARTH:
+      case gz::msgs::DVLKinematicEstimate::DVL_REFERENCE_EARTH:
         reference_type = "DVL_REFERENCE_EARTH";
         break;
-      case ReferenceType::DVL_REFERENCE_SHIP:
+      case gz::msgs::DVLKinematicEstimate::DVL_REFERENCE_SHIP:
         reference_type = "DVL_REFERENCE_SHIP";
         break;
       default:
