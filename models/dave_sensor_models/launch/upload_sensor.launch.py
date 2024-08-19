@@ -13,9 +13,9 @@ def generate_launch_description():
     x = LaunchConfiguration("x")
     y = LaunchConfiguration("y")
     z = LaunchConfiguration("z")
-    roll = LaunchConfiguration("roll")
-    pitch = LaunchConfiguration("pitch")
-    yaw = LaunchConfiguration("yaw")
+    roll = LaunchConfiguration("R")
+    pitch = LaunchConfiguration("P")
+    yaw = LaunchConfiguration("Y")
 
     args = [
         DeclareLaunchArgument(
