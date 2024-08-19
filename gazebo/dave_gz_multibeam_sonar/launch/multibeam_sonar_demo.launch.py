@@ -63,10 +63,17 @@ def generate_launch_description():
         output='screen',
     )
 
+    # TF
+    tf_node = Node(package = "tf2_ros", 
+                executable = "static_transform_publisher",
+                arguments = ['--frame-id', 'blueview_p900/blueview_p900_base_link/multibeam_sonar', '--child-frame-id', 'map'])
+
+
     return LaunchDescription([
         multibeam_sonar_sim,
         DeclareLaunchArgument('rviz', default_value='true',
                               description='Open RViz.'),
         bridge,
         rviz,
+        tf_node,
     ])
