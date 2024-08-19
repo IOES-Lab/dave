@@ -63,10 +63,11 @@ def generate_launch_description():
         output='screen',
     )
 
-    # TF
+    # ! TODO: Add a static transform publisher for the multibeam sonar
+    # TF (Not sure about this....)
     tf_node = Node(package = "tf2_ros", 
                 executable = "static_transform_publisher",
-                arguments = ['--frame-id', 'blueview_p900/blueview_p900_base_link/multibeam_sonar', '--child-frame-id', 'map'])
+                arguments=['--frame-id', 'world', '--child-frame-id', 'blueview_p900/blueview_p900_base_link/multibeam_sonar'])
 
 
     return LaunchDescription([
