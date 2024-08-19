@@ -87,7 +87,7 @@
       <kinematic>0</kinematic>
 
       <visual name="blueview_p900_base_link_visual">
-        <pose>0 0 0 0 0 3.14159</pose>
+        <pose>0 0 0 0 0 0</pose>
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
@@ -98,7 +98,7 @@
         <cast_shadows>1</cast_shadows>
       </visual>
       <collision name="blueview_p900_base_link_collision">
-        <pose>0 0 0 0 0 3.14159</pose>
+        <pose>0 0 0 0 0 0</pose>
         <geometry>
           <mesh>
             <uri>model://meshes/blueview_p900/COLLISION-p900.dae</uri>
