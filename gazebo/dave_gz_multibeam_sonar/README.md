@@ -11,6 +11,7 @@
   ```
 
 - Launch example with `ros_gz_bridge` to translate gazebo msg to ROS msg:
+  - Not perfect
 
   ```
   ros2 launch dave_gz_multibeam_sonar multibeam_sonar_demo.launch.py
