@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
 
 #include <memory>
 #include <string>
@@ -26,6 +26,11 @@
 #include <gz/common/Profiler.hh>
 #include <gz/common/VideoEncoder.hh>
 
+#include <gz/sim/Conversions.hh>
+#include <gz/sim/EntityComponentManager.hh>
+#include <gz/sim/EventManager.hh>
+#include <gz/sim/Events.hh>
+#include <gz/sim/Util.hh>
 #include <gz/sim/components/AngularVelocity.hh>
 #include <gz/sim/components/CustomSensor.hh>
 #include <gz/sim/components/LinearVelocity.hh>
@@ -33,11 +38,6 @@
 #include <gz/sim/components/ParentEntity.hh>
 #include <gz/sim/components/Pose.hh>
 #include <gz/sim/components/SphericalCoordinates.hh>
-#include <gz/sim/Conversions.hh>
-#include <gz/sim/EntityComponentManager.hh>
-#include <gz/sim/EventManager.hh>
-#include <gz/sim/Events.hh>
-#include <gz/sim/Util.hh>
 
 #include <gz/sim/rendering/Events.hh>
 
@@ -91,138 +91,161 @@ struct SetEnvironmentalData
 };
 
 /// \brief Union request type.
-using SomeRequest = std::variant<
-  CreateSensor, DestroySensor,
-  SetWorldState, SetEnvironmentalData>;
+using SomeRequest = std::variant<CreateSensor, DestroySensor, SetWorldState, SetEnvironmentalData>;
 
 }  // namespace requests
-}
-}
+}  // namespace sim
+}  // namespace gz
 
 /// \brief Private data class.
 class gz::sim::systems::MultibeamSonarSystem::Implementation
 {
   /// \brief Callback invoked in the rendering thread before a rendering update
-  public: void OnPreRender();
+public:
+  void OnPreRender();
 
   /// \brief Callback invoked in the rendering thread during a rendering update
-  public: void OnRender();
+public:
+  void OnRender();
 
   /// \brief Callback invoked in the rendering thread after a rendering update
-  public: void OnPostRender();
+public:
+  void OnPostRender();
 
   /// \brief Callback invoked in the rendering thread before stopping
-  public: void OnRenderTeardown();
+public:
+  void OnRenderTeardown();
 
   /// \brief Find visual with given entity id
   /// \param[in] _scene Pointer to Scene
   /// \param[in] _entity Entity ID
-  public: gz::rendering::VisualPtr FindEntityVisual(
+public:
+  gz::rendering::VisualPtr FindEntityVisual(
     gz::rendering::ScenePtr _scene, gz::sim::Entity _entity);
 
   /// \brief Overload to handle sensor creation requests.
-  public: void Handle(requests::CreateSensor _request);
+public:
+  void Handle(requests::CreateSensor _request);
 
   /// \brief Overload to handle sensor destruction requests.
-  public: void Handle(requests::DestroySensor _request);
+public:
+  void Handle(requests::DestroySensor _request);
 
   /// \brief Overload to handle world state update requests.
-  public: void Handle(requests::SetWorldState _request);
+public:
+  void Handle(requests::SetWorldState _request);
 
   /// \brief Overload to handle environment data update requests.
-  public: void Handle(requests::SetEnvironmentalData _request);
+public:
+  void Handle(requests::SetEnvironmentalData _request);
 
   /// \brief Implementation for Configure() hook.
-  public: void DoConfigure(
-      const gz::sim::Entity &_entity,
-      const std::shared_ptr<const sdf::Element> &_sdf,
-      gz::sim::EntityComponentManager &_ecm,
-      gz::sim::EventManager &_eventMgr);
+public:
+  void DoConfigure(
+    const gz::sim::Entity & _entity, const std::shared_ptr<const sdf::Element> & _sdf,
+    gz::sim::EntityComponentManager & _ecm, gz::sim::EventManager & _eventMgr);
 
   /// \brief Implementation for PreUpdate() hook.
-  public: void DoPreUpdate(
-      const gz::sim::UpdateInfo &_info,
-      gz::sim::EntityComponentManager &_ecm);
+public:
+  void DoPreUpdate(const gz::sim::UpdateInfo & _info, gz::sim::EntityComponentManager & _ecm);
 
   /// \brief Implementation for Update() hook.
-  public: void DoUpdate(
-      const gz::sim::UpdateInfo &_info,
-      gz::sim::EntityComponentManager &_ecm);
+public:
+  void DoUpdate(const gz::sim::UpdateInfo & _info, gz::sim::EntityComponentManager & _ecm);
 
   /// \brief Implementation for PostUpdate() hook.
-  public: void DoPostUpdate(
-      const gz::sim::UpdateInfo &_info,
-      const gz::sim::EntityComponentManager &_ecm);
+public:
+  void DoPostUpdate(
+    const gz::sim::UpdateInfo & _info, const gz::sim::EntityComponentManager & _ecm);
 
   /// \brief State of all entities in the world in simulation thread
-  public: std::optional<gz::sensors::WorldState> latestWorldState;
+public:
+  std::optional<gz::sensors::WorldState> latestWorldState;
 
   /// \brief State of all entities in the world in simulation thread
-  public: std::shared_ptr<
-    gz::sensors::EnvironmentalData> latestEnvironmentalData;
+public:
+  std::shared_ptr<gz::sensors::EnvironmentalData> latestEnvironmentalData;
 
   /// \brief Connection to the pre-render event.
-  public: gz::common::ConnectionPtr preRenderConn;
+public:
+  gz::common::ConnectionPtr preRenderConn;
 
   /// \brief Connection to the render event.
-  public: gz::common::ConnectionPtr renderConn;
+public:
+  gz::common::ConnectionPtr renderConn;
 
   /// \brief Connection to the post-render event.
-  public: gz::common::ConnectionPtr postRenderConn;
+public:
+  gz::common::ConnectionPtr postRenderConn;
 
   /// \brief Connection to the render teardown event.
-  public: gz::common::ConnectionPtr renderTeardownConn;
+public:
+  gz::common::ConnectionPtr renderTeardownConn;
 
   /// \brief Pointer to the event manager
-  public: gz::sim::EventManager *eventMgr = nullptr;
+public:
+  gz::sim::EventManager * eventMgr = nullptr;
 
   //// \brief Pointer to the rendering scene
-  public: gz::rendering::ScenePtr scene;
+public:
+  gz::rendering::ScenePtr scene;
 
   /// \brief Sensor managers
-  public: gz::sensors::Manager sensorManager;
+public:
+  gz::sensors::Manager sensorManager;
 
   /// \brief Entities of known sensors (in simulation thread)
-  public: std::unordered_set<gz::sim::Entity> knownSensorEntities;
+public:
+  std::unordered_set<gz::sim::Entity> knownSensorEntities;
 
   /// \brief Sensor ID per sensor entity mapping in rendering thread
-  public: std::unordered_map<
-    gz::sim::Entity, gz::sensors::SensorId> sensorIdPerEntity;
+public:
+  std::unordered_map<gz::sim::Entity, gz::sensors::SensorId> sensorIdPerEntity;
 
   /// \brief IDs of sensors updated in the last rendering pass
-  public: std::vector<gz::sensors::SensorId> updatedSensorIds;
+public:
+  std::vector<gz::sensors::SensorId> updatedSensorIds;
 
   /// \brief Queue of requests from simulation thread to rendering thread
-  public: std::vector<requests::SomeRequest> perStepRequests;
+public:
+  std::vector<requests::SomeRequest> perStepRequests;
 
   /// \brief Mutex to synchronize access to queued requests
-  public: std::mutex requestsMutex;
+public:
+  std::mutex requestsMutex;
 
   /// \brief Create/Destroy sensor requests queue, popped by the rendering
   /// thread.
-  public: std::vector<requests::SomeRequest> queuedRequests;
+public:
+  std::vector<requests::SomeRequest> queuedRequests;
 
   /// \brief SetWorldState requests queue, popped by the rendering thread.
-  public: std::vector<requests::SomeRequest> queuedSetWorldRequests;
+public:
+  std::vector<requests::SomeRequest> queuedSetWorldRequests;
 
   /// \brief Flag for pending (ie. queued) requests.
-  public: std::atomic<bool> pendingRequests{false};
+public:
+  std::atomic<bool> pendingRequests{false};
 
   /// \brief Flag for pending (ie. queued) set world state requests.
-  public: std::atomic<bool> pendingSetWorldRequests{false};
+public:
+  std::atomic<bool> pendingSetWorldRequests{false};
 
   /// \brief Flag for
-  public: bool needsUpdate{false};
+public:
+  bool needsUpdate{false};
 
   /// \brief Current simulation time.
-  public: std::chrono::steady_clock::duration simTime{0};
+public:
+  std::chrono::steady_clock::duration simTime{0};
 
   /// \brief Current simulation time.
-  public: std::chrono::steady_clock::duration nextUpdateTime{
-    std::chrono::steady_clock::duration::max()};
+public:
+  std::chrono::steady_clock::duration nextUpdateTime{std::chrono::steady_clock::duration::max()};
 
   /// \brief Mutex to protect current simulation times
-  public: std::mutex timeMutex;
+public:
+  std::mutex timeMutex;
 };
 
 using namespace gz;
@@ -231,38 +254,30 @@ using namespace systems;
 
 //////////////////////////////////////////////////
 void MultibeamSonarSystem::Implementation::DoConfigure(
-    const gz::sim::Entity &,
-    const std::shared_ptr<const sdf::Element> &,
-    gz::sim::EntityComponentManager &,
-    gz::sim::EventManager &_eventMgr)
+  const gz::sim::Entity &, const std::shared_ptr<const sdf::Element> &,
+  gz::sim::EntityComponentManager &, gz::sim::EventManager & _eventMgr)
 {
   this->preRenderConn =
-      _eventMgr.Connect<gz::sim::events::PreRender>(
-          std::bind(&Implementation::OnPreRender, this));
+    _eventMgr.Connect<gz::sim::events::PreRender>(std::bind(&Implementation::OnPreRender, this));
 
   this->renderConn =
-      _eventMgr.Connect<gz::sim::events::Render>(
-          std::bind(&Implementation::OnRender, this));
+    _eventMgr.Connect<gz::sim::events::Render>(std::bind(&Implementation::OnRender, this));
 
   this->postRenderConn =
-      _eventMgr.Connect<gz::sim::events::PostRender>(
-          std::bind(&Implementation::OnPostRender, this));
+    _eventMgr.Connect<gz::sim::events::PostRender>(std::bind(&Implementation::OnPostRender, this));
 
-  this->renderTeardownConn =
-      _eventMgr.Connect<gz::sim::events::RenderTeardown>(
-          std::bind(&Implementation::OnRenderTeardown, this));
+  this->renderTeardownConn = _eventMgr.Connect<gz::sim::events::RenderTeardown>(
+    std::bind(&Implementation::OnRenderTeardown, this));
 
   this->eventMgr = &_eventMgr;
 }
 
 //////////////////////////////////////////////////
 void MultibeamSonarSystem::Implementation::DoPreUpdate(
-  const gz::sim::UpdateInfo &,
-  gz::sim::EntityComponentManager &_ecm)
+  const gz::sim::UpdateInfo &, gz::sim::EntityComponentManager & _ecm)
 {
   _ecm.EachNew<gz::sim::components::Environment>(
-    [&](const gz::sim::Entity &_entity,
-        const gz::sim::components::Environment *_env) -> bool
+    [&](const gz::sim::Entity & _entity, const gz::sim::components::Environment * _env) -> bool
     {
       if (_entity == gz::sim::worldEntity(_ecm))
       {
@@ -271,27 +286,24 @@ void MultibeamSonarSystem::Implementation::DoPreUpdate(
         // generic data structure? Currently the data structure is
         // duplicated in the two libraries.
         auto envData = sensors::EnvironmentalData::MakeShared(
-            _env->Data()->frame, _env->Data()->reference,
-            static_cast<gz::sensors::EnvironmentalData::ReferenceUnits>(
-                _env->Data()->units),
-            _env->Data()->staticTime);
+          _env->Data()->frame, _env->Data()->reference,
+          static_cast<gz::sensors::EnvironmentalData::ReferenceUnits>(_env->Data()->units),
+          _env->Data()->staticTime);
 
-        this->perStepRequests.push_back(
-          requests::SetEnvironmentalData{envData});
+        this->perStepRequests.push_back(requests::SetEnvironmentalData{envData});
       }
       return true;
     });
 
-  _ecm.EachNew<gz::sim::components::CustomSensor,
-               gz::sim::components::ParentEntity>(
-    [&](const gz::sim::Entity &_entity,
-        const gz::sim::components::CustomSensor *_custom,
-        const gz::sim::components::ParentEntity *_parent) -> bool
+  _ecm.EachNew<gz::sim::components::CustomSensor, gz::sim::components::ParentEntity>(
+    [&](
+      const gz::sim::Entity & _entity, const gz::sim::components::CustomSensor * _custom,
+      const gz::sim::components::ParentEntity * _parent) -> bool
     {
       using namespace gz::sim;
       // Get sensor's scoped name without the world
-      std::string sensorScopedName = removeParentScope(
-          scopedName(_entity, _ecm, "::", false), "::");
+      std::string sensorScopedName =
+        removeParentScope(scopedName(_entity, _ecm, "::", false), "::");
 
       // Check sensor's type before proceeding
       sdf::Sensor sdf = _custom->Data();
@@ -299,19 +311,18 @@ void MultibeamSonarSystem::Implementation::DoPreUpdate(
       if (!root->HasAttribute("gz:type"))
       {
         gzmsg << "No 'gz:type' attribute in custom sensor "
-               << "[" << sensorScopedName << "]. Ignoring."
-               << std::endl;
+              << "[" << sensorScopedName << "]. Ignoring." << std::endl;
         return true;
       }
       auto type = root->Get<std::string>("gz:type");
       if (type != "multibeam_sonar")
       {
         gzdbg << "Found custom sensor [" << sensorScopedName << "]"
-               << " of '" << type << "' type. Ignoring." << std::endl;
+              << " of '" << type << "' type. Ignoring." << std::endl;
         return true;
       }
       gzdbg << "Found custom sensor [" << sensorScopedName << "]"
-             << " of '" << type << "' type!" << std::endl;
+            << " of '" << type << "' type!" << std::endl;
 
       sdf.SetName(sensorScopedName);
 
@@ -321,15 +332,14 @@ void MultibeamSonarSystem::Implementation::DoPreUpdate(
         sdf.SetTopic(scopedName(_entity, _ecm) + "/multibeam_sonar/velocity");
       }
 
-      auto parentName =
-          _ecm.Component<components::Name>(_parent->Data());
+      auto parentName = _ecm.Component<components::Name>(_parent->Data());
 
       enableComponent<components::WorldPose>(_ecm, _entity);
       enableComponent<components::WorldAngularVelocity>(_ecm, _entity);
       enableComponent<components::WorldLinearVelocity>(_ecm, _entity);
 
-      this->perStepRequests.push_back(requests::CreateSensor{
-          sdf, _entity, _parent->Data(), parentName->Data()});
+      this->perStepRequests.push_back(
+        requests::CreateSensor{sdf, _entity, _parent->Data(), parentName->Data()});
 
       this->knownSensorEntities.insert(_entity);
       return true;
@@ -338,17 +348,14 @@ void MultibeamSonarSystem::Implementation::DoPreUpdate(
 
 //////////////////////////////////////////////////
 void MultibeamSonarSystem::Implementation::DoPostUpdate(
-  const gz::sim::UpdateInfo &_info,
-  const gz::sim::EntityComponentManager &_ecm)
+  const gz::sim::UpdateInfo & _info, const gz::sim::EntityComponentManager & _ecm)
 {
   _ecm.EachRemoved<gz::sim::components::CustomSensor>(
-    [&](const gz::sim::Entity &_entity,
-        const gz::sim::components::CustomSensor *)
+    [&](const gz::sim::Entity & _entity, const gz::sim::components::CustomSensor *)
     {
       if (this->knownSensorEntities.count(_entity))
       {
-        this->perStepRequests.push_back(
-            requests::DestroySensor{_entity});
+        this->perStepRequests.push_back(requests::DestroySensor{_entity});
         this->knownSensorEntities.erase(_entity);
       }
       return true;
@@ -356,26 +363,24 @@ void MultibeamSonarSystem::Implementation::DoPostUpdate(
 
   std::lock_guard<std::mutex> timeLock(this->timeMutex);
 
-  if (!this->perStepRequests.empty() || (
-        !_info.paused && this->nextUpdateTime <= _info.simTime))
+  if (!this->perStepRequests.empty() || (!_info.paused && this->nextUpdateTime <= _info.simTime))
   {
     this->simTime = _info.simTime;
     requests::SetWorldState request;
-    auto component = _ecm.Component<
-      gz::sim::components::SphericalCoordinates
-    >(gz::sim::worldEntity(_ecm));
+    auto component =
+      _ecm.Component<gz::sim::components::SphericalCoordinates>(gz::sim::worldEntity(_ecm));
     if (component)
     {
       request.worldState.origin = component->Data();
     }
 
-    _ecm.Each<gz::sim::components::WorldPose,
-              gz::sim::components::WorldLinearVelocity,
-              gz::sim::components::WorldAngularVelocity>(
-      [&](const gz::sim::Entity &_entity,
-          const gz::sim::components::WorldPose *_pose,
-          const gz::sim::components::WorldLinearVelocity *_linearVelocity,
-          const gz::sim::components::WorldAngularVelocity *_angularVelocity)
+    _ecm.Each<
+      gz::sim::components::WorldPose, gz::sim::components::WorldLinearVelocity,
+      gz::sim::components::WorldAngularVelocity>(
+      [&](
+        const gz::sim::Entity & _entity, const gz::sim::components::WorldPose * _pose,
+        const gz::sim::components::WorldLinearVelocity * _linearVelocity,
+        const gz::sim::components::WorldAngularVelocity * _angularVelocity)
       {
         auto & kinematicState = request.worldState.kinematics[_entity];
 
@@ -383,15 +388,15 @@ void MultibeamSonarSystem::Implementation::DoPostUpdate(
         kinematicState.linearVelocity = _linearVelocity->Data();
         kinematicState.angularVelocity = _angularVelocity->Data();
         return true;
-      });;
+      });
+    ;
 
     {
       std::lock_guard<std::mutex> lock(this->requestsMutex);
 
       this->queuedRequests.insert(
-          this->queuedRequests.end(),
-          std::make_move_iterator(this->perStepRequests.begin()),
-          std::make_move_iterator(this->perStepRequests.end()));
+        this->queuedRequests.end(), std::make_move_iterator(this->perStepRequests.begin()),
+        std::make_move_iterator(this->perStepRequests.end()));
       this->perStepRequests.clear();
 
       // keep a queue size of 1 for set world state
@@ -411,9 +416,8 @@ void MultibeamSonarSystem::Implementation::DoPostUpdate(
 }
 
 //////////////////////////////////////////////////
-gz::rendering::VisualPtr
-    MultibeamSonarSystem::Implementation::FindEntityVisual(
-    gz::rendering::ScenePtr _scene, gz::sim::Entity _entity)
+gz::rendering::VisualPtr MultibeamSonarSystem::Implementation::FindEntityVisual(
+  gz::rendering::ScenePtr _scene, gz::sim::Entity _entity)
 {
   for (unsigned int i = 0; i < _scene->VisualCount(); ++i)
   {
@@ -431,17 +435,13 @@ gz::rendering::VisualPtr
 }
 
 //////////////////////////////////////////////////
-void MultibeamSonarSystem::Implementation::Handle(
-    requests::CreateSensor _request)
+void MultibeamSonarSystem::Implementation::Handle(requests::CreateSensor _request)
 {
-  auto *sensor =
-      this->sensorManager.CreateSensor<
-          gz::sensors::MultibeamSonarSensor>(_request.sdf);
+  auto * sensor = this->sensorManager.CreateSensor<gz::sensors::MultibeamSonarSensor>(_request.sdf);
   if (nullptr == sensor)
   {
     gzerr << "Failed to create sensor "
-           << "[" << _request.sdf.Name() << "]"
-           << std::endl;
+          << "[" << _request.sdf.Name() << "]" << std::endl;
     return;
   }
 
@@ -462,17 +462,15 @@ void MultibeamSonarSystem::Implementation::Handle(
     sensor->SetEnvironmentalData(*this->latestEnvironmentalData);
   }
 
-  gz::rendering::VisualPtr parentVisual =
-      this->FindEntityVisual(this->scene, _request.parent);
+  gz::rendering::VisualPtr parentVisual = this->FindEntityVisual(this->scene, _request.parent);
   if (!parentVisual)
   {
     gzerr << "Failed to find parent visual for sensor "
-           << "[" << _request.sdf.Name() << "]" << std::endl;
+          << "[" << _request.sdf.Name() << "]" << std::endl;
     if (!this->sensorManager.Remove(sensor->Id()))
     {
       gzerr << "Internal error, missing sensor "
-             << "[" << _request.sdf.Name() << "]"
-             << std::endl;
+            << "[" << _request.sdf.Name() << "]" << std::endl;
     }
     return;
   }
@@ -489,14 +487,13 @@ void MultibeamSonarSystem::Implementation::Handle(
 }
 
 //////////////////////////////////////////////////
-void MultibeamSonarSystem::Implementation::Handle(
-    requests::DestroySensor _request)
+void MultibeamSonarSystem::Implementation::Handle(requests::DestroySensor _request)
 {
   auto it = this->sensorIdPerEntity.find(_request.entity);
   if (it != this->sensorIdPerEntity.end())
   {
-    auto *sensor = dynamic_cast<gz::sensors::MultibeamSonarSensor *>(
-        this->sensorManager.Sensor(it->second));
+    auto * sensor =
+      dynamic_cast<gz::sensors::MultibeamSonarSensor *>(this->sensorManager.Sensor(it->second));
     if (sensor)
     {
       for (auto renderingSensor : sensor->RenderingSensors())
@@ -508,35 +505,33 @@ void MultibeamSonarSystem::Implementation::Handle(
     else
     {
       gzerr << "Internal error, missing DVL sensor for entity "
-             << "[" << _request.entity << "]" << std::endl;
+            << "[" << _request.entity << "]" << std::endl;
     }
     this->sensorIdPerEntity.erase(it);
   }
 }
 
 //////////////////////////////////////////////////
-void MultibeamSonarSystem::Implementation::Handle(
-    requests::SetWorldState _request)
+void MultibeamSonarSystem::Implementation::Handle(requests::SetWorldState _request)
 {
   this->latestWorldState = std::move(_request.worldState);
-  for (const auto& [_, sensorId] : this->sensorIdPerEntity)
+  for (const auto & [_, sensorId] : this->sensorIdPerEntity)
   {
-    auto *sensor = dynamic_cast<gz::sensors::MultibeamSonarSensor *>(
-        this->sensorManager.Sensor(sensorId));
+    auto * sensor =
+      dynamic_cast<gz::sensors::MultibeamSonarSensor *>(this->sensorManager.Sensor(sensorId));
     sensor->SetWorldState(*this->latestWorldState);
   }
   this->needsUpdate = true;
 }
 
 //////////////////////////////////////////////////
-void MultibeamSonarSystem::Implementation::Handle(
-    requests::SetEnvironmentalData _request)
+void MultibeamSonarSystem::Implementation::Handle(requests::SetEnvironmentalData _request)
 {
   this->latestEnvironmentalData = std::move(_request.environmentalData);
-  for (const auto& [_, sensorId] : this->sensorIdPerEntity)
+  for (const auto & [_, sensorId] : this->sensorIdPerEntity)
   {
-    auto *sensor = dynamic_cast<gz::sensors::MultibeamSonarSensor *>(
-        this->sensorManager.Sensor(sensorId));
+    auto * sensor =
+      dynamic_cast<gz::sensors::MultibeamSonarSensor *>(this->sensorManager.Sensor(sensorId));
     sensor->SetEnvironmentalData(*this->latestEnvironmentalData);
   }
   this->needsUpdate = true;
@@ -558,28 +553,24 @@ void MultibeamSonarSystem::Implementation::OnPreRender()
     std::vector<requests::SomeRequest> setWorldRequests;
     {
       std::lock_guard<std::mutex> lock(this->requestsMutex);
-      requests.insert(requests.end(),
-        std::make_move_iterator(this->queuedRequests.begin()),
+      requests.insert(
+        requests.end(), std::make_move_iterator(this->queuedRequests.begin()),
         std::make_move_iterator(this->queuedRequests.end()));
       this->queuedRequests.clear();
-      setWorldRequests.insert(setWorldRequests.end(),
-        std::make_move_iterator(this->queuedSetWorldRequests.begin()),
+      setWorldRequests.insert(
+        setWorldRequests.end(), std::make_move_iterator(this->queuedSetWorldRequests.begin()),
         std::make_move_iterator(this->queuedSetWorldRequests.end()));
       this->queuedSetWorldRequests.clear();
     }
     // handle requests - create/destroy sensor
-    for (auto &request : requests)
+    for (auto & request : requests)
     {
-      std::visit([this](auto & req) {
-        this->Handle(std::move(req));
-      }, request);
+      std::visit([this](auto & req) { this->Handle(std::move(req)); }, request);
     }
     // handle set world state requests
-    for (auto &request : setWorldRequests)
+    for (auto & request : setWorldRequests)
     {
-      std::visit([this](auto & req) {
-        this->Handle(std::move(req));
-      }, request);
+      std::visit([this](auto & req) { this->Handle(std::move(req)); }, request);
     }
   }
 }
@@ -588,8 +579,7 @@ void MultibeamSonarSystem::Implementation::OnPreRender()
 void MultibeamSonarSystem::Implementation::OnRender()
 {
   GZ_PROFILE("MultibeamSonarSystem::Implementation::OnRender");
-  if (!this->scene->IsInitialized() ||
-      this->scene->SensorCount() == 0)
+  if (!this->scene->IsInitialized() || this->scene->SensorCount() == 0)
   {
     return;
   }
@@ -601,17 +591,15 @@ void MultibeamSonarSystem::Implementation::OnRender()
       std::vector<requests::SomeRequest> setWorldRequests;
       {
         std::lock_guard<std::mutex> lock(this->requestsMutex);
-        setWorldRequests.insert(setWorldRequests.end(),
-          std::make_move_iterator(this->queuedSetWorldRequests.begin()),
+        setWorldRequests.insert(
+          setWorldRequests.end(), std::make_move_iterator(this->queuedSetWorldRequests.begin()),
           std::make_move_iterator(this->queuedSetWorldRequests.end()));
         this->queuedSetWorldRequests.clear();
       }
       // handle set world state requests
-      for (auto &request : setWorldRequests)
+      for (auto & request : setWorldRequests)
       {
-        std::visit([this](auto & req) {
-          this->Handle(std::move(req));
-        }, request);
+        std::visit([this](auto & req) { this->Handle(std::move(req)); }, request);
       }
     }
 
@@ -621,8 +609,7 @@ void MultibeamSonarSystem::Implementation::OnRender()
 
     for (const auto & [_, sensorId] : this->sensorIdPerEntity)
     {
-      gz::sensors::Sensor *sensor =
-          this->sensorManager.Sensor(sensorId);
+      gz::sensors::Sensor * sensor = this->sensorManager.Sensor(sensorId);
 
       constexpr bool kForce = true;
       if (sensor->Update(this->simTime, !kForce))
@@ -630,8 +617,7 @@ void MultibeamSonarSystem::Implementation::OnRender()
         this->updatedSensorIds.push_back(sensorId);
       }
 
-      closestUpdateTime = std::min(
-          sensor->NextDataUpdateTime(), closestUpdateTime);
+      closestUpdateTime = std::min(sensor->NextDataUpdateTime(), closestUpdateTime);
     }
     this->nextUpdateTime = closestUpdateTime;
 
@@ -648,9 +634,8 @@ void MultibeamSonarSystem::Implementation::OnPostRender()
 
   for (const auto & sensorId : this->updatedSensorIds)
   {
-    auto *sensor =
-        dynamic_cast<gz::sensors::MultibeamSonarSensor *>(
-            this->sensorManager.Sensor(sensorId));
+    auto * sensor =
+      dynamic_cast<gz::sensors::MultibeamSonarSensor *>(this->sensorManager.Sensor(sensorId));
     sensor->PostUpdate(this->simTime);
   }
   this->updatedSensorIds.clear();
@@ -662,8 +647,8 @@ void MultibeamSonarSystem::Implementation::OnRenderTeardown()
   GZ_PROFILE("MultibeamSonarSystem::Implementation::OnRenderTeardown");
   for (const auto & [entityId, sensorId] : this->sensorIdPerEntity)
   {
-    auto *sensor = dynamic_cast<gz::sensors::MultibeamSonarSensor *>(
-        this->sensorManager.Sensor(sensorId));
+    auto * sensor =
+      dynamic_cast<gz::sensors::MultibeamSonarSensor *>(this->sensorManager.Sensor(sensorId));
     if (sensor)
     {
       for (auto renderingSensor : sensor->RenderingSensors())
@@ -675,29 +660,24 @@ void MultibeamSonarSystem::Implementation::OnRenderTeardown()
     else
     {
       gzerr << "Internal error, missing DVL sensor for entity "
-             << "[" << entityId << "]" << std::endl;
+            << "[" << entityId << "]" << std::endl;
     }
   }
   this->sensorIdPerEntity.clear();
 }
 
 //////////////////////////////////////////////////
-MultibeamSonarSystem::MultibeamSonarSystem()
-  : dataPtr(gz::utils::MakeUniqueImpl<Implementation>())
+MultibeamSonarSystem::MultibeamSonarSystem() : dataPtr(gz::utils::MakeUniqueImpl<Implementation>())
 {
 }
 
 //////////////////////////////////////////////////
-MultibeamSonarSystem::~MultibeamSonarSystem()
-{
-}
+MultibeamSonarSystem::~MultibeamSonarSystem() {}
 
 //////////////////////////////////////////////////
 void MultibeamSonarSystem::Configure(
-    const gz::sim::Entity &_entity,
-    const std::shared_ptr<const sdf::Element> &_sdf,
-    gz::sim::EntityComponentManager &_ecm,
-    gz::sim::EventManager &_eventMgr)
+  const gz::sim::Entity & _entity, const std::shared_ptr<const sdf::Element> & _sdf,
+  gz::sim::EntityComponentManager & _ecm, gz::sim::EventManager & _eventMgr)
 {
   GZ_PROFILE("MultibeamSonarSystem::Configure");
   this->dataPtr->DoConfigure(_entity, _sdf, _ecm, _eventMgr);
@@ -705,8 +685,7 @@ void MultibeamSonarSystem::Configure(
 
 //////////////////////////////////////////////////
 void MultibeamSonarSystem::PreUpdate(
-  const gz::sim::UpdateInfo &_info,
-  gz::sim::EntityComponentManager &_ecm)
+  const gz::sim::UpdateInfo & _info, gz::sim::EntityComponentManager & _ecm)
 {
   GZ_PROFILE("MultibeamSonarSystem::PreUpdate");
   this->dataPtr->DoPreUpdate(_info, _ecm);
@@ -714,20 +693,14 @@ void MultibeamSonarSystem::PreUpdate(
 
 //////////////////////////////////////////////////
 void MultibeamSonarSystem::PostUpdate(
-  const gz::sim::UpdateInfo &_info,
-  const gz::sim::EntityComponentManager &_ecm)
+  const gz::sim::UpdateInfo & _info, const gz::sim::EntityComponentManager & _ecm)
 {
   GZ_PROFILE("MultibeamSonarSystem::PostUpdate");
   this->dataPtr->DoPostUpdate(_info, _ecm);
 }
 
-GZ_ADD_PLUGIN(MultibeamSonarSystem,
-  gz::sim::System,
-  MultibeamSonarSystem::ISystemConfigure,
-  MultibeamSonarSystem::ISystemPreUpdate,
-  MultibeamSonarSystem::ISystemPostUpdate
-)
+GZ_ADD_PLUGIN(
+  MultibeamSonarSystem, gz::sim::System, MultibeamSonarSystem::ISystemConfigure,
+  MultibeamSonarSystem::ISystemPreUpdate, MultibeamSonarSystem::ISystemPostUpdate)
 
-GZ_ADD_PLUGIN_ALIAS(MultibeamSonarSystem,
-  "custom::MultibeamSonarSystem"
-)
+GZ_ADD_PLUGIN_ALIAS(MultibeamSonarSystem, "custom::MultibeamSonarSystem")

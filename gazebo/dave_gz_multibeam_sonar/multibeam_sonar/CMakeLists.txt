@@ -28,12 +28,12 @@ if (TARGET gz-rendering${GZ_RENDERING_VER}::ogre2)
 endif()
 
 add_library(${PROJECT_NAME}
-  SHARED 
+  SHARED
     MultibeamSonarSensor.cc
 )
 
 # Ensure that the CameraSensor class is available
-target_include_directories(${PROJECT_NAME} 
+target_include_directories(${PROJECT_NAME}
   PUBLIC
   ${gz-sensors${GZ_SENSORS_VER}_INCLUDE_DIRS}
   ${gz-rendering${GZ_RENDERING_VER}_INCLUDE_DIRS}
