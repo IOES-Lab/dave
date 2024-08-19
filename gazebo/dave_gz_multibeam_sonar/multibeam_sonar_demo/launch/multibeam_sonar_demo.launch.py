@@ -43,12 +43,15 @@ def generate_launch_description():
     )
 
     # RViz
-    pkg_dave_multibeam_sonar_demo= get_package_share_directory('dave_multibeam_sonar_demo')
+    pkg_dave_multibeam_sonar_demo = get_package_share_directory("dave_multibeam_sonar_demo")
     rviz = Node(
-        package='rviz2',
-        executable='rviz2',
-        arguments=['-d', os.path.join(pkg_dave_multibeam_sonar_demo, 'rviz', 'multibeam_sonar.rviz')],
-        condition=IfCondition(LaunchConfiguration('rviz'))
+        package="rviz2",
+        executable="rviz2",
+        arguments=[
+            "-d",
+            os.path.join(pkg_dave_multibeam_sonar_demo, "rviz", "multibeam_sonar.rviz"),
+        ],
+        condition=IfCondition(LaunchConfiguration("rviz")),
     )
 
     # Bridge
