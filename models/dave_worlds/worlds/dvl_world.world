@@ -42,6 +42,12 @@
 			filename="gz-sim-scene-broadcaster-system"
 			name="gz::sim::systems::SceneBroadcaster">
 		</plugin>
+<<<<<<<< HEAD:models/dave_worlds/worlds/dvl_world.world
+========
+		<plugin filename="gz-sim-contact-system"
+				name="gz::sim::systems::Contact">
+		</plugin>
+>>>>>>>> ros2:models/dave_worlds/worlds/new_dvl.world
 		<plugin
 			filename="gz-sim-sensors-system"
 			name="gz::sim::systems::Sensors">
