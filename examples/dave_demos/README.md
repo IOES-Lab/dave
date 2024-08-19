@@ -47,7 +47,7 @@ If you prefer to use model files downloaded from Fuel, proceed as follows:
 4. Launch the model using the provided launch file:
 
    ```bash
-   ros2 launch dave_demos dave_sensor.launch.py namespace:='nortek_dvl500_300' world_name:=dvl_world paused:=false
+   ros2 launch dave_demos dave_sensor.launch.py namespace:='nortek_dvl500_300' world_name:=dvl_world paused:=false z:=-30
    ```
 
 This approach gives you more control over the models you use, allowing for offline use and customization. It's especially useful when working in environments with limited internet connectivity or when specific model versions are required.
