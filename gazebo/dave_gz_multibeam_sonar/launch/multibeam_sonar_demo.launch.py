@@ -27,54 +27,65 @@ from launch_ros.actions import Node
 
 
 def generate_launch_description():
-    pkg_dave_demos = get_package_share_directory('dave_demos')
+    pkg_dave_demos = get_package_share_directory("dave_demos")
     multibeam_sonar_sim = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            os.path.join(pkg_dave_demos, 'launch', 'dave_sensor.launch.py')),
+            os.path.join(pkg_dave_demos, "launch", "dave_sensor.launch.py")
+        ),
         launch_arguments={
-            'namespace': 'blueview_p900',
-            'world_name': 'dave_multibeam_sonar',
-            'paused': 'false',
-            'x': '4',
-            'z': '0.5',
-            'yaw': '3.14'
+            "namespace": "blueview_p900",
+            "world_name": "dave_multibeam_sonar",
+            "paused": "false",
+            "x": "4",
+            "z": "0.5",
+            "yaw": "3.14",
         }.items(),
     )
 
     # RViz
-    pkg_dave_gz_multibeam_sonar = get_package_share_directory('dave_gz_multibeam_sonar')
+    pkg_dave_gz_multibeam_sonar = get_package_share_directory("dave_gz_multibeam_sonar")
     rviz = Node(
-        package='rviz2',
-        executable='rviz2',
-        arguments=['-d', os.path.join(pkg_dave_gz_multibeam_sonar, 'rviz', 'multibeam_sonar.rviz')],
-        condition=IfCondition(LaunchConfiguration('rviz'))
+        package="rviz2",
+        executable="rviz2",
+        arguments=[
+            "-d",
+            os.path.join(pkg_dave_gz_multibeam_sonar, "rviz", "multibeam_sonar.rviz"),
+        ],
+        condition=IfCondition(LaunchConfiguration("rviz")),
     )
 
     # Bridge
     bridge = Node(
-        package='ros_gz_bridge',
-        executable='parameter_bridge',
+        package="ros_gz_bridge",
+        executable="parameter_bridge",
         arguments=[
-            '/sensor/camera@sensor_msgs/msg/Image@gz.msgs.Image',
-            '/sensor/camera_info@sensor_msgs/msg/CameraInfo@gz.msgs.CameraInfo',
-            '/sensor/depth_camera@sensor_msgs/msg/Image@gz.msgs.Image',
-            '/sensor/multibeam_sonar/point_cloud@sensor_msgs/msg/PointCloud2@gz.msgs.PointCloudPacked'
+            "/sensor/camera@sensor_msgs/msg/Image@gz.msgs.Image",
+            "/sensor/camera_info@sensor_msgs/msg/CameraInfo@gz.msgs.CameraInfo",
+            "/sensor/depth_camera@sensor_msgs/msg/Image@gz.msgs.Image",
+            "/sensor/multibeam_sonar/point_cloud@sensor_msgs/msg/PointCloud2@gz.msgs.PointCloudPacked",
         ],
-        output='screen',
+        output="screen",
     )
 
     # ! TODO: Add a static transform publisher for the multibeam sonar
     # TF (Not sure about this....)
-    tf_node = Node(package = "tf2_ros", 
-                executable = "static_transform_publisher",
-                arguments=['--frame-id', 'world', '--child-frame-id', 'blueview_p900/blueview_p900_base_link/multibeam_sonar'])
+    tf_node = Node(
+        package="tf2_ros",
+        executable="static_transform_publisher",
+        arguments=[
+            "--frame-id",
+            "world",
+            "--child-frame-id",
+            "blueview_p900/blueview_p900_base_link/multibeam_sonar",
+        ],
+    )
 
-
-    return LaunchDescription([
-        multibeam_sonar_sim,
-        DeclareLaunchArgument('rviz', default_value='true',
-                              description='Open RViz.'),
-        bridge,
-        rviz,
-        tf_node,
-    ])
+    return LaunchDescription(
+        [
+            multibeam_sonar_sim,
+            DeclareLaunchArgument("rviz", default_value="true", description="Open RViz."),
+            bridge,
+            rviz,
+            tf_node,
+        ]
+    )
