@@ -53,6 +53,12 @@
             <far>10.0</far>
           </clip>
         </camera>
+        <!-- <plugin
+          filename="RosGzPointCloud"
+          name="ros_gz_point_cloud::PointCloud">
+          <topic>/sensor/depth_camera/ros_gz_point_cloud</topic>
+          <frame_id>map</frame_id>
+        </plugin> -->
       </sensor>
 
       <!-- Multibeam Sonar sensor -->
@@ -81,6 +87,13 @@
             </range>
           </ray>
         </gz:multibeam_sonar>
+        <!-- <plugin
+          filename="RosGzPointCloud"
+          name="ros_gz_point_cloud::PointCloud">
+          <namespace>/sensor/multibeam_sonar</namespace>
+          <topic>ros_gz_point_cloud</topic>
+          <frame_id>blueview_p900/blueview_p900_base_link</frame_id>
+        </plugin> -->
       </sensor>
       <self_collide>0</self_collide>
       <enable_wind>0</enable_wind>
