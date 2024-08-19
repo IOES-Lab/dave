@@ -14,5 +14,5 @@
   - Not perfect
 
   ```
-  ros2 launch dave_gz_multibeam_sonar multibeam_sonar_demo.launch.py
+  ros2 launch dave_multibeam_sonar_demo multibeam_sonar_demo.launch.py
   ```
