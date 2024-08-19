@@ -110,7 +110,7 @@
         </geometry>
       </collision>
     </link>
-    <static>0</static>
+    <static>1</static>
     <allow_auto_disable>1</allow_auto_disable>
 
     <plugin
