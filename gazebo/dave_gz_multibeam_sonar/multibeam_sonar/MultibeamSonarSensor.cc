@@ -931,9 +931,9 @@ bool MultibeamSonarSensor::Update(const std::chrono::steady_clock::duration & _n
     return false;
   }
 
-  const gz::math::Pose3d beamsFramePose = this->Pose() * this->dataPtr->beamsFrameTransform;
-  this->dataPtr->depthSensor->SetLocalPose(beamsFramePose);
-  this->dataPtr->imageSensor->SetLocalPose(beamsFramePose);
+  // const gz::math::Pose3d beamsFramePose = this->Pose() * this->dataPtr->beamsFrameTransform;
+  // this->dataPtr->depthSensor->SetLocalPose(beamsFramePose);
+  // this->dataPtr->imageSensor->SetLocalPose(beamsFramePose);
 
   // Generate sensor data
   this->Render();
@@ -957,33 +957,6 @@ bool MultibeamSonarSensor::Update(const std::chrono::steady_clock::duration & _n
 
     // For the point cloud visualization in gazebo
     // https://github.com/gazebosim/gz-gui/pull/346
-    // What is this? doesn't look right
-    gz::msgs::Float_V floatVMsg;
-    gz::msgs::PointCloudPackedIterator<float> xIter(this->dataPtr->pointMsg, "x");
-    gz::msgs::PointCloudPackedIterator<float> yIter(this->dataPtr->pointMsg, "y");
-    gz::msgs::PointCloudPackedIterator<float> zIter(this->dataPtr->pointMsg, "z");
-
-    for (float x = 0.0, y = 0.0, z = 0.0; xIter != xIter.End(); ++xIter, ++yIter, ++zIter)
-    {
-      *xIter = x;
-      *yIter = y;
-      *zIter = z;
-      floatVMsg.add_data(1);
-
-      x += 1.0;
-      if (x > 9)
-      {
-        x = 0.0;
-        y += 1.0;
-      }
-      if (y > 9)
-      {
-        y = 0.0;
-        z += 1.0;
-      }
-    }
-    this->dataPtr->pointFloatPub.Publish(floatVMsg);
-
     {
       this->AddSequence(this->dataPtr->pointMsg.mutable_header());
       GZ_PROFILE("MultibeamSonarSensor::Update Publish point cloud");
