@@ -1,5 +1,5 @@
-#ifndef dave_gz_sensor_plugins__SUBSEA_PRESSURE_SENSOR_HH_
-#define dave_gz_sensor_plugins__SUBSEA_PRESSURE_SENSOR_HH_
+#ifndef DAVE_GZ_SENSOR_PLUGINS__SUBSEA_PRESSURE_SENSOR_HH_
+#define DAVE_GZ_SENSOR_PLUGINS__SUBSEA_PRESSURE_SENSOR_HH_
 
 #include <gz/msgs/vector3d.pb.h>
 #include <gz/sim/System.hh>

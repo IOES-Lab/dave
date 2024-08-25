@@ -1,0 +1,126 @@
+<?xml version="1.0"?>
+<sdf version="1.7">
+  <model name="blueview_p900">
+    <pose>4 0 0.5 0 0.0 3.14</pose>
+    <link name="blueview_p900_base_link">
+      <inertial>
+        <pose>0 0 0 0 0 0</pose>
+        <mass>3.5</mass>
+        <inertia>
+          <ixx>0.0195872</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.0195872</iyy>
+          <iyz>0</iyz>
+          <izz>0.0151357</izz>
+        </inertia>
+      </inertial>
+      <gravity>1</gravity>
+
+      <!-- Camera sensor -->
+      <sensor name="camera" type="camera">
+        <camera>
+          <horizontal_fov>1.047</horizontal_fov>
+          <image>
+            <width>320</width>
+            <height>240</height>
+          </image>
+          <clip>
+            <near>0.1</near>
+            <far>100</far>
+          </clip>
+        </camera>
+        <always_on>1</always_on>
+        <update_rate>30</update_rate>
+        <visualize>true</visualize>
+        <topic>/sensor/camera</topic>
+      </sensor>
+
+      <!-- Depth Camera sensor -->
+      <sensor name="depth_camera" type="depth_camera">
+        <update_rate>10</update_rate>
+        <topic>/sensor/depth_camera</topic>
+        <enable_metrics>true</enable_metrics>
+        <camera>
+          <horizontal_fov>1.05</horizontal_fov>
+          <image>
+            <width>320</width>
+            <height>240</height>
+            <format>R_FLOAT32</format>
+          </image>
+          <clip>
+            <near>0.1</near>
+            <far>10.0</far>
+          </clip>
+        </camera>
+        <!-- <plugin
+          filename="RosGzPointCloud"
+          name="ros_gz_point_cloud::PointCloud">
+          <topic>/sensor/depth_camera/ros_gz_point_cloud</topic>
+          <frame_id>map</frame_id>
+        </plugin> -->
+      </sensor>
+
+      <!-- Multibeam Sonar sensor -->
+      <sensor name="multibeam_sonar" type="custom" gz:type="multibeam_sonar">
+        <always_on>true</always_on>
+        <update_rate>30.0</update_rate>
+        <topic>/sensor/multibeam_sonar</topic>
+        <visualize>true</visualize>
+        <gz:multibeam_sonar>
+          <ray degrees="true">
+            <scan>
+                <horizontal>
+                  <samples>256</samples>
+                  <min_angle>-0.78539816339</min_angle>
+                  <max_angle>0.78539816339</max_angle>
+                </horizontal>
+                <vertical>
+                  <rays>3</rays>
+                  <min_angle>-0.349066</min_angle>
+                  <max_angle>0.349066</max_angle>
+                </vertical>
+            </scan>
+            <range>
+                <min>0.1</min>
+                <max>5.0</max>
+            </range>
+          </ray>
+        </gz:multibeam_sonar>
+        <!-- <plugin
+          filename="RosGzPointCloud"
+          name="ros_gz_point_cloud::PointCloud">
+          <namespace>/sensor/multibeam_sonar</namespace>
+          <topic>ros_gz_point_cloud</topic>
+          <frame_id>blueview_p900/blueview_p900_base_link</frame_id>
+        </plugin> -->
+      </sensor>
+
+      <self_collide>0</self_collide>
+      <enable_wind>0</enable_wind>
+      <kinematic>0</kinematic>
+
+      <visual name="blueview_p900_base_link_visual">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://meshes/blueview_p900/p900.dae</uri>
+          </mesh>
+        </geometry>
+        <transparency>0</transparency>
+        <cast_shadows>1</cast_shadows>
+      </visual>
+      <collision name="blueview_p900_base_link_collision">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>model://meshes/blueview_p900/COLLISION-p900.dae</uri>
+          </mesh>
+        </geometry>
+      </collision>
+    </link>
+    <static>1</static>
+    <allow_auto_disable>1</allow_auto_disable>
+  </model>
+</sdf>

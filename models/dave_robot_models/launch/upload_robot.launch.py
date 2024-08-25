@@ -14,9 +14,9 @@ def generate_launch_description():
     x = LaunchConfiguration("x")
     y = LaunchConfiguration("y")
     z = LaunchConfiguration("z")
-    roll = LaunchConfiguration("roll")
-    pitch = LaunchConfiguration("pitch")
-    yaw = LaunchConfiguration("yaw")
+    roll = LaunchConfiguration("R")
+    pitch = LaunchConfiguration("P")
+    yaw = LaunchConfiguration("Y")
     use_ned_frame = LaunchConfiguration("use_ned_frame")
 
     args = [
@@ -51,17 +51,17 @@ def generate_launch_description():
             description="Initial z position",
         ),
         DeclareLaunchArgument(
-            "roll",
+            "R",
             default_value="0.0",
             description="Initial roll",
         ),
         DeclareLaunchArgument(
-            "pitch",
+            "P",
             default_value="0.0",
             description="Initial pitch",
         ),
         DeclareLaunchArgument(
-            "yaw",
+            "Y",
             default_value="0.0",
             description="Initial yaw",
         ),

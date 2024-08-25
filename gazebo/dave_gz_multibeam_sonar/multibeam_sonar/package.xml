@@ -1,21 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?><package format="3">
-  <name>dave_gz_sensor_plugins</name>
-  <version>0.0.0</version>
-  <description>DAVE sensor plugins</description>
-  <maintainer email="gaurav.og.9920@gmail.com">Gaurav kumar</maintainer>
+  <name>multibeam_sonar</name>
+  <version>0.0.1</version>
+  <description>DAVE multibeam sonar sensor</description>
+  <maintainer email="woensug.choi@gmail.com">Woen-Sug Choi</maintainer>
   <maintainer email="helenamoyen@gmail.com">Helena Moyen</maintainer>
+  <maintainer email="gaurav.og.9920@gmail.com">Gaurav kumar</maintainer>
   <license>Apache 2.0</license>
   <depend>geometry_msgs</depend>
   <buildtool_depend>ament_cmake</buildtool_depend>
   <test_depend>ament_lint_auto</test_depend>
-  <build_depend>dave_interfaces</build_depend>
+  <!-- <build_depend>dave_interfaces</build_depend>
   <build_depend>protobuf</build_depend>
-  <!-- <build_depend>marine_acoustic_msgs</build_depend>
-  <build_depend>pcl_ros</build_depend> -->
+  <build_depend>marine_acoustic_msgs</build_depend>
+  <build_depend>pcl_ros</build_depend>
   <exec_depend>protobuf</exec_depend>
   <exec_depend>dave_interfaces</exec_depend>
-  <!-- <exec_depend>marine_acoustic_msgs</exec_depend>
+  <exec_depend>marine_acoustic_msgs</exec_depend>
   <exec_depend>pcl_ros</exec_depend> -->
   <export>
     <build_type>ament_cmake</build_type>
