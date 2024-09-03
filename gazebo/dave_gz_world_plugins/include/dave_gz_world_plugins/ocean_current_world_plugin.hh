@@ -27,7 +27,6 @@ namespace dave_gz_world_plugins
 // public WorldPlugin,
 class UnderwaterCurrentPlugin : public gz::sim::System,
                                 public gz::sim::ISystemConfigure,
-                                public gz::sim::ISystemPreUpdate,
                                 public gz::sim::ISystemUpdate,
                                 public gz::sim::ISystemPostUpdate
 // public gz::sim::WorldPlugin
@@ -44,12 +43,6 @@ public:
 
   // Documentation inherited.
   virtual void Init();
-
-  /// \brief Update the simulation state.
-  /// \param[in] _info Information used in the update event.
-  //   void Update(const common::UpdateInfo & _info); (check if this is needed)
-
-  void PreUpdate(const gz::sim::UpdateInfo & _info, gz::sim::EntityComponentManager & _ecm);
 
   void Update(const gz::sim::UpdateInfo & _info, gz::sim::EntityComponentManager & _ecm);
 

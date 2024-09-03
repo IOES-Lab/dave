@@ -39,7 +39,8 @@ def launch_setup(context, *args, **kwargs):
         gz_args.append(" -r")
     if debug.perform(context) == "true":
         gz_args.append(" -v ")
-        gz_args.append(verbose.perform(context))
+    if verbose.perform(context) == "true":
+        gz_args.append(" -v ")
 
     # Include the first launch file
     gz_sim_launch = IncludeLaunchDescription(

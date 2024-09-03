@@ -77,9 +77,10 @@ void UnderwaterCurrentROSPlugin::Configure(
 {
   if (!rclcpp::ok())
   {
-    gzerr << "ROS 2 has not been properly initialized. Please make sure you have initialized your "
-             "ROS 2 environment.\n";
-    return;
+    rclcpp::init(0, nullptr);
+    // gzerr << "ROS 2 has not been properly initialized. Please make sure you have initialized your
+    // "
+    //          "ROS 2 environment.\n";
   }
 
   this->dataPtr->rosNode = std::make_shared<rclcpp::Node>("underwater_current_ros_plugin");
@@ -123,8 +124,6 @@ void UnderwaterCurrentROSPlugin::Configure(
   // request and response objects that the service callback expects to receive. This allows the
   // serviceCallback method of <MyClass> to be used directly as a ROS 2 service handler without
   // having to wrap it in another function that manually passes the request and response.
-
-  // check for the number of arg being passed to the function
 
   // Advertise the service to get the current velocity model
   this->dataPtr->get_current_velocity_model =

@@ -11,6 +11,8 @@ find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
+find_package(gz-cmake3 REQUIRED)
+find_package(gz-msgs10 REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/UsblCommand.msg"

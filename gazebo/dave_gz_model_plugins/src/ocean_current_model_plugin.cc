@@ -46,16 +46,13 @@ namespace dave_gz_model_plugins
 struct TransientCurrentPlugin::PrivateData
 {
   // Initialize any necessary states before the plugin starts
-  virtual void Init();
   std::string transientCurrentVelocityTopic;
   gz::sim::World world{gz::sim::kNullEntity};
   gz::sim::Entity entity{gz::sim::kNullEntity};
   gz::sim::Model model{gz::sim::kNullEntity};
   gz::sim::Entity modelLink{gz::sim::kNullEntity};
   std::string ns;
-  virtual void Connect();
   std::shared_ptr<gz::transport::Node> gz_node;
-  // std::map<std::string, gz::transport::Publisher> publishers;
   gz::transport::Node::Publisher gz_current_vel_pub;
   std::string currentVelocityTopic;
   std::chrono::steady_clock::duration lastUpdate{0};
@@ -66,7 +63,6 @@ struct TransientCurrentPlugin::PrivateData
   std::shared_ptr<rclcpp::Node> ros_node_;
   rclcpp::Publisher<geometry_msgs::msg::TwistStamped>::SharedPtr flowVelocityPub;
   rclcpp::Subscription<dave_interfaces::msg::StratifiedCurrentDatabase>::SharedPtr databaseSub;
-  // std::shared_ptr<rclcpp::Publisher<geometry_msgs::msg::TwistStamped>> flowVelocityPub;
   std::string modelName;
 
   /// \brief Gauss-Markov process instance for the velocity components
@@ -187,11 +183,14 @@ void TransientCurrentPlugin::Configure(
     this->dataPtr->gz_node->Advertise<gz::msgs::Vector3d>(this->dataPtr->currentVelocityTopic);
 
   // Subscribe stratified ocean current database
+  // this->dataPtr->databaseSub =
+  //   this->ros_node_->create_subscription<dave_interfaces::msg::StratifiedCurrentDatabase>(
+  //     this->dataPtr->transientCurrentVelocityTopic, 10,
+  //     std::bind(&TransientCurrentPlugin::UpdateDatabase, this, std::placeholders::_1));
   this->dataPtr->databaseSub =
     this->ros_node_->create_subscription<dave_interfaces::msg::StratifiedCurrentDatabase>(
       this->dataPtr->transientCurrentVelocityTopic, 10,
       std::bind(&TransientCurrentPlugin::UpdateDatabase, this, std::placeholders::_1));
-
   // Read topic name of stratified ocean current from SDF
   LoadCurrentVelocityParams(sdfClone, _ecm);
   Gauss_Markov_process_initialize(_sdf);
@@ -230,11 +229,7 @@ void TransientCurrentPlugin::LoadCurrentVelocityParams(
     }
   }
 }
-/////////////////////////////////////////////////
-void TransientCurrentPlugin::Init()
-{
-  // Doing nothing for now
-}
+
 //////////////////////////////////////////
 
 gz::sim::Entity TransientCurrentPlugin::GetModelEntity(
@@ -430,8 +425,10 @@ void TransientCurrentPlugin::PublishCurrentVelocity(const gz::sim::UpdateInfo & 
 }
 
 /////////////////////////////////////////////////
+// void TransientCurrentPlugin::UpdateDatabase(
+//   const dave_interfaces::msg::StratifiedCurrentDatabase::ConstPtr & _msg)
 void TransientCurrentPlugin::UpdateDatabase(
-  const dave_interfaces::msg::StratifiedCurrentDatabase::ConstPtr & _msg)
+  const std::shared_ptr<const dave_interfaces::msg::StratifiedCurrentDatabase> & _msg)
 {
   this->dataPtr->lock_.lock();
 
@@ -595,6 +592,17 @@ void TransientCurrentPlugin::Gauss_Markov_process_initialize(
   this->dataPtr->currentVelEastModel.lastUpdate = this->dataPtr->lastUpdate.count();
   this->dataPtr->currentVelDownModel.lastUpdate = this->dataPtr->lastUpdate.count();
 }
+
+/////////////////////////////////////////////////
+// void TransientCurrentPlugin::ApllyModelForces(){}
+
+/////////////////////////////////////////////////
+// void TransientCurrentPlugin::PreUpdate(){
+
+// // Apply force to the model
+
+// }
+
 /////////////////////////////////////////////////
 void TransientCurrentPlugin::Update(
   const gz::sim::UpdateInfo & _info, gz::sim::EntityComponentManager & _ecm)

@@ -587,7 +587,7 @@
     <!-- Sea Pressure Sensor Plugin -->
     <plugin
       filename="sea_pressure_sensor"
-      name=" dave_gz_sensor_plugins::SubseaPressureSensorPlugin">
+      name="dave_gz_sensor_plugins::SubseaPressureSensorPlugin">
       <namespace>rexrov</namespace>
       <topic>sea_pressure</topic>
       <update_rate>10</update_rate>
@@ -595,6 +595,33 @@
       <estimate_depth_on>true</estimate_depth_on>
       <standard_pressure>101.325</standard_pressure>
       <kPa_per_meter>9.80638</kPa_per_meter>
+    </plugin>
+
+    <!-- Dave Transient Current Plugin -->
+    <!-- dave_gz_model_plugins::TransientCurrentPlugin -->
+    <plugin
+      filename="libocean_current_model_plugin.so"
+      name="dave_gz_model_plugins::TransientCurrentPlugin">
+      <namespace>rexrov</namespace>
+      <!-- <flow_velocity_topic>hydrodynamics/current_velocity/$(arg namespace)</flow_velocity_topic> -->
+      <!-- <link_name>base_link</link_name> -->
+      <base_link_name>$(arg namespace)/base_link</base_link_name>
+      <transient_current>
+        <topic_stratified>stratified_current_velocity</topic_stratified>
+        <velocity_north>
+          <noiseAmp>0.3</noiseAmp>
+          <noiseFreq>0.0</noiseFreq>
+        </velocity_north>
+        <velocity_east>
+          <noiseAmp>0.3</noiseAmp>
+          <noiseFreq>0.0</noiseFreq>
+        </velocity_east>
+        <velocity_down>
+          <noiseAmp>0.3</noiseAmp>
+          <noiseFreq>0.0</noiseFreq>
+        </velocity_down>
+      </transient_current>
+      <tide_oscillation>false</tide_oscillation>
     </plugin>
 
   </model>

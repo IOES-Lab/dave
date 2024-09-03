@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?><package format="3">
   <name>dave_gz_model_plugins</name>
   <version>0.0.0</version>
-  <description>The dave_gz_model_plugins</description>
+  <description>Dave Model Plugins</description>
   <maintainer email="gaurav.og.9920@gmail.com">Gaurav Kumar</maintainer>
   <license>Apache 2.0</license>
   <buildtool_depend>ament_cmake</buildtool_depend>

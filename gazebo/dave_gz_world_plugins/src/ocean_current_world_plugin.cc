@@ -29,7 +29,7 @@
 GZ_ADD_PLUGIN(
   dave_gz_world_plugins::UnderwaterCurrentPlugin, gz::sim::System,
   dave_gz_world_plugins::UnderwaterCurrentPlugin::ISystemConfigure,
-  dave_gz_world_plugins::UnderwaterCurrentPlugin::ISystemPreUpdate,
+  dave_gz_world_plugins::UnderwaterCurrentPlugin::ISystemUpdate,
   dave_gz_world_plugins::UnderwaterCurrentPlugin::ISystemPostUpdate)
 
 namespace dave_gz_world_plugins
@@ -99,8 +99,8 @@ void UnderwaterCurrentPlugin::Configure(
   const gz::sim::Entity & _entity, const std::shared_ptr<const sdf::Element> & _sdf,
   gz::sim::EntityComponentManager & _ecm, gz::sim::EventManager & _eventMgr)
 {
-  GZ_ASSERT(_entity != NULL, "World pointer is invalid");
-  GZ_ASSERT(_sdf != NULL, "SDF pointer is invalid");
+  // GZ_ASSERT(_entity !=  gz::sim::kNullEntity, "World pointer is invalid");
+  // GZ_ASSERT(_sdf != nullptr, "SDF pointer is invalid");
 
   this->dataPtr->world = gz::sim::World(_ecm.EntityByComponents(gz::sim::components::World()));
   if (!this->dataPtr->world.Valid(_ecm))  // check
@@ -652,12 +652,6 @@ void UnderwaterCurrentPlugin::PublishStratifiedCurrentVelocity()
     return;
   }
   this->dataPtr->gz_node_cvel_world_pub.Publish(currentVel);
-}
-
-/////////////////////////////////////////////////
-void UnderwaterCurrentPlugin::PreUpdate(
-  const gz::sim::UpdateInfo & _info, gz::sim::EntityComponentManager & _ecm)
-{
 }
 
 /////////////////////////////////////////////////

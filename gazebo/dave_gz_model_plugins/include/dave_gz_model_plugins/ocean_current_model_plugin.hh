@@ -67,7 +67,9 @@ public:
   void Gauss_Markov_process_initialize(const std::shared_ptr<const sdf::Element> & _sdf);
 
   /// \brief Convey model state from gazebo topic to outside
-  void UpdateDatabase(const dave_interfaces::msg::StratifiedCurrentDatabase::ConstPtr & _msg);
+  // void UpdateDatabase(const dave_interfaces::msg::StratifiedCurrentDatabase::ConstPtr & _msg);
+  void UpdateDatabase(
+    const std::shared_ptr<const dave_interfaces::msg::StratifiedCurrentDatabase> & _msg);
 
   /// \brief Publish ocean current
   void PublishCurrentVelocity(const gz::sim::UpdateInfo & _info);
