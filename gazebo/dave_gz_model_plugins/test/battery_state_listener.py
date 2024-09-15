@@ -6,9 +6,10 @@ from sensor_msgs.msg import BatteryState
 class BatteryStateListener(Node):
     def __init__(self):
         super().__init__('battery_state_listener')
+        # Adjust the topic name to match the namespace
         self.subscription = self.create_subscription(
             BatteryState,
-            'battery_state',
+            'battery_model/base_link/battery_sensor/battery_state',
             self.listener_callback,
             10)
 

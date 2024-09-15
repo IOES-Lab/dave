@@ -1,17 +1,28 @@
 <?xml version="1.6" ?>
 <sdf version="1.6">
   <world name="default">
-  <model name="battery_model">
-    <static>false</static>
-    <link name="base_link">
-      <sensor name="battery_sensor" type="custom">
-        <plugin filename="gz-sim-python-system-loader-system" name="gz::sim::systems::PythonSystemLoader">
-          <module_name>linear_battery_plugin</module_name>
-          <namespace>battery_model/base_link</namespace>
-          <update_rate>2</update_rate>
-        </plugin>
-      </sensor>
-    </link>
-  </model>
+    <model name="battery_model">
+      <static>false</static>
+      <link name="base_link">
+        <sensor name="battery_sensor" type="custom">
+          <plugin filename="gz-sim-python-system-loader-system" name="gz::sim::systems::PythonSystemLoader">
+            <module_name>linear_battery_plugin</module_name>
+            <namespace>battery_model/base_link</namespace>
+            <update_rate>2</update_rate>
+            
+            <!-- Battery parameters -->
+            <battery_name>demo_battery</battery_name>
+            <initial_charge>5.0</initial_charge> <!-- q0: Initial battery charge in Ah -->
+            <capacity>5.0</capacity> <!-- The capacity of the battery in Ah -->
+            <voltage>12.0</voltage> <!-- Nominal voltage of the battery in Volts -->
+            <resistance>0.1</resistance> <!-- Internal resistance of the battery in Ohms -->
+            <open_circuit_voltage>12.6</open_circuit_voltage> <!-- Voltage at full charge -->
+            <enable_recharge>True</enable_recharge>
+            <charging_time>10</charging_time>
+            <fix_issue_225>True</fix_issue_225>
+          </plugin>
+        </sensor>
+      </link>
+    </model>
   </world>
 </sdf>
