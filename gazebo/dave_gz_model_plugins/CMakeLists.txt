@@ -25,6 +25,7 @@ message(STATUS "Compiling against Gazebo Harmonic")
 add_library(ocean_current_model_plugin SHARED
   src/ocean_current_model_plugin.cc
 )
+set_property(TARGET ocean_current_model_plugin PROPERTY CXX_STANDARD 17)
 
 target_include_directories(ocean_current_model_plugin PRIVATE include)
 
@@ -55,6 +56,7 @@ install(DIRECTORY include/
 ament_environment_hooks(
   "${CMAKE_CURRENT_SOURCE_DIR}/hooks/${PROJECT_NAME}.dsv.in"
 )
+
 
 # Following directives are used when testing.
 if(BUILD_TESTING)

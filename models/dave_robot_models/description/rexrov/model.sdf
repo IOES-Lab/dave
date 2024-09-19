@@ -600,7 +600,7 @@
     <!-- Dave Transient Current Plugin -->
     <!-- dave_gz_model_plugins::TransientCurrentPlugin -->
     <plugin
-      filename="libocean_current_model_plugin.so"
+      filename="ocean_current_model_plugin"
       name="dave_gz_model_plugins::TransientCurrentPlugin">
       <namespace>rexrov</namespace>
       <!-- <flow_velocity_topic>hydrodynamics/current_velocity/$(arg namespace)</flow_velocity_topic> -->

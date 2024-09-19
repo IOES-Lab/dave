@@ -1,8 +1,11 @@
 #include "dave_gz_model_plugins/ocean_current_model_plugin.hh"
 #include <gz/msgs/vector3d.pb.h>
 #include <algorithm>
+#include <ament_index_cpp/get_package_share_directory.hpp>
 #include <array>
 #include <chrono>
+#include <geometry_msgs/msg/twist_stamped.hpp>
+#include <geometry_msgs/msg/vector3.hpp>
 #include <gz/physics/World.hh>
 #include <gz/plugin/Register.hh>
 #include <gz/sim/Model.hh>
@@ -18,6 +21,7 @@
 #include <iostream>
 #include <memory>
 #include <rclcpp/rclcpp.hpp>
+#include <sdf/sdf.hh>
 #include <std_msgs/msg/string.hpp>
 #include <string>
 #include <unordered_map>
@@ -28,11 +32,6 @@
 #include "dave_interfaces/msg/Stratified_Current_Velocity.hpp"
 #include "gz/common/StringUtils.hh"
 #include "gz/plugin/Register.hh"
-
-#include <ament_index_cpp/get_package_share_directory.hpp>
-#include <geometry_msgs/msg/twist_stamped.hpp>
-#include <geometry_msgs/msg/vector3.hpp>
-#include <sdf/sdf.hh>
 
 // Register plugin
 GZ_ADD_PLUGIN(
