@@ -1,0 +1,61 @@
+<sdf version="1.6">
+  <model name="pressure_model">
+    <link name="pressure_link">
+      <inertial>
+        <mass>0.015</mass>
+        <inertia>
+          <ixx>0.00001</ixx>
+          <ixy>0.0</ixy>
+          <ixz>0.0</ixz>
+          <iyy>0.00001</iyy>
+          <iyz>0.0</iyz>
+          <izz>0.00001</izz>
+        </inertia>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh>
+            <uri>model://meshes/sea_pressure_sensor/pressure.dae</uri>
+            <scale>1 1 1</scale>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision>
+        <geometry>
+          <cylinder>
+            <radius>0.000001</radius>
+            <length>0.000001</length>
+          </cylinder>
+        </geometry>
+        <pose>0 0 0 0 1.5708 0</pose> <!-- Converted 0.5*pi to radians -->
+      </collision>
+    </link>
+
+    <joint name="pressure_joint" type="revolute">
+      <parent>parent_link_name</parent>
+      <child>pressure_link</child>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <upper>0</upper>
+          <lower>0</lower>
+          <effort>0</effort>
+          <velocity>0</velocity>
+        </limit>
+      </axis>
+    </joint>
+
+    <!-- Sea Pressure Sensor Plugin -->
+    <plugin
+      filename="sea_pressure_sensor"
+      name=" dave_gz_sensor_plugins::SubseaPressureSensorPlugin">
+      <namespace>rexrov</namespace>
+      <topic>sea_pressure</topic>
+      <update_rate>10</update_rate>
+      <noise_sigma>3.0</noise_sigma>
+      <estimate_depth_on>false</estimate_depth_on>
+      <standard_pressure>101.325</standard_pressure>
+      <kPa_per_meter>9.80638</kPa_per_meter>
+    </plugin>
+  </model>
+</sdf>
