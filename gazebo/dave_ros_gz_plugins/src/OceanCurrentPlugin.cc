@@ -1,62 +1,90 @@
-#include "dave_ros_gz_plugins/ocean_current_plugin.hh"
+// Standard Library Headers
 #include <algorithm>
-#include <boost/shared_ptr.hpp>
 #include <chrono>
 #include <functional>
-#include <geometry_msgs/msg/twist_stamped.hpp>
-#include <gz/physics/World.hh>
-#include <gz/sim/Model.hh>
-#include <gz/sim/System.hh>
-#include <gz/sim/World.hh>
 #include <iostream>
+#include <vector>
+
+// Boost Library Header
+#include <boost/shared_ptr.hpp>
+
+// ROS 2 Headers
+#include <geometry_msgs/msg/twist_stamped.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/service.hpp>
 #include <std_msgs/msg/string.hpp>
-#include <vector>
-#include "dave_gz_world_plugins/gauss_markov_process.hh"
-#include "dave_gz_world_plugins/ocean_current_world_plugin.hh"
 
-#include "gz/plugin/Register.hh"
-#include "gz/sim/components/World.hh"
+// Gazebo Physics and Simulation Headers
+#include <gz/physics/World.hh>
+#include <gz/plugin/Register.hh>
+#include <gz/sim/Model.hh>
+#include <gz/sim/System.hh>
+#include <gz/sim/World.hh>
+#include <gz/sim/components/World.hh>
+
+// Dave Gazebo World Plugins
+#include "dave_gz_world_plugins/OceanCurrentWorldPlugin.hh"
+#include "dave_gz_world_plugins/gauss_markov_process.hh"
+
+// Dave ROS-Gazebo Plugin
+#include "dave_ros_gz_plugins/OceanCurrentPlugin.hh"
 
 GZ_ADD_PLUGIN(
-  dave_ros_gz_plugins::UnderwaterCurrentROSPlugin, gz::sim::System,
-  dave_ros_gz_plugins::UnderwaterCurrentROSPlugin::ISystemConfigure,
-  dave_ros_gz_plugins::UnderwaterCurrentROSPlugin::ISystemPostUpdate)
+  dave_ros_gz_plugins::OceanCurrentPlugin, gz::sim::System,
+  dave_ros_gz_plugins::OceanCurrentPlugin::ISystemConfigure,
+  dave_ros_gz_plugins::OceanCurrentPlugin::ISystemPostUpdate)
 
 namespace dave_ros_gz_plugins
 {
-struct UnderwaterCurrentROSPlugin::PrivateData
+struct OceanCurrentPlugin::PrivateData
 {
   // std::string db_path;  (check)(TODO)
   // this->dataPtr->db_path = ament_index_cpp::get_package_share_directory("dave_worlds");
-  std::chrono::steady_clock::duration lastUpdate{0};
   // // rclcpp::Service<dave_interfaces::srv::>::SharedPtr;  //Template
+
+  // Time management
+  std::chrono::steady_clock::duration lastUpdate{0};
+
+  // ROS 2 Services for Current Models
   rclcpp::Service<dave_interfaces::srv::GetCurrentModel>::SharedPtr get_current_velocity_model;
   rclcpp::Service<dave_interfaces::srv::GetCurrentModel>::SharedPtr get_current_horz_angle_model;
   rclcpp::Service<dave_interfaces::srv::GetCurrentModel>::SharedPtr get_current_vert_angle_model;
   rclcpp::Service<dave_interfaces::srv::SetCurrentModel>::SharedPtr set_current_velocity_model;
   rclcpp::Service<dave_interfaces::srv::SetCurrentModel>::SharedPtr set_current_horz_angle_model;
   rclcpp::Service<dave_interfaces::srv::SetCurrentModel>::SharedPtr set_current_vert_angle_model;
+
+  // ROS 2 Services for Current Velocity and Directions
   rclcpp::Service<dave_interfaces::srv::SetCurrentVelocity>::SharedPtr set_current_velocity;
   rclcpp::Service<dave_interfaces::srv::SetCurrentDirection>::SharedPtr set_current_horz_angle;
   rclcpp::Service<dave_interfaces::srv::SetCurrentDirection>::SharedPtr set_current_vert_angle;
+
+  // ROS 2 Services for Stratified Current Models
   rclcpp::Service<dave_interfaces::srv::SetStratifiedCurrentVelocity>::SharedPtr
     set_stratified_current_velocity;
   rclcpp::Service<dave_interfaces::srv::SetStratifiedCurrentDirection>::SharedPtr
     set_stratified_current_horz_angle;
   rclcpp::Service<dave_interfaces::srv::SetStratifiedCurrentDirection>::SharedPtr
     set_stratified_current_vert_angle;
+
+  // ROS Node
   std::shared_ptr<rclcpp::Node> rosNode;
+
+  // Gazebo Simulation Objects
   gz::sim::World world;
   gz::sim::Model model;
   gz::sim::Entity entity;  // Added entity member
+
+  // Model and SDF Parameters
   std::string modelName;
   std::shared_ptr<const sdf::Element> sdf;
-  std::string stratifiedCurrentVelocityTopic;
+
+  // Topic Names for Publishing Data
+  // std::string stratifiedCurrentVelocityTopic;
   std::string stratifiedCurrentVelocityDatabaseTopic;
-  std::string currentVelocityTopic;
+  // std::string currentVelocityTopic;
   std::string model_namespace;
+
+  // ROS 2 Publishers
   rclcpp::Publisher<geometry_msgs::msg::TwistStamped>::SharedPtr flowVelocityPub;
   rclcpp::Publisher<dave_interfaces::msg::StratifiedCurrentVelocity>::SharedPtr
     stratifiedCurrentVelocityPub;
@@ -65,13 +93,11 @@ struct UnderwaterCurrentROSPlugin::PrivateData
 };
 
 /////////////////////////////////////////////////
-UnderwaterCurrentROSPlugin::UnderwaterCurrentROSPlugin() : dataPtr(std::make_unique<PrivateData>())
-{
-}
-UnderwaterCurrentROSPlugin::~UnderwaterCurrentROSPlugin() {}
+OceanCurrentPlugin::OceanCurrentPlugin() : dataPtr(std::make_unique<PrivateData>()) {}
+OceanCurrentPlugin::~OceanCurrentPlugin() {}
 
 /////////////////////////////////////////////////
-void UnderwaterCurrentROSPlugin::Configure(
+void OceanCurrentPlugin::Configure(
   const gz::sim::Entity & _entity, const std::shared_ptr<const sdf::Element> & _sdf,
   gz::sim::EntityComponentManager & _ecm, gz::sim::EventManager & _eventMgr)
 {
@@ -79,27 +105,35 @@ void UnderwaterCurrentROSPlugin::Configure(
   {
     rclcpp::init(0, nullptr);
     // gzerr << "ROS 2 has not been properly initialized. Please make sure you have initialized your
-    // "
-    //          "ROS 2 environment.\n";
+    // ROS 2 environment.";
   }
 
+  // Initialize the ROS 2 node
   this->dataPtr->rosNode = std::make_shared<rclcpp::Node>("underwater_current_ros_plugin");
+
+  // Retrieve the Gazebo world entity
   auto worldEntity = _ecm.EntityByComponents(gz::sim::components::World());
   this->dataPtr->world = gz::sim::World(worldEntity);
 
+  // Set model entity
   this->dataPtr->entity = _entity;
-
   this->dataPtr->model = gz::sim::Model(_entity);
   this->dataPtr->modelName = this->dataPtr->model.Name(_ecm);
+
+  // Save the SDF pointer
   this->dataPtr->sdf = _sdf;
 
-  this->dataPtr->stratifiedCurrentVelocityDatabaseTopic =
-    this->dataPtr->stratifiedCurrentVelocityTopic + "_database";
+  dave_gz_world_plugins::OceanCurrentWorldPlugin::SharedData data;
 
+  // Set the topic for the stratified current velocity database
+  this->dataPtr->stratifiedCurrentVelocityDatabaseTopic =
+    data.stratifiedCurrentVelocityTopic + "_database";
+
+  // Retrieve the model namespace from the SDF if it exists
   this->dataPtr->model_namespace =
     _sdf->HasElement("namespace") ? _sdf->Get<std::string>("namespace") : "";
 
-  // Initialising ROS 2 node
+  // Reinitialize the ROS 2 node with the model namespace
   this->dataPtr->rosNode =
     std::make_shared<rclcpp::Node>("underwater_current_ros_plugin", this->dataPtr->model_namespace);
 
@@ -107,114 +141,108 @@ void UnderwaterCurrentROSPlugin::Configure(
   // Advertise the flow velocity as a stamped twist message
   this->dataPtr->flowVelocityPub =
     this->dataPtr->rosNode->create_publisher<geometry_msgs::msg::TwistStamped>(
-      this->dataPtr->currentVelocityTopic, rclcpp::QoS(10));
+      data.currentVelocityTopic, rclcpp::QoS(10));
 
   // Advertise the stratified ocean current message
   this->dataPtr->stratifiedCurrentVelocityPub =
     this->dataPtr->rosNode->create_publisher<dave_interfaces::msg::StratifiedCurrentVelocity>(
-      this->dataPtr->stratifiedCurrentVelocityTopic, rclcpp::QoS(10));
+      data.stratifiedCurrentVelocityTopic, rclcpp::QoS(10));
 
   // Advertise the stratified ocean current database message
   this->dataPtr->stratifiedCurrentDatabasePub =
     this->dataPtr->rosNode->create_publisher<dave_interfaces::msg::StratifiedCurrentDatabase>(
       this->dataPtr->stratifiedCurrentVelocityDatabaseTopic, rclcpp::QoS(10));
 
-  // Create and advertise services
-  // In this setup : std::placeholders::_1 and std::placeholders::_2 are used to represent the
-  // request and response objects that the service callback expects to receive. This allows the
-  // serviceCallback method of <MyClass> to be used directly as a ROS 2 service handler without
-  // having to wrap it in another function that manually passes the request and response.
-
   // Advertise the service to get the current velocity model
   this->dataPtr->get_current_velocity_model =
     this->dataPtr->rosNode->create_service<dave_interfaces::srv::GetCurrentModel>(
       "get_current_velocity_model", std::bind(
-                                      &UnderwaterCurrentROSPlugin::GetCurrentVelocityModel, this,
+                                      &OceanCurrentPlugin::GetCurrentVelocityModel, this,
                                       std::placeholders::_1, std::placeholders::_2));
 
   // Advertise the service to get the current horizontal angle model
   this->dataPtr->get_current_horz_angle_model =
     this->dataPtr->rosNode->create_service<dave_interfaces::srv::GetCurrentModel>(
       "get_current_horz_angle_model", std::bind(
-                                        &UnderwaterCurrentROSPlugin::GetCurrentHorzAngleModel, this,
+                                        &OceanCurrentPlugin::GetCurrentHorzAngleModel, this,
                                         std::placeholders::_1, std::placeholders::_2));
 
   // Advertise the service to get the current vertical angle model
   this->dataPtr->get_current_vert_angle_model =
     this->dataPtr->rosNode->create_service<dave_interfaces::srv::GetCurrentModel>(
       "get_current_vert_angle_model", std::bind(
-                                        &UnderwaterCurrentROSPlugin::GetCurrentVertAngleModel, this,
+                                        &OceanCurrentPlugin::GetCurrentVertAngleModel, this,
                                         std::placeholders::_1, std::placeholders::_2));
 
   // Advertise the service to update the current velocity model
   this->dataPtr->set_current_velocity_model =
     this->dataPtr->rosNode->create_service<dave_interfaces::srv::SetCurrentModel>(
       "set_current_velocity_model", std::bind(
-                                      &UnderwaterCurrentROSPlugin::UpdateCurrentVelocityModel, this,
+                                      &OceanCurrentPlugin::UpdateCurrentVelocityModel, this,
                                       std::placeholders::_1, std::placeholders::_2));
 
   // Advertise the service to update the current horizontal angle model
   this->dataPtr->set_current_horz_angle_model =
     this->dataPtr->rosNode->create_service<dave_interfaces::srv::SetCurrentModel>(
       "set_current_horz_angle_model", std::bind(
-                                        &UnderwaterCurrentROSPlugin::UpdateCurrentHorzAngleModel,
-                                        this, std::placeholders::_1, std::placeholders::_2));
+                                        &OceanCurrentPlugin::UpdateCurrentHorzAngleModel, this,
+                                        std::placeholders::_1, std::placeholders::_2));
 
   // Advertise the service to update the current vertical angle model
   this->dataPtr->set_current_vert_angle_model =
     this->dataPtr->rosNode->create_service<dave_interfaces::srv::SetCurrentModel>(
       "set_current_vert_angle_model", std::bind(
-                                        &UnderwaterCurrentROSPlugin::UpdateCurrentVertAngleModel,
-                                        this, std::placeholders::_1, std::placeholders::_2));
+                                        &OceanCurrentPlugin::UpdateCurrentVertAngleModel, this,
+                                        std::placeholders::_1, std::placeholders::_2));
 
   // Advertise the service to update the current velocity mean value
   this->dataPtr->set_current_velocity =
     this->dataPtr->rosNode->create_service<dave_interfaces::srv::SetCurrentVelocity>(
       "set_current_velocity", std::bind(
-                                &UnderwaterCurrentROSPlugin::UpdateCurrentVelocity, this,
+                                &OceanCurrentPlugin::UpdateCurrentVelocity, this,
                                 std::placeholders::_1, std::placeholders::_2));
 
   // Advertise the service to update the stratified current velocity
   this->dataPtr->set_stratified_current_velocity =
     this->dataPtr->rosNode->create_service<dave_interfaces::srv::SetStratifiedCurrentVelocity>(
       "set_stratified_current_velocity", std::bind(
-                                           &UnderwaterCurrentROSPlugin::UpdateStratCurrentVelocity,
-                                           this, std::placeholders::_1, std::placeholders::_2));
+                                           &OceanCurrentPlugin::UpdateStratCurrentVelocity, this,
+                                           std::placeholders::_1, std::placeholders::_2));
 
   // Advertise the service to update the current horizontal angle //TODO
   this->dataPtr->set_current_horz_angle =
     this->dataPtr->rosNode->create_service<dave_interfaces::srv::SetCurrentDirection>(
-      "set_current_horz_angle", std::bind(
-                                  &UnderwaterCurrentROSPlugin::UpdateHorzAngle, this,
-                                  std::placeholders::_1, std::placeholders::_2));
+      "set_current_horz_angle",
+      std::bind(
+        &OceanCurrentPlugin::UpdateHorzAngle, this, std::placeholders::_1, std::placeholders::_2));
 
   // Advertise the service to update the current horizontal angle //TODO
   this->dataPtr->set_current_vert_angle =
     this->dataPtr->rosNode->create_service<dave_interfaces::srv::SetCurrentDirection>(
-      "set_current_vert_angle", std::bind(
-                                  &UnderwaterCurrentROSPlugin::UpdateVertAngle, this,
-                                  std::placeholders::_1, std::placeholders::_2));
+      "set_current_vert_angle",
+      std::bind(
+        &OceanCurrentPlugin::UpdateVertAngle, this, std::placeholders::_1, std::placeholders::_2));
 
   // Advertise the service to update the stratified current horizontal angle
   this->dataPtr->set_stratified_current_horz_angle =
     this->dataPtr->rosNode->create_service<dave_interfaces::srv::SetStratifiedCurrentDirection>(
       "set_stratified_current_horz_angle", std::bind(
-                                             &UnderwaterCurrentROSPlugin::UpdateStratHorzAngle,
-                                             this, std::placeholders::_1, std::placeholders::_2));
+                                             &OceanCurrentPlugin::UpdateStratHorzAngle, this,
+                                             std::placeholders::_1, std::placeholders::_2));
 
   // // Advertise the service to update the current vertical angle
   // this->dataPtr->set_current_vert_angle_model =
   //   this->dataPtr->rosNode->create_service<dave_interfaces::srv::SetCurrentDirection>(
   //     "set_current_vert_angle_model", std::bind(
-  //                                       &UnderwaterCurrentROSPlugin::UpdateVertAngleModel, this,
+  //                                       &OceanCurrentPlugin::UpdateVertAngleModel, this,
   //                                       std::placeholders::_1, std::placeholders::_2));
 
   // Advertise the service to update the stratified current vertical angle
   this->dataPtr->set_stratified_current_vert_angle =
     this->dataPtr->rosNode->create_service<dave_interfaces::srv::SetStratifiedCurrentDirection>(
       "set_stratified_current_vert_angle", std::bind(
-                                             &UnderwaterCurrentROSPlugin::UpdateStratVertAngle,
-                                             this, std::placeholders::_1, std::placeholders::_2));
+                                             &OceanCurrentPlugin::UpdateStratVertAngle, this,
+                                             std::placeholders::_1, std::placeholders::_2));
 
   // Connect to the Gazebo Harmonic update event
   // this->dataPtr->rosPublishConnection = _world->OnUpdateBegin([this](const gz::sim::UpdateInfo &
@@ -224,12 +252,12 @@ void UnderwaterCurrentROSPlugin::Configure(
 }
 
 /////////////////////////////////////////////////
-// void UnderwaterCurrentROSPlugin::PreUpdate(
+// void OceanCurrentPlugin::PreUpdate(
 //   const gz::sim::UpdateInfo & _info, gz::sim::EntityComponentManager & _ecm)
 // {
 // }
 // /////////////////////////////////////////////////
-// void UnderwaterCurrentROSPlugin::Update(
+// void OceanCurrentPlugin::Update(
 //   const gz::sim::UpdateInfo & _info, const gz::sim::EntityComponentManager & _ecm)
 // {
 //   if (_info.simTime > this->dataPtr->lastUpdate)
@@ -240,21 +268,21 @@ void UnderwaterCurrentROSPlugin::Configure(
 
 // namespace dave_ros_gz_plugins
 /////////////////////////////////////////////////
-bool UnderwaterCurrentROSPlugin::UpdateHorzAngle(
+bool OceanCurrentPlugin::UpdateHorzAngle(
   const std::shared_ptr<dave_interfaces::srv::SetCurrentDirection::Request> _req,
   std::shared_ptr<dave_interfaces::srv::SetCurrentDirection::Response> _res)
 {
-  dave_gz_world_plugins::UnderwaterCurrentPlugin::SharedData data;
+  dave_gz_world_plugins::OceanCurrentWorldPlugin::SharedData data;
   _res->success = data.currentHorzAngleModel.SetMean(_req->angle);
   return true;
 }
 
 /////////////////////////////////////////////////
-bool UnderwaterCurrentROSPlugin::UpdateStratHorzAngle(
+bool OceanCurrentPlugin::UpdateStratHorzAngle(
   const std::shared_ptr<dave_interfaces::srv::SetStratifiedCurrentDirection::Request> _req,
   std::shared_ptr<dave_interfaces::srv::SetStratifiedCurrentDirection::Response> _res)
 {
-  dave_gz_world_plugins::UnderwaterCurrentPlugin::SharedData data;
+  dave_gz_world_plugins::OceanCurrentWorldPlugin::SharedData data;
 
   if (_req->layer >= data.stratifiedDatabase.size())
   {
@@ -275,21 +303,21 @@ bool UnderwaterCurrentROSPlugin::UpdateStratHorzAngle(
 }
 
 /////////////////////////////////////////////////
-bool UnderwaterCurrentROSPlugin::UpdateVertAngle(
+bool OceanCurrentPlugin::UpdateVertAngle(
   const std::shared_ptr<dave_interfaces::srv::SetCurrentDirection::Request> _req,
   std::shared_ptr<dave_interfaces::srv::SetCurrentDirection::Response> _res)
 {
-  dave_gz_world_plugins::UnderwaterCurrentPlugin::SharedData data;
+  dave_gz_world_plugins::OceanCurrentWorldPlugin::SharedData data;
   _res->success = data.currentVertAngleModel.SetMean(_req->angle);
   return true;
 }
 
 /////////////////////////////////////////////////
-bool UnderwaterCurrentROSPlugin::UpdateStratVertAngle(
+bool OceanCurrentPlugin::UpdateStratVertAngle(
   const std::shared_ptr<dave_interfaces::srv::SetStratifiedCurrentDirection::Request> _req,
   std::shared_ptr<dave_interfaces::srv::SetStratifiedCurrentDirection::Response> _res)
 {
-  dave_gz_world_plugins::UnderwaterCurrentPlugin::SharedData data;
+  dave_gz_world_plugins::OceanCurrentWorldPlugin::SharedData data;
 
   if (_req->layer >= data.stratifiedDatabase.size())
   {
@@ -301,11 +329,11 @@ bool UnderwaterCurrentROSPlugin::UpdateStratVertAngle(
 }
 
 /////////////////////////////////////////////////
-bool UnderwaterCurrentROSPlugin::UpdateCurrentVelocity(
+bool OceanCurrentPlugin::UpdateCurrentVelocity(
   const std::shared_ptr<dave_interfaces::srv::SetCurrentVelocity::Request> _req,
   std::shared_ptr<dave_interfaces::srv::SetCurrentVelocity::Response> _res)
 {
-  dave_gz_world_plugins::UnderwaterCurrentPlugin::SharedData data;
+  dave_gz_world_plugins::OceanCurrentWorldPlugin::SharedData data;
 
   if (
     data.currentVelModel.SetMean(_req->velocity) &&
@@ -327,11 +355,11 @@ bool UnderwaterCurrentROSPlugin::UpdateCurrentVelocity(
 }
 
 /////////////////////////////////////////////////
-bool UnderwaterCurrentROSPlugin::UpdateStratCurrentVelocity(
+bool OceanCurrentPlugin::UpdateStratCurrentVelocity(
   const std::shared_ptr<dave_interfaces::srv::SetStratifiedCurrentVelocity::Request> _req,
   std::shared_ptr<dave_interfaces::srv::SetStratifiedCurrentVelocity::Response> _res)
 {
-  dave_gz_world_plugins::UnderwaterCurrentPlugin::SharedData data;
+  dave_gz_world_plugins::OceanCurrentWorldPlugin::SharedData data;
 
   if (_req->layer >= data.stratifiedDatabase.size())
   {
@@ -361,11 +389,11 @@ bool UnderwaterCurrentROSPlugin::UpdateStratCurrentVelocity(
 }
 
 /////////////////////////////////////////////////
-bool UnderwaterCurrentROSPlugin::GetCurrentVelocityModel(
+bool OceanCurrentPlugin::GetCurrentVelocityModel(
   const std::shared_ptr<dave_interfaces::srv::GetCurrentModel::Request> _req,
   std::shared_ptr<dave_interfaces::srv::GetCurrentModel::Response> _res)
 {
-  dave_gz_world_plugins::UnderwaterCurrentPlugin::SharedData data;
+  dave_gz_world_plugins::OceanCurrentWorldPlugin::SharedData data;
 
   _res->mean = data.currentVelModel.mean;
   _res->min = data.currentVelModel.min;
@@ -376,11 +404,11 @@ bool UnderwaterCurrentROSPlugin::GetCurrentVelocityModel(
 }
 
 /////////////////////////////////////////////////
-bool UnderwaterCurrentROSPlugin::GetCurrentHorzAngleModel(
+bool OceanCurrentPlugin::GetCurrentHorzAngleModel(
   const std::shared_ptr<dave_interfaces::srv::GetCurrentModel::Request> _req,
   std::shared_ptr<dave_interfaces::srv::GetCurrentModel::Response> _res)
 {
-  dave_gz_world_plugins::UnderwaterCurrentPlugin::SharedData data;
+  dave_gz_world_plugins::OceanCurrentWorldPlugin::SharedData data;
 
   _res->mean = data.currentHorzAngleModel.mean;
   _res->min = data.currentHorzAngleModel.min;
@@ -391,11 +419,11 @@ bool UnderwaterCurrentROSPlugin::GetCurrentHorzAngleModel(
 }
 
 /////////////////////////////////////////////////
-bool UnderwaterCurrentROSPlugin::GetCurrentVertAngleModel(
+bool OceanCurrentPlugin::GetCurrentVertAngleModel(
   const std::shared_ptr<dave_interfaces::srv::GetCurrentModel::Request> _req,
   std::shared_ptr<dave_interfaces::srv::GetCurrentModel::Response> _res)
 {
-  dave_gz_world_plugins::UnderwaterCurrentPlugin::SharedData data;
+  dave_gz_world_plugins::OceanCurrentWorldPlugin::SharedData data;
 
   _res->mean = data.currentVertAngleModel.mean;
   _res->min = data.currentVertAngleModel.min;
@@ -406,11 +434,11 @@ bool UnderwaterCurrentROSPlugin::GetCurrentVertAngleModel(
 }
 
 /////////////////////////////////////////////////
-bool UnderwaterCurrentROSPlugin::UpdateCurrentVelocityModel(
+bool OceanCurrentPlugin::UpdateCurrentVelocityModel(
   const std::shared_ptr<dave_interfaces::srv::SetCurrentModel::Request> _req,
   std::shared_ptr<dave_interfaces::srv::SetCurrentModel::Response> _res)
 {
-  dave_gz_world_plugins::UnderwaterCurrentPlugin::SharedData data;
+  dave_gz_world_plugins::OceanCurrentWorldPlugin::SharedData data;
 
   _res->success = data.currentVelModel.SetModel(
     std::max(0.0, _req->mean), std::min(0.0, _req->min), std::max(0.0, _req->max), _req->mu,
@@ -431,11 +459,11 @@ bool UnderwaterCurrentROSPlugin::UpdateCurrentVelocityModel(
   return true;
 }
 /////////////////////////////////////////////////
-bool UnderwaterCurrentROSPlugin::UpdateCurrentHorzAngleModel(
+bool OceanCurrentPlugin::UpdateCurrentHorzAngleModel(
   const std::shared_ptr<dave_interfaces::srv::SetCurrentModel::Request> _req,
   std::shared_ptr<dave_interfaces::srv::SetCurrentModel::Response> _res)
 {
-  dave_gz_world_plugins::UnderwaterCurrentPlugin::SharedData data;
+  dave_gz_world_plugins::OceanCurrentWorldPlugin::SharedData data;
 
   _res->success =
     data.currentHorzAngleModel.SetModel(_req->mean, _req->min, _req->max, _req->mu, _req->noise);
@@ -458,11 +486,11 @@ bool UnderwaterCurrentROSPlugin::UpdateCurrentHorzAngleModel(
 }
 
 /////////////////////////////////////////////////
-bool UnderwaterCurrentROSPlugin::UpdateCurrentVertAngleModel(
+bool OceanCurrentPlugin::UpdateCurrentVertAngleModel(
   const std::shared_ptr<dave_interfaces::srv::SetCurrentModel::Request> _req,
   std::shared_ptr<dave_interfaces::srv::SetCurrentModel::Response> _res)
 {
-  dave_gz_world_plugins::UnderwaterCurrentPlugin::SharedData data;
+  dave_gz_world_plugins::OceanCurrentWorldPlugin::SharedData data;
 
   _res->success =
     data.currentVertAngleModel.SetModel(_req->mean, _req->min, _req->max, _req->mu, _req->noise);
@@ -474,10 +502,10 @@ bool UnderwaterCurrentROSPlugin::UpdateCurrentVertAngleModel(
 }
 
 /////////////////////////////////////////////////
-void UnderwaterCurrentROSPlugin::PostUpdate(
+void OceanCurrentPlugin::PostUpdate(
   const gz::sim::UpdateInfo & _info, const gz::sim::EntityComponentManager & _ecm)
 {
-  dave_gz_world_plugins::UnderwaterCurrentPlugin::SharedData data;
+  dave_gz_world_plugins::OceanCurrentWorldPlugin::SharedData data;
   // Generate and publish current velocity according to the vehicle depth
   geometry_msgs::msg::TwistStamped flowVelMsg;
   flowVelMsg.header.stamp = this->dataPtr->rosNode->get_clock()->now();

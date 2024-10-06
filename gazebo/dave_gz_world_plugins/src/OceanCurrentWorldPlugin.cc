@@ -1,14 +1,11 @@
-#include "dave_gz_world_plugins/ocean_current_world_plugin.hh"
+// Include the necessary headers for Ocean Current Plugin
+#include "dave_gz_world_plugins/OceanCurrentWorldPlugin.hh"
+
+// Include messages for Stratified Current Velocity
 #include <dave_gz_world_plugins_msgs/msgs/StratifiedCurrentVelocity.pb.h>
 
+// Include Gazebo and Ignition libraries
 #include <gz/msgs/vector3d.pb.h>
-#include <math.h>
-#include <ament_index_cpp/get_package_share_directory.hpp>  // TODO (235-239)
-#include <boost/algorithm/string.hpp>
-#include <boost/bind.hpp>
-#include <boost/bind/bind.hpp>
-#include <boost/shared_ptr.hpp>
-#include <chrono>
 #include <gz/math/Pose3.hh>
 #include <gz/math/Vector3.hh>
 #include <gz/math/Vector4.hh>
@@ -16,86 +13,89 @@
 #include <gz/plugin/Register.hh>
 #include <gz/sim/System.hh>
 #include <gz/sim/World.hh>
+#include <gz/sim/components/Model.hh>
+#include <gz/sim/components/World.hh>
 #include <gz/transport/Node.hh>
+
+// Boost libraries for string manipulation, binding, and shared pointers
+#include <boost/algorithm/string.hpp>
+#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
+#include <boost/shared_ptr.hpp>
+
+// Other necessary libraries
+#include <math.h>
+#include <chrono>
 #include <map>
-#include <sdf/sdf.hh>
 #include <string>
-#include "dave_gz_world_plugins/gauss_markov_process.hh"
-#include "dave_gz_world_plugins/tidal_oscillation.hh"
-#include "gz/plugin/Register.hh"
-#include "gz/sim/components/Model.hh"
-#include "gz/sim/components/World.hh"
+
+// AMENT library for package directory functions
+#include <ament_index_cpp/get_package_share_directory.hpp>
+
+// Custom plugin headers
+#include "dave_gz_world_plugins/gauss_markov_process.hh"  // For Gauss-Markov process
+#include "dave_gz_world_plugins/tidal_oscillation.hh"     // For tidal oscillation modeling
 
 GZ_ADD_PLUGIN(
-  dave_gz_world_plugins::UnderwaterCurrentPlugin, gz::sim::System,
-  dave_gz_world_plugins::UnderwaterCurrentPlugin::ISystemConfigure,
-  dave_gz_world_plugins::UnderwaterCurrentPlugin::ISystemUpdate,
-  dave_gz_world_plugins::UnderwaterCurrentPlugin::ISystemPostUpdate)
+  dave_gz_world_plugins::OceanCurrentWorldPlugin, gz::sim::System,
+  dave_gz_world_plugins::OceanCurrentWorldPlugin::ISystemConfigure,
+  dave_gz_world_plugins::OceanCurrentWorldPlugin::ISystemUpdate,
+  dave_gz_world_plugins::OceanCurrentWorldPlugin::ISystemPostUpdate)
 
 namespace dave_gz_world_plugins
 {
 
-struct UnderwaterCurrentPlugin::PrivateData
+struct OceanCurrentWorldPlugin::PrivateData
 {
-  gz::sim::World world{gz::sim::kNullEntity};
-  sdf::ElementPtr sdf;
-  bool hasSurface;
+  // Gazebo Simulation and World Components
+  gz::sim::World world{gz::sim::kNullEntity};  // Gazebo world instance
+  sdf::ElementPtr sdf;                         // Pointer to the SDF element
+  bool hasSurface;                             // Flag to check if surface is present
 
-  /// \brief Pointer to a node for communication
-  std::shared_ptr<gz::transport::Node> gz_node;
+  // Communication Node for Gazebo
+  std::shared_ptr<gz::transport::Node> gz_node;  // Transport node for communication
 
-  /// \brief Map of publishers
-  // gz::transport::Node::Publisher publishers;
-  gz::transport::Node::Publisher gz_node_cvel_world_pub;
+  // Publishers
+  gz::transport::Node::Publisher gz_node_cvel_world_pub;  // Publisher for current velocity
 
-  /// \brief Vehicle Depth Subscriber
-  gz::transport::Node subscriber;
+  // Subscribers
+  gz::transport::Node subscriber;  // Subscriber for vehicle depth
 
-  /// \brief Current velocity topic
-  std::string currentVelocityTopic;
+  // Database File Paths
+  std::string databaseFilePath;  // Path to ocean current database (CSV file)
+  std::string tidalFilePath;     // Path to tidal oscillation database (TXT file)
 
-  /// \brief Stratified Ocean current topic
-  std::string stratifiedCurrentVelocityTopic;
+  // Namespace for Topics and Services
+  std::string ns;  // Namespace for topics and services
 
-  /// \brief Vehicle depth topic
-  std::string vehicleDepthTopic;
-
-  /// \brief Ocean Current Database file path for csv file
-  std::string databaseFilePath;
-
-  /// \brief Tidal Oscillation Database file path for txt file
-  std::string tidalFilePath;
-
-  /// \brief Namespace for topics and services
-  std::string ns;
-
-  /// \brief Tidal Oscillation flag
+  // Tidal Oscillation Variables
   bool tideFlag;
-
-  /// \brief Tidal Oscillation interpolation model
   dave_gz_world_plugins::TidalOscillation tide;
 
-  /// \brief Last update time stamp
+  // Timing
   std::chrono::steady_clock::duration lastUpdate{0};
 
-  /// \brief File path for stratified current database
-  std::string db_path;
+  // Stratified Current Database Path
+  std::string db_path;  // Path to the stratified current database
 
+  // ROS 2 Node
   std::shared_ptr<rclcpp::Node> rosNode;
 };
 
 /////////////////////////////////////////////////
-UnderwaterCurrentPlugin::UnderwaterCurrentPlugin()
+OceanCurrentWorldPlugin::OceanCurrentWorldPlugin()
 : dataPtr(std::make_unique<PrivateData>()), sharedDataPtr(std::make_unique<SharedData>())
 {
   // this->sharedDataPtr = std::make_unique<SharedData>();
 }
 
 /////////////////////////////////////////////////
-UnderwaterCurrentPlugin::~UnderwaterCurrentPlugin() { this->dataPtr->rosNode.reset(); }
+OceanCurrentWorldPlugin::~OceanCurrentWorldPlugin() { this->dataPtr->rosNode.reset(); }
+
+// ----------------------------------------------
 
 /////////////////////////////////////////////////
-void UnderwaterCurrentPlugin::Configure(
+void OceanCurrentWorldPlugin::Configure(
   const gz::sim::Entity & _entity, const std::shared_ptr<const sdf::Element> & _sdf,
   gz::sim::EntityComponentManager & _ecm, gz::sim::EventManager & _eventMgr)
 {
@@ -138,16 +138,15 @@ void UnderwaterCurrentPlugin::Configure(
 }
 
 /////////////////////////////////////////////////
-void UnderwaterCurrentPlugin::LoadTidalOscillationDatabase()
+void OceanCurrentWorldPlugin::LoadTidalOscillationDatabase()
 {
   this->dataPtr->tideFlag = true;
   this->sharedDataPtr->tidalHarmonicFlag = false;
 
-  sdf::ElementPtr tidalOscillationParams =
-    this->dataPtr->sdf->GetElement("tidal_oscillation");  // include this xml/ (TODO)
+  sdf::ElementPtr tidalOscillationParams = this->dataPtr->sdf->GetElement("tidal_oscillation");
   sdf::ElementPtr tidalHarmonicParams;
 
-  // Read the tidal oscillation parameter from the SDF file // (TODO)(TO UNDERSTAND)
+  // Read the tidal oscillation parameter from the SDF file
   if (tidalOscillationParams->HasElement("databasefilePath"))
   {
     this->dataPtr->tidalFilePath = tidalOscillationParams->Get<std::string>("databasefilePath");
@@ -307,7 +306,7 @@ void UnderwaterCurrentPlugin::LoadTidalOscillationDatabase()
 }
 
 /////////////////////////////////////////////////
-void UnderwaterCurrentPlugin::LoadStratifiedCurrentDatabase()
+void OceanCurrentWorldPlugin::LoadStratifiedCurrentDatabase()
 {
   GZ_ASSERT(
     this->dataPtr->sdf->HasElement("transient_current"),
@@ -316,16 +315,16 @@ void UnderwaterCurrentPlugin::LoadStratifiedCurrentDatabase()
 
   if (transientCurrentParams->HasElement("topic_stratified"))
   {
-    this->dataPtr->stratifiedCurrentVelocityTopic =
+    this->sharedDataPtr->stratifiedCurrentVelocityTopic =
       transientCurrentParams->Get<std::string>("topic_stratified");
   }
   else
   {
-    this->dataPtr->stratifiedCurrentVelocityTopic = "stratified_current_velocity";
+    this->sharedDataPtr->stratifiedCurrentVelocityTopic = "stratified_current_velocity";
   }
 
   GZ_ASSERT(
-    !this->dataPtr->stratifiedCurrentVelocityTopic.empty(),
+    !this->sharedDataPtr->stratifiedCurrentVelocityTopic.empty(),
     "Empty stratified ocean current velocity topic");
 
   // Read the depth dependent ocean current file path from the SDF file
@@ -430,14 +429,15 @@ void UnderwaterCurrentPlugin::LoadStratifiedCurrentDatabase()
 
   this->dataPtr->gz_node_cvel_world_pub =
     this->dataPtr->gz_node->Advertise<dave_gz_world_plugins_msgs::msgs::StratifiedCurrentVelocity>(
-      this->dataPtr->ns + "/" + this->dataPtr->stratifiedCurrentVelocityTopic);
+      this->dataPtr->ns + "/" + this->sharedDataPtr->stratifiedCurrentVelocityTopic);
 
   gzmsg << "Stratified current velocity topic name: "
-        << this->dataPtr->ns + "/" + this->dataPtr->stratifiedCurrentVelocityTopic << std::endl;
+        << this->dataPtr->ns + "/" + this->sharedDataPtr->stratifiedCurrentVelocityTopic
+        << std::endl;
 }
 
 /////////////////////////////////////////////////
-void UnderwaterCurrentPlugin::LoadGlobalCurrentConfig()
+void OceanCurrentWorldPlugin::LoadGlobalCurrentConfig()
 {
   // NOTE: The plugin currently requires stratified current, so the
   //       global current set up in this method is potentially
@@ -452,14 +452,15 @@ void UnderwaterCurrentPlugin::LoadGlobalCurrentConfig()
   // Read the topic names from the SDF file
   if (currentVelocityParams->HasElement("topic"))
   {
-    this->dataPtr->currentVelocityTopic = currentVelocityParams->Get<std::string>("topic");
+    this->sharedDataPtr->currentVelocityTopic = currentVelocityParams->Get<std::string>("topic");
   }
   else
   {
-    this->dataPtr->currentVelocityTopic = "current_velocity";
+    this->sharedDataPtr->currentVelocityTopic = "current_velocity";
   }
 
-  GZ_ASSERT(!this->dataPtr->currentVelocityTopic.empty(), "Empty ocean current velocity topic");
+  GZ_ASSERT(
+    !this->sharedDataPtr->currentVelocityTopic.empty(), "Empty ocean current velocity topic");
 
   if (currentVelocityParams->HasElement("velocity"))
   {
@@ -618,44 +619,15 @@ void UnderwaterCurrentPlugin::LoadGlobalCurrentConfig()
 
   // Advertise the current velocity & stratified current velocity topics
   this->dataPtr->gz_node_cvel_world_pub = this->dataPtr->gz_node->Advertise<gz::msgs::Vector3d>(
-    this->dataPtr->ns + "/" + this->dataPtr->currentVelocityTopic);
+    this->dataPtr->ns + "/" + this->sharedDataPtr->currentVelocityTopic);
   gzmsg << "Current velocity topic name: "
-        << this->dataPtr->ns + "/" + this->dataPtr->currentVelocityTopic << std::endl;
+        << this->dataPtr->ns + "/" + this->sharedDataPtr->currentVelocityTopic << std::endl;
 }
 
-/////////////////////////////////////////////////
-void UnderwaterCurrentPlugin::PublishCurrentVelocity()
-{
-  gz::msgs::Vector3d currentVel;
-  gz::msgs::Set(
-    &currentVel,
-    gz::math::Vector3d(
-      this->sharedDataPtr->currentVelocity.X(), this->sharedDataPtr->currentVelocity.Y(),
-      this->sharedDataPtr->currentVelocity.Z()));
-  this->dataPtr->gz_node_cvel_world_pub.Publish(currentVel);
-}
+// ----------------------------------------------
 
 /////////////////////////////////////////////////
-void UnderwaterCurrentPlugin::PublishStratifiedCurrentVelocity()
-{
-  dave_gz_world_plugins_msgs::msgs::StratifiedCurrentVelocity currentVel;  // check
-  for (std::vector<gz::math::Vector4d>::iterator it =
-         this->sharedDataPtr->currentStratifiedVelocity.begin();
-       it != this->sharedDataPtr->currentStratifiedVelocity.end();
-       ++it)  // currentStratifiedVelocity values defined where ? (TODO)
-  {
-    gz::msgs::Set(currentVel.add_velocity(), gz::math::Vector3d(it->X(), it->Y(), it->Z()));
-    currentVel.add_depth(it->W());
-  }
-  if (currentVel.velocity_size() == 0)
-  {
-    return;
-  }
-  this->dataPtr->gz_node_cvel_world_pub.Publish(currentVel);
-}
-
-/////////////////////////////////////////////////
-void UnderwaterCurrentPlugin::Update(
+void OceanCurrentWorldPlugin::Update(
   const gz::sim::UpdateInfo & _info, gz::sim::EntityComponentManager & _ecm)
 {
   // Update the time
@@ -692,8 +664,41 @@ void UnderwaterCurrentPlugin::Update(
   }
 }
 
+// ----------------------------------------------
+
 /////////////////////////////////////////////////
-void UnderwaterCurrentPlugin::PostUpdate(
+void OceanCurrentWorldPlugin::PublishCurrentVelocity()
+{
+  gz::msgs::Vector3d currentVel;
+  gz::msgs::Set(
+    &currentVel,
+    gz::math::Vector3d(
+      this->sharedDataPtr->currentVelocity.X(), this->sharedDataPtr->currentVelocity.Y(),
+      this->sharedDataPtr->currentVelocity.Z()));
+  this->dataPtr->gz_node_cvel_world_pub.Publish(currentVel);
+}
+
+/////////////////////////////////////////////////
+void OceanCurrentWorldPlugin::PublishStratifiedCurrentVelocity()
+{
+  dave_gz_world_plugins_msgs::msgs::StratifiedCurrentVelocity currentVel;  // check
+  for (std::vector<gz::math::Vector4d>::iterator it =
+         this->sharedDataPtr->currentStratifiedVelocity.begin();
+       it != this->sharedDataPtr->currentStratifiedVelocity.end();
+       ++it)  // currentStratifiedVelocity values defined where ? (TODO)
+  {
+    gz::msgs::Set(currentVel.add_velocity(), gz::math::Vector3d(it->X(), it->Y(), it->Z()));
+    currentVel.add_depth(it->W());
+  }
+  if (currentVel.velocity_size() == 0)
+  {
+    return;
+  }
+  this->dataPtr->gz_node_cvel_world_pub.Publish(currentVel);
+}
+
+/////////////////////////////////////////////////
+void OceanCurrentWorldPlugin::PostUpdate(
   const gz::sim::UpdateInfo & _info, const gz::sim::EntityComponentManager & _ecm)
 {
   // Update time stamp
@@ -701,4 +706,5 @@ void UnderwaterCurrentPlugin::PostUpdate(
   PublishCurrentVelocity();
   PublishStratifiedCurrentVelocity();
 }
+
 }  // namespace dave_gz_world_plugins

@@ -23,7 +23,7 @@ message(STATUS "Compiling against Gazebo Harmonic")
 
 # Libraries
 add_library(SphericalCoords SHARED src/SphericalCoords.cc)
-add_library(ocean_current_plugin SHARED src/ocean_current_plugin.cc)
+add_library(OceanCurrentPlugin SHARED src/OceanCurrentPlugin.cc)
 
 # Include directories
 target_include_directories(SphericalCoords
@@ -33,7 +33,7 @@ target_include_directories(SphericalCoords
   PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
-target_include_directories(ocean_current_plugin
+target_include_directories(OceanCurrentPlugin
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
@@ -47,7 +47,7 @@ target_include_directories(ocean_current_plugin
 target_link_libraries(SphericalCoords
   gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
 )
-target_link_libraries(ocean_current_plugin
+target_link_libraries(OceanCurrentPlugin
   gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
 )
 
@@ -59,7 +59,7 @@ ament_target_dependencies(SphericalCoords
   std_msgs
 )
 
-ament_target_dependencies(ocean_current_plugin
+ament_target_dependencies(OceanCurrentPlugin
   rclcpp
   std_msgs
   geometry_msgs
@@ -74,7 +74,7 @@ install(DIRECTORY include/
 
 # Install targets
 install(
-  TARGETS SphericalCoords ocean_current_plugin
+  TARGETS SphericalCoords OceanCurrentPlugin
   EXPORT export_${PROJECT_NAME}
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib

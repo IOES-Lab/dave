@@ -26,8 +26,8 @@ set(GZ_MSGS_VER ${gz-msgs10_VERSION_MAJOR})
 
 message(STATUS "compiling against Gazebo Harmonic")
 
-add_library(ocean_current_world_plugin SHARED
-  src/ocean_current_world_plugin.cc
+add_library(OceanCurrentWorldPlugin SHARED
+  src/OceanCurrentWorldPlugin.cc
 )
 add_library(gauss_markov_process SHARED
   src/gauss_markov_process.cc
@@ -36,7 +36,7 @@ add_library(tidal_oscillation SHARED
   src/tidal_oscillation.cc
 )
 
-target_include_directories(ocean_current_world_plugin
+target_include_directories(OceanCurrentWorldPlugin
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
@@ -59,7 +59,7 @@ target_include_directories(tidal_oscillation
     ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-target_link_libraries(ocean_current_world_plugin
+target_link_libraries(OceanCurrentWorldPlugin
   gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
 )
 target_link_libraries(gauss_markov_process
@@ -69,7 +69,7 @@ target_link_libraries(tidal_oscillation
   gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
 )
 
-ament_target_dependencies(ocean_current_world_plugin
+ament_target_dependencies(OceanCurrentWorldPlugin
   rclcpp
   std_msgs
   geometry_msgs
@@ -98,7 +98,7 @@ install(DIRECTORY include/
 
 # Install targets
 install(
-  TARGETS ocean_current_world_plugin gauss_markov_process tidal_oscillation
+  TARGETS OceanCurrentWorldPlugin gauss_markov_process tidal_oscillation
   EXPORT export_${PROJECT_NAME}
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
