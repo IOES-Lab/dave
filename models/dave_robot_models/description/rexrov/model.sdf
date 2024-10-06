@@ -600,29 +600,35 @@
     <!-- Dave Transient Current Plugin -->
     <!-- dave_gz_model_plugins::TransientCurrentPlugin -->
     <plugin
-      filename="ocean_current_model_plugin"
-      name="dave_gz_model_plugins::TransientCurrentPlugin">
+      filename="OceanCurrentModelPlugin"
+      name="dave_gz_model_plugins::OceanCurrentModelPlugin">
       <namespace>rexrov</namespace>
-      <!-- <flow_velocity_topic>hydrodynamics/current_velocity/$(arg namespace)</flow_velocity_topic> -->
-      <!-- <link_name>base_link</link_name> -->
+      <flow_velocity_topic>hydrodynamics/current_velocity</flow_velocity_topic>
+      <link_name>base_link</link_name>
       <base_link_name>$(arg namespace)/base_link</base_link_name>
       <transient_current>
         <topic_stratified>stratified_current_velocity</topic_stratified>
         <velocity_north>
+          <mean>0.0</mean>
+          <mu>0.0</mu>
           <noiseAmp>0.3</noiseAmp>
           <noiseFreq>0.0</noiseFreq>
         </velocity_north>
         <velocity_east>
+          <mean>0.0</mean>
+          <mu>0.0</mu>
           <noiseAmp>0.3</noiseAmp>
           <noiseFreq>0.0</noiseFreq>
         </velocity_east>
         <velocity_down>
+          <mean>0.0</mean>
+          <mu>0.0</mu>
           <noiseAmp>0.3</noiseAmp>
           <noiseFreq>0.0</noiseFreq>
         </velocity_down>
       </transient_current>
       <tide_oscillation>false</tide_oscillation>
-    </plugin>
+  </plugin>
 
   </model>
 </sdf>
