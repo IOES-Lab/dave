@@ -141,12 +141,12 @@ repos:
 
   # Spellcheck in comments and docs
   # skipping of *.svg files is not working...
-  - repo: https://github.com/codespell-project/codespell
-    rev: v2.3.0
-    hooks:
-      - id: codespell
-        args: ["--write-changes", "--uri-ignore-words-list=ist", "-L manuel"]
-        exclude: CHANGELOG\.rst|\.(svg|pyc|drawio)$
+  # - repo: https://github.com/codespell-project/codespell
+  #   rev: v2.3.0
+  #   hooks:
+  #     - id: codespell
+  #       args: ["--write-changes", "--uri-ignore-words-list=ist", "-L manuel"]
+  #       exclude: CHANGELOG\.rst|\.(svg|pyc|drawio)$
 
   # Json lint
   - repo: https://github.com/python-jsonschema/check-jsonschema

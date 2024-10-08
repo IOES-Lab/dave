@@ -78,7 +78,7 @@
 
 # Using the pre-built image for above commented out dockerfile code lines
 # hadolint ignore=DL3007
-FROM --platform=linux/arm64 woensugchoi/ubuntu-arm-rdp-base:latest
+FROM woensugchoi/ubuntu-arm-rdp-base:latest
 ARG USER=docker
 
 # ROS-Gazebo arg
@@ -90,25 +90,24 @@ ADD https://raw.githubusercontent.com/IOES-Lab/dave/$BRANCH/\
 extras/ros-jazzy-binary-gz-harmonic-source-install.sh install.sh
 RUN bash install.sh
 
-# Set up Dave workspace
-ENV ROS_UNDERLAY=/home/$USER/dave_ws/install
-WORKDIR $ROS_UNDERLAY/../src
-
-ADD https://raw.githubusercontent.com/IOES-Lab/dave/$BRANCH/\
-extras/repos/dave.$ROS_DISTRO.repos /home/$USER/ws_dave/dave.repos
-RUN vcs import --shallow --input "/home/$USER/ws_dave/dave.repos"
-
-RUN rosdep init && \
-  rosdep update --rosdistro $ROS_DISTRO
-
-# hadolint ignore=DL3027
-RUN apt update && apt --fix-broken install && \
-    rosdep update &&  rosdep install -iy --from-paths . && \
-    rm -rf /var/lib/apt/lists/
-
-WORKDIR $ROS_UNDERLAY/..
-RUN . "/opt/ros/${ROS_DISTRO}/setup.sh" && \
-    colcon build
+# Prereqs for Ardupilot - Ardusub
+ENV DEBIAN_FRONTEND=noninteractive
+ENV DEBCONF_NONINTERACTIVE_SEEN=true
+# hadolint ignore=DL3008
+ADD --chown=root:root --chmod=0644 https://raw.githubusercontent.com/osrf/osrf-rosdep/master/gz/00-gazebo.list /etc/ros/rosdep/sources.list.d/00-gazebo.list
+RUN wget https://packages.osrfoundation.org/gazebo.gpg -O /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] http://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" |  tee /etc/apt/sources.list.d/gazebo-stable.list > /dev/null \
+    && apt-get -q update && \
+    apt-get install -y --no-install-recommends \
+    python-is-python3 python3-future python3-wxgtk4.0 python3-pexpect \
+    libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev \
+    libgz-sim8-dev rapidjson-dev libopencv-dev libasio-dev \
+    gstreamer1.0-plugins-bad gstreamer1.0-libav gstreamer1.0-gl \
+    && rm -rf /var/lib/apt/lists/
+# Install mavros
+ADD https://raw.githubusercontent.com/IOES-Lab/dave/ardusub_install/\
+extras/mavros-ubuntu-install.sh install.sh
+RUN bash install.sh
 
 # Download the background image from GitHub raw content URL
 # hadolint ignore=DL3047
@@ -122,17 +121,42 @@ extras/background.png && \
     cp /usr/share/backgrounds/warty-final-ubuntu.png \
         /usr/share/backgrounds/ubuntu-wallpaper-d.png
 
-# source entrypoint setup
-RUN touch /ros_entrypoint.sh && sed --in-place --expression \
-    '$i source "$ROS_UNDERLAY/setup.bash"' /ros_entrypoint.sh
+# Install Ardupilot - Ardusub
+USER docker
+RUN wget -O /tmp/install.sh https://raw.githubusercontent.com/IOES-Lab/dave/ardusub_install/extras/ardusub-ubuntu-install-local.sh
+RUN chmod +x /tmp/install.sh && bash /tmp/install.sh
+
+# Set up Dave workspace
+ENV DAVE_UNDERLAY=/home/$USER/dave_ws
+WORKDIR $DAVE_UNDERLAY/src
+RUN wget -O /home/$USER/dave_ws/dave.repos -q https://raw.githubusercontent.com/IOES-Lab/dave/$BRANCH/\
+extras/repos/dave.$ROS_DISTRO.repos
+RUN vcs import --shallow --input "/home/$USER/dave_ws/dave.repos"
+
+# hadolint ignore=DL3027
+RUN sudo apt update && sudo apt --fix-broken install && \
+    sudo rosdep init && rosdep update --rosdistro $ROS_DISTRO && \
+    rosdep install --rosdistro $ROS_DISTRO -iy --from-paths . && \
+    sudo rm -rf /var/lib/apt/lists/
+
+# Build dave workspace
+WORKDIR $DAVE_UNDERLAY
+RUN . "/opt/ros/${ROS_DISTRO}/setup.sh" && colcon build
 
 # Set User as user
 USER docker
 RUN echo "source /opt/ros/jazzy/setup.bash" >> ~/.bashrc && \
     echo "source /opt/gazebo/install/setup.bash" >> ~/.bashrc && \
-    echo "export PYTHONPATH=$PYTHONPATH:/opt/gazebo/install/lib/python" >> ~/.bashrc && \
-    echo "if [ -d ~/HOST ]; then chown docker:docker ~/HOST; fi" \
-    >> ~/.bashrc
+    echo "source /opt/mavros/install/setup.bash" >> ~/.bashrc && \
+    echo "source $DAVE_UNDERLAY/install/setup.bash" >> ~/.bashrc && \
+    echo "export GEOGRAPHICLIB_GEOID_PATH=/usr/local/share/GeographicLib/geoids" >> ~/.bashrc && \
+    echo "export PYTHONPATH=\$PYTHONPATH:/opt/gazebo/install/lib/python" >> ~/.bashrc && \
+    echo "export PATH=/home/$USER/ardupilot_dave/ardupilot/Tools/autotest:\$PATH" >> ~/.bashrc && \
+    echo "export PATH=/home/$USER/ardupilot_dave/ardupilot/build/sitl/bin:\$PATH" >> ~/.bashrc && \
+    echo "export GZ_SIM_SYSTEM_PLUGIN_PATH=/home/$USER/ardupilot_dave/ardupilot_gazebo/build:\$GZ_SIM_SYSTEM_PLUGIN_PATH" >> ~/.bashrc && \
+    echo "export GZ_SIM_RESOURCE_PATH=/home/$USER/ardupilot_dave/ardupilot_gazebo/models:/home/$USER/ardupilot_dave/ardupilot_gazebo/worlds:\$GZ_SIM_RESOURCE_PATH" >> ~/.bashrc && \
+    echo "\n\n" >> ~/.bashrc && echo "if [ -d ~/HOST ]; then chown $USER:$USER ~/HOST; fi" >> ~/.bashrc  && \
+    echo "\n\n" >> ~/.bashrc
 
 # Other environment variables
 RUN echo "export XDG_RUNTIME_DIR=~/.xdg_log" >> ~/.bashrc && \
@@ -140,13 +164,24 @@ RUN echo "export XDG_RUNTIME_DIR=~/.xdg_log" >> ~/.bashrc && \
 
 # Create and write the welcome message to a new file
 RUN mkdir -p /home/docker/.config/autostart && \
+    printf '\033[1;37m =====\n' >> ~/.hi && \
+    printf '  ____    ___     _______      _                     _   _      \n' >> ~/.hi && \
+    printf ' |  _ \  / \ \   / | ____|    / \   __ _ _   _  __ _| |_(_) ___ \n' >> ~/.hi && \
+    printf ' | | | |/ _ \ \ / /|  _|     / _ \ / _` | | | |/ _` | __| |/ __|\n' >> ~/.hi && \
+    printf ' | |_| / ___ \ V / | |___   / ___ | (_| | |_| | (_| | |_| | (__ \n' >> ~/.hi && \
+    printf ' |____/_/   \_\_/  |_____| /_/   \_\__, |\__,_|\__,_|\__|_|\___|\n' >> ~/.hi && \
+    printf ' __     ___      _               _     _____            _       \n' >> ~/.hi && \
+    printf ' \ \   / (_)_ __| |_ _   _  __ _| |   | ____|_ ____   _(_)_ __  \n' >> ~/.hi && \
+    printf '  \ \ / /| | `__| __| | | |/ _` | |   |  _| | `_ \ \ / | | `__| \n' >> ~/.hi && \
+    printf '   \ V / | | |  | |_| |_| | (_| | |   | |___| | | \ V /| | |_   \n' >> ~/.hi && \
+    printf '    \_/  |_|_|   \__|\__,_|\__,_|_|   |_____|_| |_|\_/ |_|_(_)  \n\033[0m' >> ~/.hi && \
     printf '\033[1;32m\n =====\n\033[0m' >> ~/.hi && \
-    printf "\\033[1;32m 👋 Hi! This is Docker virtual environment\n\\033[0m" \
+    printf "\\033[1;32m 👋 Hi! This is Docker virtual environment for DAVE\n\\033[0m" \
     >> ~/.hi && \
-    printf "\\033[1;33m\tROS2 Jazzy - Gazebo Harmonic\n\n\n\\033[0m" \
+    printf "\\033[1;33m\tROS2 Jazzy - Gazebo Harmonic (w ardupilot(ardusub) + mavros)\n\n\n\\033[0m" \
     >> ~/.hi
 
-# Remove sudo message
+    # Remove sudo message
 RUN touch /home/docker/.sudo_as_admin_successful
 
 # Autostart terminal
