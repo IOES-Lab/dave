@@ -15,26 +15,20 @@
 #include <geometry_msgs/msg/twist_stamped.hpp>
 #include <geometry_msgs/msg/vector3.hpp>
 
+#include <gz/plugin/Register.hh>
 #include <gz/transport/Node.hh>
 #include <sdf/sdf.hh>
 
 namespace dave_gz_world_plugins
 {
-/// \brief Class for the underwater current plugin
-
-// typedef const boost::shared_ptr<const gz::msgs::Any> AnyPtr;
-
-// public WorldPlugin,
 class OceanCurrentWorldPlugin : public gz::sim::System,
                                 public gz::sim::ISystemConfigure,
                                 public gz::sim::ISystemUpdate,
                                 public gz::sim::ISystemPostUpdate
-// public gz::sim::WorldPlugin
-
 {
 public:
   OceanCurrentWorldPlugin();
-  ~OceanCurrentWorldPlugin();
+  ~OceanCurrentWorldPlugin() override;
 
   // ----------------------------------------------
 
@@ -42,14 +36,11 @@ public:
     const gz::sim::Entity & _entity, const std::shared_ptr<const sdf::Element> & _sdf,
     gz::sim::EntityComponentManager & _ecm, gz::sim::EventManager & _eventMgr);
 
-  virtual void LoadTidalOscillationDatabase();
+  void LoadTidalOscillationDatabase();
 
-  virtual void LoadStratifiedCurrentDatabase();
+  void LoadStratifiedCurrentDatabase();
 
-  virtual void LoadGlobalCurrentConfig();
-
-  // Documentation inherited.
-  virtual void Init();
+  void LoadGlobalCurrentConfig();
 
   // ----------------------------------------------
 
@@ -64,6 +55,7 @@ public:
   void PublishStratifiedCurrentVelocity();
 
   // ----------------------------------------------
+
   struct SharedData
   {
     // Gauss-Markov process instances for current models
@@ -117,6 +109,7 @@ private:
   struct PrivateData;
   std::unique_ptr<PrivateData> dataPtr;
 };
+
 }  // namespace dave_gz_world_plugins
 
 #endif  // DAVE_GZ_WORLD_PLUGINS__OCEAN_CURRENT_WORLD_PLUGIN_HH_

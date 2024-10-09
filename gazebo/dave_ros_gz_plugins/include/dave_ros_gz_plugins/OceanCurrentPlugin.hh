@@ -41,7 +41,7 @@ class OceanCurrentPlugin : public gz::sim::System,
 {
 public:
   OceanCurrentPlugin();
-  ~OceanCurrentPlugin();
+  ~OceanCurrentPlugin() override;
 
   // ----------------------------------------------
 

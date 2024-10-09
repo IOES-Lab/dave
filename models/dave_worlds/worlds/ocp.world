@@ -17,7 +17,7 @@
 <!-- Modified for different Gazebo GUI camera angle -->
 
 <sdf version="1.4">
-  <world name="oceans_waves">
+  <world name="ocp">
     <scene>
       <ambient>0.01 0.01 0.01 1.0</ambient>
       <sky>
@@ -116,7 +116,7 @@
       </graded_buoyancy>
     </plugin>
 
-    <plugin filename="OceanCurrentPlugin" name="dave_ros_gz_plugins::OceanCurrentPlugin">
+    <plugin filename="OceanCurrentWorldPlugin" name="dave_gz_world_plugins::OceanCurrentWorldPlugin">
       <namespace>hydrodynamics</namespace>
       <constant_current>
         <topic>current_velocity</topic>
@@ -149,7 +149,7 @@
         <topic_stratified>stratified_current_velocity</topic_stratified>
         <!-- Database tag can accept full path or filename for .csv within the dave_worlds/worlds
         folder  -->
-        <databasefilePath>transientOceanCurrentDatabase.csv</databasefilePath>
+        <databasefilePath>/Users/gaurav/dave_ws/src/dave/models/dave_worlds/worlds/transientOceanCurrentDatabase.csv</databasefilePath>
       </transient_current>
 
       <!-- transient current database CSV file (North direction value) is used as a depth variation -->
@@ -194,9 +194,9 @@
 
         <!-- Starting time of the simulator in GMT  -->
         <world_start_time_GMT>
-          <day>4</day>
-          <month>3</month>
-          <year>2021</year>
+          <day>9</day>
+          <month>9</month>
+          <year>2024</year>
           <hour>15</hour>
           <minute>0</minute>
         </world_start_time_GMT>

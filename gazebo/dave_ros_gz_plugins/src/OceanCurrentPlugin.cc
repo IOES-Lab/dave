@@ -94,7 +94,7 @@ struct OceanCurrentPlugin::PrivateData
 
 /////////////////////////////////////////////////
 OceanCurrentPlugin::OceanCurrentPlugin() : dataPtr(std::make_unique<PrivateData>()) {}
-OceanCurrentPlugin::~OceanCurrentPlugin() {}
+OceanCurrentPlugin::~OceanCurrentPlugin() = default;
 
 /////////////////////////////////////////////////
 void OceanCurrentPlugin::Configure(

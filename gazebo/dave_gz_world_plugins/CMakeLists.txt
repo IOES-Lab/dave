@@ -59,8 +59,16 @@ target_include_directories(tidal_oscillation
     ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
+# target_link_libraries(OceanCurrentWorldPlugin
+#   gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
+# )
+
 target_link_libraries(OceanCurrentWorldPlugin
   gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
+  gauss_markov_process  # Add this line
+  tidal_oscillation
+  # dave_interfaces
+  # dave_gz_world_plugins_msgs
 )
 target_link_libraries(gauss_markov_process
   gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
@@ -75,6 +83,7 @@ ament_target_dependencies(OceanCurrentWorldPlugin
   geometry_msgs
   dave_interfaces
   ament_index_cpp
+  gz-msgs${GZ_MSGS_VER}
 )
 
 ament_target_dependencies(gauss_markov_process
@@ -91,11 +100,6 @@ ament_target_dependencies(tidal_oscillation
   dave_interfaces
 )
 
-# Install headers
-install(DIRECTORY include/
-  DESTINATION include/${PROJECT_NAME}
-)
-
 # Install targets
 install(
   TARGETS OceanCurrentWorldPlugin gauss_markov_process tidal_oscillation
@@ -104,6 +108,11 @@ install(
   ARCHIVE DESTINATION lib
   RUNTIME DESTINATION bin
   INCLUDES DESTINATION include
+)
+
+# Install headers
+install(DIRECTORY include/
+  DESTINATION include/${PROJECT_NAME}
 )
 
 ament_export_include_directories("include/${PROJECT_NAME}")

@@ -44,7 +44,6 @@ GZ_ADD_PLUGIN(
 
 namespace dave_gz_world_plugins
 {
-
 struct OceanCurrentWorldPlugin::PrivateData
 {
   // Gazebo Simulation and World Components
@@ -82,7 +81,6 @@ struct OceanCurrentWorldPlugin::PrivateData
   std::shared_ptr<rclcpp::Node> rosNode;
 };
 
-/////////////////////////////////////////////////
 OceanCurrentWorldPlugin::OceanCurrentWorldPlugin()
 : dataPtr(std::make_unique<PrivateData>()), sharedDataPtr(std::make_unique<SharedData>())
 {
@@ -90,11 +88,11 @@ OceanCurrentWorldPlugin::OceanCurrentWorldPlugin()
 }
 
 /////////////////////////////////////////////////
-OceanCurrentWorldPlugin::~OceanCurrentWorldPlugin() { this->dataPtr->rosNode.reset(); }
+OceanCurrentWorldPlugin::~OceanCurrentWorldPlugin() = default;
+// OceanCurrentWorldPlugin::~OceanCurrentWorldPlugin() { this->dataPtr->rosNode.reset(); }
 
 // ----------------------------------------------
 
-/////////////////////////////////////////////////
 void OceanCurrentWorldPlugin::Configure(
   const gz::sim::Entity & _entity, const std::shared_ptr<const sdf::Element> & _sdf,
   gz::sim::EntityComponentManager & _ecm, gz::sim::EventManager & _eventMgr)
@@ -137,7 +135,6 @@ void OceanCurrentWorldPlugin::Configure(
         << "\tWARNING: Current velocity calculated in the ENU frame" << std::endl;
 }
 
-/////////////////////////////////////////////////
 void OceanCurrentWorldPlugin::LoadTidalOscillationDatabase()
 {
   this->dataPtr->tideFlag = true;
@@ -334,7 +331,8 @@ void OceanCurrentWorldPlugin::LoadStratifiedCurrentDatabase()
   }
   else
   {
-    this->dataPtr->databaseFilePath = "transientOceanCurrentDatabase.csv";
+    this->dataPtr->databaseFilePath =
+      "/Users/gaurav/dave_ws/src/dave/models/dave_worlds/worlds/transientOceanCurrentDatabase.csv";
   }
 
   GZ_ASSERT(
@@ -665,17 +663,15 @@ void OceanCurrentWorldPlugin::Update(
 }
 
 // ----------------------------------------------
-
 /////////////////////////////////////////////////
 void OceanCurrentWorldPlugin::PublishCurrentVelocity()
 {
-  gz::msgs::Vector3d currentVel;
+  gz::msgs::Vector3d currVel;
   gz::msgs::Set(
-    &currentVel,
-    gz::math::Vector3d(
-      this->sharedDataPtr->currentVelocity.X(), this->sharedDataPtr->currentVelocity.Y(),
-      this->sharedDataPtr->currentVelocity.Z()));
-  this->dataPtr->gz_node_cvel_world_pub.Publish(currentVel);
+    &currVel, gz::math::Vector3d(
+                this->sharedDataPtr->currentVelocity.X(), this->sharedDataPtr->currentVelocity.Y(),
+                this->sharedDataPtr->currentVelocity.Z()));
+  this->dataPtr->gz_node_cvel_world_pub.Publish(currVel);
 }
 
 /////////////////////////////////////////////////
@@ -706,5 +702,6 @@ void OceanCurrentWorldPlugin::PostUpdate(
   PublishCurrentVelocity();
   PublishStratifiedCurrentVelocity();
 }
+// ----------------------------------------------
 
 }  // namespace dave_gz_world_plugins
