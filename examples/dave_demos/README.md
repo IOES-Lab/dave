@@ -60,22 +60,22 @@ Before launching, ensure to build and source the workspace:
 colcon build && source install/setup.bash
 ```
 
-1. Launching REXROV in an empty world:
-
-```bash
-ros2 launch dave_demos dave_robot.launch.py z:=2.0 namespace:=rexrov world_name:=empty.sdf paused:=false
-```
-
-2. Launching REXROV in dave_ocean_waves.world:
+1. Launching REXROV in dave_ocean_waves.world:
 
 ```bash
 ros2 launch dave_demos dave_robot.launch.py z:=-5 namespace:=rexrov world_name:=dave_ocean_waves paused:=false
 ```
 
-3. Launching Slocum Glider in an empty world:
+2. Launching BlueROV2 in dave_ocean_waves.world:
 
 ```bash
-ros2 launch dave_demos dave_robot.launch.py z:=0.2 namespace:=glider_slocum world_name:=empty.sdf paused:=false
+ros2 launch dave_demos dave_robot.launch.py z:=-5 namespace:=bluerov2 world_name:=dave_ocean_waves paused:=false
+```
+
+3. Launching BlueROV2 Heavy in dave_ocean_waves.world:
+
+```bash
+ros2 launch dave_demos dave_robot.launch.py z:=-5 namespace:=bluerov2_heavy world_name:=dave_ocean_waves paused:=false
 ```
 
 4. Launching Slocum Glider in dave_ocean_waves.world:

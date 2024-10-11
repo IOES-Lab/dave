@@ -8,7 +8,6 @@ from launch.actions import (
 from launch.substitutions import (
     LaunchConfiguration,
     PathJoinSubstitution,
-    EqualsSubstitution,
 )
 from launch.conditions import IfCondition
 from launch_ros.substitutions import FindPackageShare
@@ -107,7 +106,7 @@ def generate_launch_description():
         ],
         output="both",
         condition=IfCondition(use_ned_frame),
-        parameters=[{"use_sim_time_time": use_sim_time}],
+        parameters=[{"use_sim_time": use_sim_time}],
     )
 
     gz_spawner = Node(
@@ -133,36 +132,31 @@ def generate_launch_description():
         ],
         output="both",
         condition=IfCondition(gui),
-        parameters=[{"use_sim_time_time": use_sim_time}],
+        parameters=[{"use_sim_time": use_sim_time}],
     )
 
     nodes = [tf2_spawner, gz_spawner]
 
-    # Include the Rexrov launch file if the namespace is "rexrov"
-    rexrov_launch = IncludeLaunchDescription(
+    # Include robot_config.py based on the model name
+    robot_config = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            PathJoinSubstitution(
-                [FindPackageShare("dave_robot_models"), "launch", "rexrov.launch.py"]
-            )
+            [
+                PathJoinSubstitution(
+                    [
+                        FindPackageShare("dave_robot_models"),
+                        "config",
+                        namespace,
+                        "robot_config.py",
+                    ]
+                )
+            ]
         ),
-        condition=IfCondition(EqualsSubstitution(namespace, "rexrov")),
+        launch_arguments={
+            "namespace": namespace,
+        }.items(),
     )
 
-    # Include the Glider launch file if the namespace is "glider_slocum"
-    glider_launch = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            PathJoinSubstitution(
-                [
-                    FindPackageShare("dave_robot_models"),
-                    "launch",
-                    "glider_slocum.launch.py",
-                ]
-            )
-        ),
-        condition=IfCondition(EqualsSubstitution(namespace, "glider_slocum")),
-    )
-
-    include = [rexrov_launch, glider_launch]
+    include = [robot_config]
 
     event_handlers = [
         RegisterEventHandler(
