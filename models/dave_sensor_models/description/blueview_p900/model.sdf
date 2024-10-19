@@ -61,6 +61,8 @@
         </plugin> -->
       </sensor>
 
+
+
       <!-- Multibeam Sonar sensor -->
       <sensor name="multibeam_sonar" type="custom" gz:type="multibeam_sonar">
         <always_on>true</always_on>
@@ -68,15 +70,15 @@
         <topic>/sensor/multibeam_sonar</topic>
         <visualize>true</visualize>
         <gz:multibeam_sonar>
-          <ray degrees="true">
+          <ray degrees="false">
             <scan>
                 <horizontal>
-                  <samples>256</samples>
+                  <samples>1024</samples>
                   <min_angle>-0.78539816339</min_angle>
                   <max_angle>0.78539816339</max_angle>
                 </horizontal>
                 <vertical>
-                  <rays>3</rays>
+                  <rays>10</rays>
                   <min_angle>-0.349066</min_angle>
                   <max_angle>0.349066</max_angle>
                 </vertical>
