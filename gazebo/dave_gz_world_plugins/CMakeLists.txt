@@ -26,6 +26,37 @@ set(GZ_MSGS_VER ${gz-msgs10_VERSION_MAJOR})
 
 message(STATUS "compiling against Gazebo Harmonic")
 
+# Define a variable 'GZ_MSGS_VER' holding the version number
+set(GZ_MSGS_VER ${gz-msgs10_VERSION_MAJOR})
+
+# Define a variable 'MSGS_PROTOS' listing the .proto files
+set(MSGS_PROTOS ${CMAKE_CURRENT_SOURCE_DIR}/proto/dave_gz_world_plugins_msgs/msgs/StratifiedCurrentVelocity.proto)
+
+# Example of custom messages that depend on gz.msgs
+set(MSGS_PROTOS
+  ${CMAKE_CURRENT_SOURCE_DIR}/proto/dave_gz_world_plugins_msgs/msgs/StratifiedCurrentVelocity.proto
+)
+
+gz_msgs_generate_messages(
+  # The cmake target to be generated for libraries/executables to link
+  TARGET msgs    # pressure_sensor_msgs_gen
+  # TARGET dave_gz_world_plugins_msgs
+  # The protobuf package to generate (Typically based on the path)
+  PROTO_PACKAGE "dave_gz_world_plugins_msgs.msgs"
+
+  # The path to the base directory of the proto files
+  # All import paths should be relative to this (eg gz/custom_msgs/vector3d.proto)
+  MSGS_PATH ${CMAKE_CURRENT_SOURCE_DIR}/proto
+
+  # List of proto files to generate
+  MSGS_PROTOS ${MSGS_PROTOS}
+
+  # List of message targets this library imports from
+  # DEPENDENCIES gz_msgs_gen
+  # Dependency on gz-msgs
+  DEPENDENCIES gz-msgs${GZ_MSGS_VER}::gz-msgs${GZ_MSGS_VER}
+)
+
 add_library(OceanCurrentWorldPlugin SHARED
   src/OceanCurrentWorldPlugin.cc
 )
@@ -67,8 +98,7 @@ target_link_libraries(OceanCurrentWorldPlugin
   gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
   gauss_markov_process  # Add this line
   tidal_oscillation
-  # dave_interfaces
-  # dave_gz_world_plugins_msgs
+  dave_gz_world_plugins-msgs
 )
 target_link_libraries(gauss_markov_process
   gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
@@ -102,7 +132,7 @@ ament_target_dependencies(tidal_oscillation
 
 # Install targets
 install(
-  TARGETS OceanCurrentWorldPlugin gauss_markov_process tidal_oscillation
+  TARGETS OceanCurrentWorldPlugin gauss_markov_process tidal_oscillation dave_gz_world_plugins-msgs
   EXPORT export_${PROJECT_NAME}
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib

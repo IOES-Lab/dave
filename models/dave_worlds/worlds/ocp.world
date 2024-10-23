@@ -149,7 +149,7 @@
         <topic_stratified>stratified_current_velocity</topic_stratified>
         <!-- Database tag can accept full path or filename for .csv within the dave_worlds/worlds
         folder  -->
-        <databasefilePath>/Users/gaurav/dave_ws/src/dave/models/dave_worlds/worlds/transientOceanCurrentDatabase.csv</databasefilePath>
+        <databasefilePath>transientOceanCurrentDatabase.csv</databasefilePath>
       </transient_current>
 
       <!-- transient current database CSV file (North direction value) is used as a depth variation -->

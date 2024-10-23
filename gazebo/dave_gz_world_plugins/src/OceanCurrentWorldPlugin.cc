@@ -327,12 +327,14 @@ void OceanCurrentWorldPlugin::LoadStratifiedCurrentDatabase()
   // Read the depth dependent ocean current file path from the SDF file
   if (transientCurrentParams->HasElement("databasefilePath"))
   {
-    this->dataPtr->databaseFilePath = transientCurrentParams->Get<std::string>("databasefilePath");
+    this->dataPtr->databaseFilePath = ament_index_cpp::get_package_share_directory("dave_worlds") +
+                                      "/worlds/" +
+                                      transientCurrentParams->Get<std::string>("databasefilePath");
   }
   else
   {
-    this->dataPtr->databaseFilePath =
-      "/Users/gaurav/dave_ws/src/dave/models/dave_worlds/worlds/transientOceanCurrentDatabase.csv";
+    this->dataPtr->databaseFilePath = ament_index_cpp::get_package_share_directory("dave_worlds") +
+                                      "/worlds/transientOceanCurrentDatabase.csv";
   }
 
   GZ_ASSERT(
