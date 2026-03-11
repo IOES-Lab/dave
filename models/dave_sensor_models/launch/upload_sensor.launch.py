@@ -1,10 +1,40 @@
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, RegisterEventHandler, LogInfo
+from launch.actions import (
+    DeclareLaunchArgument,
+    RegisterEventHandler,
+    LogInfo,
+    OpaqueFunction,
+    IncludeLaunchDescription,
+)
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch.conditions import IfCondition
 from launch_ros.substitutions import FindPackageShare
 from launch.event_handlers import OnProcessExit
 from launch_ros.actions import Node
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+import os
+
+
+def launch_setup(context, *args, **kwargs):
+    namespace_value = LaunchConfiguration("namespace").perform(context)
+    config_path = PathJoinSubstitution(
+        [
+            FindPackageShare("dave_sensor_models"),
+            "config",
+            namespace_value,
+            "sensor_config.py",
+        ]
+    ).perform(context)
+
+    if os.path.exists(config_path):
+        return [
+            IncludeLaunchDescription(
+                PythonLaunchDescriptionSource(config_path),
+                launch_arguments={"namespace": namespace_value}.items(),
+            )
+        ]
+    else:
+        return []
 
 
 def generate_launch_description():
@@ -134,4 +164,6 @@ def generate_launch_description():
         )
     ]
 
-    return LaunchDescription(args + nodes + event_handlers)
+    return LaunchDescription(
+        args + nodes + event_handlers + [OpaqueFunction(function=launch_setup)]
+    )

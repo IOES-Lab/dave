@@ -29,7 +29,7 @@ def launch_setup(context, *args, **kwargs):
             f"/model/{namespace}/pose@geometry_msgs/msg/PoseArray@gz.msgs.Pose_V",
             f"/model/{namespace}/imu@sensor_msgs/msg/Imu@gz.msgs.IMU",
             f"/model/{namespace}/magnetometer@sensor_msgs/msg/MagneticField@gz.msgs.Magnetometer",
-            f"/model/{namespace}/camera/image@sensor_msgs/msg/Image@gz.msgs.Image",
+            f"/model/{namespace}/camera/image_raw@sensor_msgs/msg/Image@gz.msgs.Image",
             f"/model/{namespace}/camera/camera_info@sensor_msgs/msg/CameraInfo@gz.msgs.CameraInfo",
         ]
     )
@@ -64,6 +64,28 @@ def launch_setup(context, *args, **kwargs):
 
     processes = [ardusub_process]
 
+    # ardusub_manager_file = LaunchConfiguration("ardusub_manager_file")
+
+    # # Include the ardusub_manager launch file
+    # ardusub_manager = IncludeLaunchDescription(
+    #     PythonLaunchDescriptionSource(
+    #         [
+    #             PathJoinSubstitution(
+    #                 [
+    #                     FindPackageShare("ardusub_manager"),
+    #                     "launch",
+    #                     "ardusub_manager.launch.py",
+    #                 ]
+    #             )
+    #         ]
+    #     ),
+    #     launch_arguments={
+    #         "ardusub_manager_file": ardusub_manager_file,
+    #     }.items(),
+    # )
+
+    # includes = [ardusub_manager]
+
     return nodes + processes
 
 
@@ -77,7 +99,7 @@ def generate_launch_description():
         DeclareLaunchArgument(
             "mavros_file",
             default_value=PathJoinSubstitution(
-                [FindPackageShare("dave_robot_models"), "config", "mavros", "mavros.yaml"]
+                [FindPackageShare("dave_robot_models"), "config", "ardusub", "mavros.yaml"]
             ),
             description="Path to mavros.yaml file",
         ),
@@ -87,6 +109,18 @@ def generate_launch_description():
                 [FindPackageShare("dave_robot_models"), "config", "bluerov2", "ardusub.parm"]
             ),
             description="Path to ardusub.parm file",
+        ),
+        DeclareLaunchArgument(
+            "ardusub_manager_file",
+            default_value=PathJoinSubstitution(
+                [
+                    FindPackageShare("dave_robot_models"),
+                    "config",
+                    "ardusub",
+                    "ardusub_manager.yaml",
+                ]
+            ),
+            description="Path to ardusub_manager.yaml file",
         ),
     ]
 

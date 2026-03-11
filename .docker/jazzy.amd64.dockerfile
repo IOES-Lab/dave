@@ -80,10 +80,10 @@ WORKDIR /
 # Set up bashrc for root
 RUN echo "source /opt/ros/jazzy/setup.bash" >> /root/.bashrc && \
     echo "source /opt/dave_ws/install/setup.bash" >> /root/.bashrc && \
-    echo "export PATH=/opt/ardupilot_ws/ardupilot/Tools/autotest:\$PATH" >> /root/.bashrc && \
-    echo "export PATH=/opt/ardupilot_ws/ardupilot/build/sitl/bin:\$PATH" >> /root/.bashrc && \
-    echo "export GZ_SIM_SYSTEM_PLUGIN_PATH=/opt/ardupilot_ws/ardupilot_gazebo/build:\$GZ_SIM_SYSTEM_PLUGIN_PATH" >> /root/.bashrc && \
-    echo "export GZ_SIM_RESOURCE_PATH=/opt/ardupilot_ws/ardupilot_gazebo/models:/opt/ardupilot_ws/ardupilot_gazebo/worlds:\$GZ_SIM_RESOURCE_PATH" >> /root/.bashrc && \
+    echo "export PATH=/opt/ardusub_ws/ardupilot/Tools/autotest:\$PATH" >> /root/.bashrc && \
+    echo "export PATH=/opt/ardusub_ws/ardupilot/build/sitl/bin:\$PATH" >> /root/.bashrc && \
+    echo "export GZ_SIM_SYSTEM_PLUGIN_PATH=/opt/ardusub_ws/ardupilot_gazebo/build:\$GZ_SIM_SYSTEM_PLUGIN_PATH" >> /root/.bashrc && \
+    echo "export GZ_SIM_RESOURCE_PATH=/opt/ardusub_ws/ardupilot_gazebo/models:/opt/ardusub_ws/ardupilot_gazebo/worlds:\$GZ_SIM_RESOURCE_PATH" >> /root/.bashrc && \
     echo "export PS1='\[\e[1;36m\]\u@DAVE_docker\[\e[0m\]\[\e[1;34m\](\$(hostname | cut -c1-12))\[\e[0m\]:\[\e[1;34m\]\w\[\e[0m\]\$ '" >> /root/.bashrc
 
 RUN touch /root/.dave_entrypoint && printf '\033[1;36m =====\n' >> /root/.dave_entrypoint && \

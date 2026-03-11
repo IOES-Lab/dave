@@ -9,11 +9,11 @@ export USER=docker
 # Really should do version pinning but Sub-4.5 is waaaay behind master
 # (e.g. it doesn't know about "noble" yet)
 export ARDUPILOT_RELEASE=master
-mkdir -p "/home/$USER/ardupilot_ws" && cd "/home/$USER/ardupilot_ws" || exit
+mkdir -p "/home/$USER/ardusub_ws" && cd "/home/$USER/ardusub_ws" || exit
 git clone -b $ARDUPILOT_RELEASE https://github.com/ArduPilot/ardupilot.git --recurse-submodules
 
 # Install ArduSub dependencies
-cd "/home/$USER/ardupilot_ws/ardupilot" || exit
+cd "/home/$USER/ardusub_ws/ardupilot" || exit
 export SKIP_AP_EXT_ENV=1 SKIP_AP_GRAPHIC_ENV=1 SKIP_AP_COV_ENV=1 SKIP_AP_GIT_CHECK=1
 # Do not install the STM development tools
 export DO_AP_STM_ENV=0
@@ -26,20 +26,20 @@ modules/waf/waf-light configure --board sitl \
   && modules/waf/waf-light build --target bin/ardusub
 
 # Clone ardupilot_gazebo code
-cd "/home/$USER/ardupilot_ws" || exit
+cd "/home/$USER/ardusub_ws" || exit
 git clone https://github.com/ArduPilot/ardupilot_gazebo.git
 
 # Install ardupilot_gazebo plugin
 # Check if the directory creation was successful
-mkdir -p "/home/$USER/ardupilot_ws/ardupilot_gazebo/build" \
-  && cd "/home/$USER/ardupilot_ws/ardupilot_gazebo/build" || exit
+mkdir -p "/home/$USER/ardusub_ws/ardupilot_gazebo/build" \
+  && cd "/home/$USER/ardusub_ws/ardupilot_gazebo/build" || exit
 cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo && make -j2
 
 # Add results of ArduSub build
-export PATH=/home/$USER/ardupilot_ws/ardupilot/build/sitl/bin:\$PATH
+export PATH=/home/$USER/ardusub_ws/ardupilot/build/sitl/bin:\$PATH
 # Optional: add autotest to the PATH, helpful for running sim_vehicle.py
-export PATH=/home/$USER/ardupilot_ws/ardupilot/Tools/autotest:\$PATH
+export PATH=/home/$USER/ardusub_ws/ardupilot/Tools/autotest:\$PATH
 # Add ardupilot_gazebo plugin
-export GZ_SIM_SYSTEM_PLUGIN_PATH=/home/$USER/ardupilot_ws/ardupilot_gazebo/build:\$GZ_SIM_SYSTEM_PLUGIN_PATH
+export GZ_SIM_SYSTEM_PLUGIN_PATH=/home/$USER/ardusub_ws/ardupilot_gazebo/build:\$GZ_SIM_SYSTEM_PLUGIN_PATH
 # Add ardupilot_gazebo models and worlds
-export GZ_SIM_RESOURCE_PATH=/home/$USER/ardupilot_ws/ardupilot_gazebo/models:/home/$USER/ardupilot_ws/ardupilot_gazebo/worlds:\$GZ_SIM_RESOURCE_PATH
+export GZ_SIM_RESOURCE_PATH=/home/$USER/ardusub_ws/ardupilot_gazebo/models:/home/$USER/ardusub_ws/ardupilot_gazebo/worlds:\$GZ_SIM_RESOURCE_PATH

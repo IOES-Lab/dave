@@ -1,0 +1,195 @@
+<?xml version="1.0"?>
+<!-- Modified for different Gazebo GUI camera angle -->
+
+<sdf version="1.4">
+  <world name="oceans_waves_sonar_integrated">
+    <scene>
+      <ambient>0.01 0.01 0.01 1.0</ambient>
+      <sky>
+        <clouds>
+          <speed>12</speed>
+        </clouds>
+      </sky>
+      <shadows>1</shadows>
+    </scene>
+    <physics name="1ms" type="ignored">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+    <plugin
+      filename="gz-sim-physics-system"
+      name="gz::sim::systems::Physics">
+    </plugin>
+    <plugin
+      filename="gz-sim-user-commands-system"
+      name="gz::sim::systems::UserCommands">
+    </plugin>
+    <plugin
+      filename="gz-sim-scene-broadcaster-system"
+      name="gz::sim::systems::SceneBroadcaster">
+    </plugin>
+    <plugin
+      filename="gz-sim-sensors-system"
+      name="gz::sim::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+    <plugin
+      filename="gz-sim-dvl-system"
+      name="gz::sim::systems::DopplerVelocityLogSystem">
+    </plugin>
+
+    <plugin
+      filename="multibeam_sonar_system"
+      name="custom::MultibeamSonarSystem">
+    </plugin>
+
+    <!-- Origin placed somewhere in the middle of the North Sea  -->
+    <spherical_coordinates>
+      <latitude_deg>56.71897669633431</latitude_deg>
+      <longitude_deg>3.515625</longitude_deg>
+    </spherical_coordinates>
+
+    <!-- Global light source -->
+    <light type="directional" name="sun1">
+      <pose>50 0 150 0 0 0</pose>
+      <diffuse>1 1 1 1</diffuse>
+      <specular>.1 .1 .1 1</specular>
+      <direction>0.3 0.3 -1</direction>
+      <cast_shadows>false</cast_shadows>
+    </light>
+
+    <light type="directional" name="sun_diffuse">
+      <pose>-50 0 -150 0 0 0</pose>
+      <diffuse>0.6 0.6 0.6 1</diffuse>
+      <specular>0 0 0 1</specular>
+      <direction>-0.3 -0.3 -1</direction>
+      <cast_shadows>false</cast_shadows>
+    </light>
+
+    <light type="directional" name="sun_diffuse_1">
+      <pose>-100 500 -20 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>1 1 1 1</specular>
+      <direction>-1 -1 0</direction>
+      <cast_shadows>false</cast_shadows>
+    </light>
+
+    <light type="directional" name="sun_diffuse_2">
+      <pose>-150 -130 50 0 0 0</pose>
+      <diffuse>0.6 0.6 0.6 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <direction>0.5 0.5 -1</direction>
+      <cast_shadows>false</cast_shadows>
+    </light>
+
+		<!-- Virtual north, east and down frame -->
+		<include>
+			<uri>
+				https://fuel.gazebosim.org/1.0/hmoyen/models/North East Down frame
+			</uri>
+			<pose>0 0 0 0 0 0</pose>
+		</include>
+
+    <!-- Sea surface -->
+    <include>
+      <uri>
+        https://fuel.gazebosim.org/1.0/OpenRobotics/models/Coast Water
+      </uri>
+    </include>
+
+    <include>
+      <uri>
+        https://fuel.gazebosim.org/1.0/Cole/models/Sunken Ship
+      </uri>
+      <pose>10 -5 -16 -0.4 0 -1.7</pose>
+    </include>
+
+    <include>
+      <name>sunken_vase</name>
+        <pose>20 -3 -16 0 0 0</pose>
+        <uri>https://fuel.ignitionrobotics.org/1.0/Cole/models/Sunken Vase</uri>
+    </include>
+
+    <include>
+      <name>sunken_vase_distorted</name>
+        <pose>20 -3.5 -16 0 0 0</pose>
+      <uri>https://fuel.gazebosim.org/1.0/hmoyen/models/Sunken Vase Distorted</uri>
+      <static>true</static>
+    </include>
+
+    <include>
+      <name>sunken_vase2</name>
+        <pose>20 -4 -16 0 0 0</pose>
+      <uri>https://fuel.ignitionrobotics.org/1.0/Cole/models/Sunken Vase 02</uri>
+      <static>true</static>
+    </include>
+
+    <include>
+      <name>Lionfish2</name>
+        <pose>20 -4.5 -16 0 0 0</pose>
+      <uri>https://fuel.ignitionrobotics.org/1.0/Cole/models/Lionfish</uri>
+      <static>true</static>
+    </include>
+
+    <include>
+      <name>Coral2</name>
+        <pose>20 -5.0 -16 0 0 0</pose>
+      <uri>https://fuel.ignitionrobotics.org/1.0/Cole/models/Coral02</uri>
+      <static>true</static>
+    </include>
+
+    <include>
+      <name>Kelp3</name>
+        <pose>20 -6.5 -16 0 0 0</pose>
+      <uri>https://fuel.ignitionrobotics.org/1.0/Cole/models/Kelp 03</uri>
+      <static>true</static>
+    </include>
+
+    <include>
+      <name>Kelp4</name>
+        <pose>20 -7.5 -16 0 0 0</pose>
+      <uri>https://fuel.ignitionrobotics.org/1.0/Cole/models/Kelp 04</uri>
+      <static>true</static>
+    </include>
+
+    <!-- Heightmap -->
+    <include>
+      <uri>https://fuel.gazebosim.org/1.0/hmoyen/models/Sand Heightmap</uri>
+      <pose>0 0 -16 0 0 0</pose>
+    </include>
+
+    <include>
+      <uri>
+      https://fuel.gazebosim.org/1.0/hmoyen/models/Hardhat Superribbed
+      </uri>
+      <pose>20 -7 -16 0 0 0</pose>
+    </include>
+
+    <include>
+      <uri>
+      https://fuel.gazebosim.org/1.0/hmoyen/models/Torpedo MK46
+      </uri>
+      <pose>20 -1 -16 0 0 2</pose>
+    </include>
+
+    <include>
+      <uri>
+      https://fuel.gazebosim.org/1.0/hmoyen/models/MBARI MARS
+      </uri>
+      <pose>27 4 -16 0 0 1</pose>
+    </include>
+
+    <plugin
+      filename="gz-sim-buoyancy-system"
+      name="gz::sim::systems::Buoyancy">
+      <graded_buoyancy>
+        <default_density>1025</default_density>
+        <density_change>
+          <above_depth>0</above_depth>
+          <density>1</density>
+        </density_change>
+      </graded_buoyancy>
+    </plugin>
+
+  </world>
+</sdf>

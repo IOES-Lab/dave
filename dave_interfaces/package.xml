@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?><package format="3">
   <name>dave_interfaces</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
+  <description>Topic and Service Message Formats</description>
   <maintainer email="helenamoyen@usp.br">lena</maintainer>
   <maintainer email="gaurav.og.9920@gmail.com">Gaurav Kumar</maintainer>
   <license>Apache 2.0</license>

@@ -4,7 +4,7 @@ project(dave_sensor_models)
 find_package(ament_cmake REQUIRED)
 
 install(
-  DIRECTORY description launch meshes
+  DIRECTORY description launch meshes config
   DESTINATION share/dave_sensor_models
 )
 

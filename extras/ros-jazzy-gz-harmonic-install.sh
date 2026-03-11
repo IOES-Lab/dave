@@ -69,6 +69,8 @@ echo -e "\033[34mInstalling ROS Gazebo framework...\033[0m"
 sudo apt update && apt install -y \
     python3-rosdep \
     python3-rosinstall-generator \
+    python3-colcon-core \
+    python3-colcon-common-extensions \
     python3-vcstool \
     $GAZEBO \
     ros-$DIST-desktop-full \
@@ -86,12 +88,32 @@ sudo apt update && apt install -y \
     ros-$DIST-ros2-controllers \
     ros-$DIST-teleop-tools \
     ros-$DIST-urdfdom-py \
+    ros-$DIST-marine-acoustic-msgs \
     ros-dev-tools
+
+echo
+echo -e "\033[96m(4/4) ------------     Install Ardusub    ---------------\033[0m"
+
+# Install ardusub(local)
+sudo mkdir -p /opt/ardusub_ws && cd /opt/ardusub_ws || exit
+wget https://raw.githubusercontent.com/IOES-Lab/dave/ros2/extras/ardusub-ubuntu-install-local.sh
+sudo chmod +x ardusub-ubuntu-install-local.sh && sudo bash ./ardusub-ubuntu-install-local.sh
+
+# Mavros install
+sudo apt-get -y install ros-jazzy-mavros*
+sudo mkdir -p /opt/mavros_ws && cd /opt/mavros_ws || exit
+sudo wget https://raw.githubusercontent.com/mavlink/mavros/master/mavros/scripts/install_geographiclib_datasets.sh
+sudo chmod +x install_geographiclib_datasets.sh && sudo bash ./install_geographiclib_datasets.sh
+
+# Environment variables setup (add to ~/.bashrc or ~/.zshrc)
+echo "source /opt/ros/jazzy/setup.bash" >> ~/.bashrc && \
+echo "export PATH=/opt/ardusub_ws/ardupilot/Tools/autotest:\$PATH" >> ~/.bashrc && \
+echo "export PATH=/opt/ardusub_ws/ardupilot/build/sitl/bin:\$PATH" >> ~/.bashrc && \
+echo "export GZ_SIM_SYSTEM_PLUGIN_PATH=/opt/ardusub_ws/ardupilot_gazebo/build:\$GZ_SIM_SYSTEM_PLUGIN_PATH" >> ~/.bashrc && \
+echo "export GZ_SIM_RESOURCE_PATH=/opt/ardusub_ws/ardupilot_gazebo/models:/opt/ardusub_ws/ardupilot_gazebo/worlds:\$GZ_SIM_RESOURCE_PATH" >> ~/.bashrc
 
 echo
 echo -e "\033[32m============================================================\033[0m"
 echo -e "\033[32mROS-Gazebo Framework Installation completed. Awesome! 🤘🚀 \033[0m"
-echo -e "Following command will set-up ROS environment variables to run it"
-echo -e "\033[95msource /opt/ros/jazzy/setup.bash\033[0m"
 echo -e "You may check ROS, and Gazebo version installed with \033[33mprintenv ROS_DISTRO\033[0m and \033[33mecho \$GZ_VERSION\033[0m"
 echo

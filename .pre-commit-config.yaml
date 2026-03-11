@@ -28,7 +28,7 @@
 repos:
   # Standard hooks
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v5.0.0
     hooks:
       - id: check-added-large-files
         args: ["--maxkb=2000"]
@@ -48,7 +48,7 @@ repos:
 
   # Python hooks
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.16.0
+    rev: v3.19.1
     hooks:
       - id: pyupgrade
         args: [--py36-plus]
@@ -62,20 +62,23 @@ repos:
           ["--ignore=D100,D101,D102,D103,D104,D105,D106,D107,D203,D212,D404"]
 
   - repo: https://github.com/psf/black
-    rev: 24.4.2
+    rev: 24.10.0
     hooks:
       - id: black
         args: ["--line-length=99", "--exclude=tools/code_check"]
 
   - repo: https://github.com/pycqa/flake8
-    rev: 7.1.0
+    rev: 7.1.1
     hooks:
       - id: flake8
-        args: ["--extend-ignore=E501", "--exclude=tools/code_check"]
+        args:
+          - "--ignore=E203,W503,E501"
+          - "--exclude=tools/code_check"
+
 
   # CPP hooks
   - repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: v18.1.7
+    rev: v19.1.6
     hooks:
       - id: clang-format
         args: ["-fallback-style=none", "-i"]
@@ -126,7 +129,7 @@ repos:
 
   # Docs - RestructuredText hooks
   - repo: https://github.com/PyCQA/doc8
-    rev: v1.1.1
+    rev: v1.1.2
     hooks:
       - id: doc8
         args: ["--max-line-length=100", "--ignore=D001"]
@@ -151,7 +154,7 @@ repos:
 
   # Json lint
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.28.6
+    rev: 0.31.0
     hooks:
       - id: check-github-workflows
         args: ["--verbose"]
@@ -162,7 +165,7 @@ repos:
 
   # XML lint for xacro, urdf, and sdf files
   - repo: https://github.com/pamoller/xmlformatter
-    rev: v0.2.6
+    rev: v0.2.8
     hooks:
       - id: xml-formatter
         name: Format XML
