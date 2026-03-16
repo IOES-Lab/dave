@@ -328,7 +328,7 @@ pub extern "C" fn sonar_wgpu_compute(
         contents: bytemuck::bytes_of(&mm_params),
         usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
     });
-    
+
     // REMOVE THIS, UNNCESSARY
     // ---- Persistent data buffers: allocate once per dimension set, reuse every frame ----
     let mut buf_guard = ctx.buffers.lock().unwrap();

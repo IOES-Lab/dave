@@ -45,7 +45,7 @@ fn main(
     } else {
       tile_a[lid.y][lid.x] = 0.0;
     }
-    
+
     // Load B tile: each thread loads one B[k_b, col].
     if (k_b < params.n_beams) {
       tile_b[lid.y][lid.x] = b[k_b * params.n_freq + col];

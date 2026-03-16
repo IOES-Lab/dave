@@ -419,7 +419,7 @@ bool MultibeamSonarSensor::Implementation::InitializeBeamArrangement(MultibeamSo
   // NOTE: frameName is the TF frame name for published sonar messages (frame_id in ROS headers).
   // This is explicitly configured in SDF <frameName> rather than derived from Gazebo's
   // internal sensor frame ID. Must match TF tree for RViz transforms to work correctly.
-  // Verify in SDF files that <frameName> matches the expected TF frame name.  
+  // Verify in SDF files that <frameName> matches the expected TF frame name.
   this->frameName =
     sensorElement->Get<std::string>("frameName", "forward_sonar_optical_link").first;
   gzmsg << "frameName: " << this->frameName << std::endl;
@@ -1085,7 +1085,7 @@ cv::Mat MultibeamSonarSensor::Implementation::ComputeNormalImage(cv::Mat & depth
 
   // Calculate focal length using the actual depth image dimensions (cols) so
   // this function is safe to call from a background thread without accessing
-  // the shared pointMsg field. Avoid data race with pointMsg.width() which may  
+  // the shared pointMsg field. Avoid data race with pointMsg.width() which may
   // be being written to by the render thread concurrently.
   double focal_length = (0.5 * depth.cols) / tan(0.5 * this->hFOV);
   images.at(2) = 1.0 / focal_length * depth;  // for blue channel
@@ -1158,7 +1158,7 @@ void MultibeamSonarSensor::Implementation::ComputeSonarImage()
     }
   }
   // lock_ released -> render thread can proceed immediately.
-  
+
   // NOTE: reflectivityImage is used here without a lock.
   // This is safe for now because only the compute thread writes to it
   // and the render thread only reads it. If the render thread ever starts modifying
@@ -1303,10 +1303,10 @@ void MultibeamSonarSensor::Implementation::ComputeSonarImage()
 
   // FEEDBACK_NEEDED/TODO: Using frameName (from SDF <frameName> tag) as the ROS frame_id.
   // This is user-friendly but requires the SDF value to match an actual TF frame exactly.
-  // The old approach used frameId (Gazebo's internal sensor ID) which was more likely 
+  // The old approach used frameId (Gazebo's internal sensor ID) which was more likely
   // to match the TF tree automatically.
   // If TF lookup errors appear in RViz, shall revert back to frameId.
-    
+
   this->sonarRawDataMsg.header.frame_id = this->frameName;
 
   this->sonarRawDataMsg.header.stamp.sec = static_cast<int32_t>(capturedStamp.seconds());

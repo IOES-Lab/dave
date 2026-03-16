@@ -1,5 +1,5 @@
-/// Fixed-point atomic accumulation in backscatter.wgsl (SCALE=1024) allows us 
-/// to avoid floating-point atomics, which are not widely supported on GPUs. This shader 
+/// Fixed-point atomic accumulation in backscatter.wgsl (SCALE=1024) allows us
+/// to avoid floating-point atomics, which are not widely supported on GPUs. This shader
 /// converts the accumulated i32 values back to f32 by dividing by SCALE=1024, precision 0.001.
 @group(0) @binding(0) var<storage, read> in_re: array<i32>;
 @group(0) @binding(1) var<storage, read> in_im: array<i32>;

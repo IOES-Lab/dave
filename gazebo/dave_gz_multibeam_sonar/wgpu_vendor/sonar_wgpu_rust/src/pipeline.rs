@@ -165,7 +165,7 @@ pub struct GpuContext {
     pub fft_bgl: wgpu::BindGroupLayout,
 
     // SonarBuffers are None until first compute call when dimensions are known.
-    // Reallocated automatically if dimensions change between frames.    
+    // Reallocated automatically if dimensions change between frames.
     // Persistent GPU buffers across frames: CUDA cudaMalloc equivalent (allocated once, reused across ≥1 frames with same dimensions).
     pub buffers: std::sync::Mutex<Option<SonarBuffers>>,
 }
@@ -215,7 +215,7 @@ fn build_bgls(device: &wgpu::Device) -> (
             make_storage_entry(1, true),    // (depth)          true = read_only
             make_storage_entry(2, true),    // (normal)
             make_storage_entry(3, true),    // (reflectivity)
-            make_storage_entry(4, false),   // (out_re_i32)     false = read_write  
+            make_storage_entry(4, false),   // (out_re_i32)     false = read_write
             make_storage_entry(5, false),   // (out_im_i32)
             make_storage_entry(6, true),    // (window)
         ],
@@ -388,7 +388,7 @@ Data flow with buffer names:
         │
         ▼
     depth_buf    [n_beams × n_rays]      f32   COPY_DST | STORAGE
-    normal_buf   [n_beams × n_rays × 3]  f32   COPY_DST | STORAGE  
+    normal_buf   [n_beams × n_rays × 3]  f32   COPY_DST | STORAGE
     refl_buf     [n_beams × n_rays]      f32   COPY_DST | STORAGE
     window_buf   [n_freq]                f32   COPY_DST | STORAGE
     bc_buf       [n_beams × n_beams]     f32   COPY_DST | STORAGE
@@ -421,4 +421,4 @@ Data flow with buffer names:
     stg_im       [n_beams × n_freq]      f32   MAP_READ | COPY_DST
         │
         ▼ CPU reads back final result
-    */    
+    */
