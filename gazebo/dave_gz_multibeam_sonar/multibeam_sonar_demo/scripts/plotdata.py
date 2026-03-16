@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -10,11 +12,30 @@ nBeams = 512
 maxRange = 5
 xPlotRange = 10
 yPlotRange = xPlotRange * np.cos(45 * np.pi / 180)
-filename = "SonarRawData_000001.csv"
-beam_angle_file = "SonarRawData_beam_angles.csv"
+source_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
+inferred_root = source_root
+candidates = [
+    os.environ.get("DAVE_SOURCE_ROOT", ""),
+    os.getcwd(),
+    inferred_root,
+    os.path.join(inferred_root, "src", "dave"),
+]
+source_root = inferred_root
+for candidate in candidates:
+    if candidate and os.path.exists(os.path.join(candidate, "models", "dave_worlds", "worlds")):
+        source_root = candidate
+        break
+
+results_dir = os.path.join(source_root, "results")
+os.makedirs(results_dir, exist_ok=True)
+
+filename = os.path.join(results_dir, "SonarRawData_000001.csv")
+beam_angle_file = os.path.join(results_dir, "SonarRawData_beam_angles.csv")
 bw = 29.9e3
 plotSkips = 1
 epsilon = 1e-10
+scatter_output_file = os.path.join(results_dir, "SonarScatter.png")
+beam_output_file = os.path.join(results_dir, "SonarBeamProfiles.png")
 
 
 # -------------------------------------------
@@ -71,7 +92,8 @@ plt.xlim(1.02 * np.array([0, xPlotRange]))
 plt.ylim(1.02 * np.array([-yPlotRange, yPlotRange]))
 plt.gca().set_facecolor("k")
 plt.tight_layout()
-plt.show()
+plt.savefig(scatter_output_file, dpi=200)
+plt.close()
 
 # -------------------------------------------
 # LINE PLOTS FOR INDIVIDUAL BEAMS
@@ -91,4 +113,8 @@ for i, idx in enumerate(iPlots[1:-1], start=1):
 
 plt.suptitle("Beam Profiles")
 plt.tight_layout()
-plt.show()
+plt.savefig(beam_output_file, dpi=200)
+plt.close()
+
+print(f"Saved {scatter_output_file}")
+print(f"Saved {beam_output_file}")

@@ -11,113 +11,104 @@ cmake_policy(SET CMP0144 NEW)
 
 project(multibeam_sonar)
 
-set(CUDA_ARCHITECTURE "60" CACHE STRING "Target CUDA SM version")
-
 find_package(ament_cmake REQUIRED)
-find_package(CUDAToolkit QUIET)
+find_package(gz-cmake REQUIRED)
+find_package(gz-sim REQUIRED)
+find_package(gz-sensors REQUIRED)
+find_package(gz-rendering REQUIRED OPTIONAL_COMPONENTS ogre ogre2)
+find_package(gz-transport REQUIRED)
+find_package(gz-msgs REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(OpenCV REQUIRED)
+find_package(marine_acoustic_msgs REQUIRED)
+find_package(cv_bridge REQUIRED)
+find_package(wgpu_vendor REQUIRED)
 
-if(CUDAToolkit_FOUND)
-
-  enable_language(CUDA)
-  find_package(CUDA REQUIRED)
-  message(STATUS "CUDA found, enabling CUDA support.")
-  include_directories(${CUDA_INCLUDE_DIRS})
-  set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -arch=sm_${CUDA_ARCHITECTURE}")
-  find_package(gz-cmake3 REQUIRED)
-  find_package(gz-sim8 REQUIRED)
-  find_package(gz-sensors8 REQUIRED)
-  find_package(gz-rendering8 REQUIRED OPTIONAL_COMPONENTS ogre ogre2)
-  find_package(gz-transport13 REQUIRED)
-  find_package(rclcpp REQUIRED)
-  find_package(sensor_msgs REQUIRED)
-  find_package(geometry_msgs REQUIRED)
-  find_package(rosidl_default_generators REQUIRED)
-  find_package(OpenCV REQUIRED)
-  find_package(marine_acoustic_msgs REQUIRED)
-  find_package(cv_bridge REQUIRED)
-
-  set(GZ_MSGS_VER ${gz-msgs10_VERSION_MAJOR})
-  set(GZ_RENDERING_VER ${gz-rendering8_VERSION_MAJOR})
-  set(GZ_SENSORS_VER ${gz-sensors8_VERSION_MAJOR})
-  set(GZ_TRANSPORT_VER ${gz-transport13_VERSION_MAJOR})
-  set(GZ_SIM_VER ${gz-sim8_VERSION_MAJOR})
-
-  if(TARGET gz-rendering${GZ_RENDERING_VER}::ogre)
-    set(HAVE_OGRE TRUE)
-    set(GZ_RENDERING_TARGET gz-rendering${GZ_RENDERING_VER}-ogre)
-    add_definitions(-DWITH_OGRE)
-  endif()
-
-  if(TARGET gz-rendering${GZ_RENDERING_VER}::ogre2)
-    set(HAVE_OGRE2 TRUE)
-    set(GZ_RENDERING_TARGET gz-rendering${GZ_RENDERING_VER}-ogre2)
-    add_definitions(-DWITH_OGRE2)
-  endif()
-
-  add_library(${PROJECT_NAME}
-    SHARED
-      MultibeamSonarSensor.cc
-      sonar_calculation_cuda.cu
-  )
-
-  set_target_properties(${PROJECT_NAME}
-    PROPERTIES
-    CUDA_SEPARABLE_COMPILATION ON
-  )
-
-  target_include_directories(${PROJECT_NAME}
-    PUBLIC
-    ${gz-sensors${GZ_SENSORS_VER}_INCLUDE_DIRS}
-    ${gz-rendering${GZ_RENDERING_VER}_INCLUDE_DIRS}
-    ${gz-msgs${GZ_MSGS_VER}_INCLUDE_DIRS}
-    ${CUDA_INCLUDE_DIRS}
-    ${gz-transport${GZ_TRANSPORT_VER}_INCLUDE_DIRS}
-    ${gz-sim${GZ_SIM_VER}_INCLUDE_DIRS}
-  )
-
-  find_library(CUBLAS_LIB cublas
-    HINTS
-      ${CUDAToolkit_LIBRARY_DIR}
-      /usr/local/cuda/lib64
-      /usr/lib/x86_64-linux-gnu
-      /usr/lib
-  )
-  if(NOT CUBLAS_LIB)
-    message(FATAL_ERROR "cuBLAS not found")
-  endif()
-
-  target_link_libraries(${PROJECT_NAME}
-    ${CUDA_LIBRARIES}
-    ${CUDA_CUFFT_LIBRARIES}
-    ${CUBLAS_LIB}
-  )
-
-  install(TARGETS ${PROJECT_NAME}
-    DESTINATION lib/${PROJECT_NAME}
-  )
-
-  ament_target_dependencies(${PROJECT_NAME}
-    gz-sensors${GZ_SENSORS_VER}
-    ${GZ_RENDERING_TARGET}
-    gz-msgs${GZ_MSGS_VER}
-    gz-transport${GZ_TRANSPORT_VER}
-    gz-sim${GZ_SIM_VER}
-    rclcpp
-    sensor_msgs
-    rosidl_default_generators
-    OpenCV
-    marine_acoustic_msgs
-    geometry_msgs
-    cv_bridge
-  )
-
-  ament_environment_hooks(
-    "${CMAKE_CURRENT_SOURCE_DIR}/hooks/${PROJECT_NAME}.dsv.in"
-  )
-
-else()
-  message(STATUS "CUDA Toolkit not found or disabled: "
-                "Skipping CUDA-specific targets")
+if(TARGET gz-rendering::ogre)
+  add_definitions(-DWITH_OGRE)
 endif()
+if(TARGET gz-rendering::ogre2)
+  add_definitions(-DWITH_OGRE2)
+endif()
+
+add_library(${PROJECT_NAME} SHARED
+  MultibeamSonarSensor.cc
+  sonar_compute_cpu.cc
+  sonar_compute_wgpu.cc
+)
+
+target_include_directories(${PROJECT_NAME} PUBLIC
+  ${gz-sensors_INCLUDE_DIRS}
+  ${gz-rendering_INCLUDE_DIRS}
+  ${gz-msgs_INCLUDE_DIRS}
+  ${gz-transport_INCLUDE_DIRS}
+  ${gz-sim_INCLUDE_DIRS}
+  ${rclcpp_INCLUDE_DIRS}
+  ${sensor_msgs_INCLUDE_DIRS}
+  ${geometry_msgs_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
+  ${marine_acoustic_msgs_INCLUDE_DIRS}
+  ${cv_bridge_INCLUDE_DIRS}
+)
+
+if(DEFINED ENV{ROS_DISTRO} AND EXISTS "/opt/ros/$ENV{ROS_DISTRO}/include/cv_bridge")
+  target_include_directories(${PROJECT_NAME} PUBLIC "/opt/ros/$ENV{ROS_DISTRO}/include/cv_bridge")
+elseif(EXISTS "/opt/ros/rolling/include/cv_bridge")
+  target_include_directories(${PROJECT_NAME} PUBLIC "/opt/ros/rolling/include/cv_bridge")
+endif()
+
+target_link_libraries(${PROJECT_NAME}
+  gz-sim::gz-sim
+  gz-sensors::gz-sensors
+  gz-msgs::gz-msgs
+  gz-transport::gz-transport
+  gz-rendering::gz-rendering
+  ${rclcpp_LIBRARIES}
+  ${sensor_msgs_LIBRARIES}
+  ${geometry_msgs_LIBRARIES}
+  ${OpenCV_LIBS}
+  ${marine_acoustic_msgs_LIBRARIES}
+)
+
+if(TARGET wgpu::wgpu_vendor)
+  target_link_libraries(${PROJECT_NAME} wgpu::wgpu_vendor)
+elseif(TARGET wgpu_vendor)
+  target_link_libraries(${PROJECT_NAME} wgpu_vendor)
+endif()
+
+# Ensure the Rust static archive is linked into this shared library.
+# The exported interface target may not always propagate non-installed imported
+# targets across package boundaries in overlay builds.
+if(DEFINED wgpu_vendor_DIR)
+  get_filename_component(_wgpu_vendor_prefix "${wgpu_vendor_DIR}/../../.." ABSOLUTE)
+  set(_sonar_wgpu_static "${_wgpu_vendor_prefix}/lib/libsonar_wgpu.a")
+  if(EXISTS "${_sonar_wgpu_static}")
+    target_link_libraries(${PROJECT_NAME} "${_sonar_wgpu_static}")
+  endif()
+endif()
+
+if(TARGET cv_bridge::cv_bridge)
+  target_link_libraries(${PROJECT_NAME} cv_bridge::cv_bridge)
+elseif(TARGET cv_bridge)
+  target_link_libraries(${PROJECT_NAME} cv_bridge)
+else()
+  target_link_libraries(${PROJECT_NAME} ${cv_bridge_LIBRARIES})
+endif()
+
+if(TARGET gz-sensors::gz-sensors-rendering)
+  target_link_libraries(${PROJECT_NAME} gz-sensors::gz-sensors-rendering)
+else()
+  find_library(GZ_SENSORS_RENDERING_LIB gz-sensors-rendering)
+  if(GZ_SENSORS_RENDERING_LIB)
+    target_link_libraries(${PROJECT_NAME} ${GZ_SENSORS_RENDERING_LIB})
+  endif()
+endif()
+
+install(TARGETS ${PROJECT_NAME} DESTINATION lib/${PROJECT_NAME})
+
+ament_environment_hooks(
+  "${CMAKE_CURRENT_SOURCE_DIR}/hooks/${PROJECT_NAME}.dsv.in")
 
 ament_package()

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<package format="3">
+  <name>wgpu_vendor</name>
+  <version>0.1.0</version>
+  <description>Vendor package exposing wgpu CMake target for DAVE sonar backend.</description>
+  <maintainer email="noreply@example.com">DAVE Maintainers</maintainer>
+  <license>Apache-2.0</license>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
