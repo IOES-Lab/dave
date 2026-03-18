@@ -24,9 +24,7 @@ fn main(
 ) {
   let row = gid.y;
   let col = gid.x;
-  if (row >= params.n_beams || col >= params.n_freq) {
-    return;
-  }
+  let in_bounds = (row < params.n_beams) && (col < params.n_freq);
 
   // Accumulator: accumulates partial products across tiles.
   var acc = 0.0;
@@ -40,14 +38,14 @@ fn main(
 
     // LOAD: load tile data into shared memory.
     // Load A tile: each thread loads one A[row, k_a].
-    if (k_a < params.n_beams) {
+    if (in_bounds && k_a < params.n_beams) {
       tile_a[lid.y][lid.x] = a[row * params.n_beams + k_a];
     } else {
       tile_a[lid.y][lid.x] = 0.0;
     }
 
     // Load B tile: each thread loads one B[k_b, col].
-    if (k_b < params.n_beams) {
+    if (in_bounds && k_b < params.n_beams) {
       tile_b[lid.y][lid.x] = b[k_b * params.n_freq + col];
     } else {
       tile_b[lid.y][lid.x] = 0.0;
@@ -67,5 +65,7 @@ fn main(
   // WRITE: final result to global memory.
   // Normalize output: divide by beam_corrector_sum.
   let norm = max(params.beam_corrector_sum, 1e-12);
-  c[row * params.n_freq + col] = acc / norm;
+  if (in_bounds) {
+    c[row * params.n_freq + col] = acc / norm;
+  }
 }

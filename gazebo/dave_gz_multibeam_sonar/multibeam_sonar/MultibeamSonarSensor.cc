@@ -427,10 +427,12 @@ bool MultibeamSonarSensor::Implementation::InitializeBeamArrangement(MultibeamSo
   if (const char * backendEnv = std::getenv("DAVE_SONAR_COMPUTE_BACKEND"))
   {
     this->requestedBackend = backendEnv;
+    gzmsg << "DAVE_SONAR_COMPUTE_BACKEND=" << this->requestedBackend << std::endl;
   }
   else
   {
     this->requestedBackend = "auto";
+    gzmsg << "DAVE_SONAR_COMPUTE_BACKEND not set. Using default backend=auto" << std::endl;
   }
 
   this->computeBackend = CreateComputeBackend(this->requestedBackend);
@@ -1107,14 +1109,19 @@ cv::Mat MultibeamSonarSensor::Implementation::ComputeNormalImage(cv::Mat & depth
 }
 
 // Precalculation of corrector sonar calculation
-void MultibeamSonarSensor::Implementation::ComputeCorrector()
+void MultibeamSonarSensor::Implementation::ComputeCorrector(int _snapshotWidth, int _nBeams)
 {
-  double hPixelSize = this->hFOV / (this->pointMsg.width() - 1);
+  if (_snapshotWidth <= 1 || _nBeams <= 0)
+  {
+    return;
+  }
+
+  double hPixelSize = this->hFOV / (_snapshotWidth - 1);
 
   // Beam culling correction precalculation
-  for (size_t beam = 0; beam < this->nBeams; beam++)
+  for (int beam = 0; beam < _nBeams; beam++)
   {
-    for (size_t beam_other = 0; beam_other < this->nBeams; beam_other++)
+    for (int beam_other = 0; beam_other < _nBeams; beam_other++)
     {
       float azimuthBeamPattern = unnormalized_sinc(
         M_PI * 0.884 / hPixelSize *
@@ -1148,7 +1155,7 @@ void MultibeamSonarSensor::Implementation::ComputeSonarImage()
 
     if (this->beamCorrectorSum == 0)
     {
-      ComputeCorrector();
+      ComputeCorrector(depthSnapshot.cols, this->nBeams);
     }
 
     if (this->reflectivityImage.rows == 0)

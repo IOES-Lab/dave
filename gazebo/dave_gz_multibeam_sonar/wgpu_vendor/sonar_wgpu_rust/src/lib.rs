@@ -59,165 +59,6 @@ struct FftParams {
     log2_n: u32,
 }
 
-// REMOVE THIS, UNNCESSARY
-/// Single-buffer i32 readback kept for CPU-fallback / test paths.
-#[allow(dead_code)]
-fn readback_i32(
-    device: &wgpu::Device,
-    queue: &wgpu::Queue,
-    src: &wgpu::Buffer,
-    len: usize,
-) -> Option<Vec<i32>> {
-    let bytes = (len * std::mem::size_of::<i32>()) as u64;
-    let staging = device.create_buffer(&wgpu::BufferDescriptor {
-        label: Some("readback_i32"),
-        size: bytes,
-        usage: wgpu::BufferUsages::MAP_READ | wgpu::BufferUsages::COPY_DST,
-        mapped_at_creation: false,
-    });
-    let mut encoder = device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
-        label: Some("readback_i32_encoder"),
-    });
-    encoder.copy_buffer_to_buffer(src, 0, &staging, 0, bytes);
-    queue.submit(std::iter::once(encoder.finish()));
-    device.poll(wgpu::Maintain::Wait);
-    let slice = staging.slice(..);
-    slice.map_async(wgpu::MapMode::Read, |_| {});
-    device.poll(wgpu::Maintain::Wait);
-    let data = slice.get_mapped_range();
-    let out = bytemuck::cast_slice::<u8, i32>(&data).to_vec();
-    drop(data);
-    staging.unmap();
-    Some(out)
-}
-
-#[allow(dead_code)]
-/// Read two i32 buffers back to CPU in **one** encoder+submit+poll pair.
-/// Returns (re_vec, im_vec).
-fn readback_i32_pair(
-    device: &wgpu::Device,
-    queue: &wgpu::Queue,
-    src_re: &wgpu::Buffer,
-    src_im: &wgpu::Buffer,
-    len: usize,
-) -> Option<(Vec<i32>, Vec<i32>)> {
-    let bytes = (len * std::mem::size_of::<i32>()) as u64;
-    let stg_re = device.create_buffer(&wgpu::BufferDescriptor {
-        label: Some("stg_re"),
-        size: bytes,
-        usage: wgpu::BufferUsages::MAP_READ | wgpu::BufferUsages::COPY_DST,
-        mapped_at_creation: false,
-    });
-    let stg_im = device.create_buffer(&wgpu::BufferDescriptor {
-        label: Some("stg_im"),
-        size: bytes,
-        usage: wgpu::BufferUsages::MAP_READ | wgpu::BufferUsages::COPY_DST,
-        mapped_at_creation: false,
-    });
-    let mut enc = device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
-        label: Some("readback_i32_pair"),
-    });
-    enc.copy_buffer_to_buffer(src_re, 0, &stg_re, 0, bytes);
-    enc.copy_buffer_to_buffer(src_im, 0, &stg_im, 0, bytes);
-    queue.submit(std::iter::once(enc.finish()));
-    device.poll(wgpu::Maintain::Wait);
-
-    stg_re.slice(..).map_async(wgpu::MapMode::Read, |_| {});
-    stg_im.slice(..).map_async(wgpu::MapMode::Read, |_| {});
-    device.poll(wgpu::Maintain::Wait);
-
-    let re_data = stg_re.slice(..).get_mapped_range();
-    let im_data = stg_im.slice(..).get_mapped_range();
-    let re = bytemuck::cast_slice::<u8, i32>(&re_data).to_vec();
-    let im = bytemuck::cast_slice::<u8, i32>(&im_data).to_vec();
-    drop(re_data);
-    drop(im_data);
-    stg_re.unmap();
-    stg_im.unmap();
-    Some((re, im))
-}
-
-// REMOVE THIS, UNNCESSARY
-#[allow(dead_code)]
-/// Read two f32 buffers back to CPU in **one** encoder+submit+poll pair.
-fn readback_f32_pair(
-    device: &wgpu::Device,
-    queue: &wgpu::Queue,
-    src_re: &wgpu::Buffer,
-    src_im: &wgpu::Buffer,
-    len: usize,
-) -> Option<(Vec<f32>, Vec<f32>)> {
-    let bytes = (len * std::mem::size_of::<f32>()) as u64;
-    let stg_re = device.create_buffer(&wgpu::BufferDescriptor {
-        label: Some("stg_re_f32"),
-        size: bytes,
-        usage: wgpu::BufferUsages::MAP_READ | wgpu::BufferUsages::COPY_DST,
-        mapped_at_creation: false,
-    });
-    let stg_im = device.create_buffer(&wgpu::BufferDescriptor {
-        label: Some("stg_im_f32"),
-        size: bytes,
-        usage: wgpu::BufferUsages::MAP_READ | wgpu::BufferUsages::COPY_DST,
-        mapped_at_creation: false,
-    });
-    let mut enc = device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
-        label: Some("readback_f32_pair"),
-    });
-    enc.copy_buffer_to_buffer(src_re, 0, &stg_re, 0, bytes);
-    enc.copy_buffer_to_buffer(src_im, 0, &stg_im, 0, bytes);
-    queue.submit(std::iter::once(enc.finish()));
-    device.poll(wgpu::Maintain::Wait);
-
-    stg_re.slice(..).map_async(wgpu::MapMode::Read, |_| {});
-    stg_im.slice(..).map_async(wgpu::MapMode::Read, |_| {});
-    device.poll(wgpu::Maintain::Wait);
-
-    let re_data = stg_re.slice(..).get_mapped_range();
-    let im_data = stg_im.slice(..).get_mapped_range();
-    let re = bytemuck::cast_slice::<u8, f32>(&re_data).to_vec();
-    let im = bytemuck::cast_slice::<u8, f32>(&im_data).to_vec();
-    drop(re_data);
-    drop(im_data);
-    stg_re.unmap();
-    stg_im.unmap();
-    Some((re, im))
-}
-
-// REMOVE THIS, UNNCESSARY
-/// Single-buffer f32 readback kept for CPU-fallback / test paths.
-#[allow(dead_code)]
-fn readback_f32(
-    device: &wgpu::Device,
-    queue: &wgpu::Queue,
-    src: &wgpu::Buffer,
-    len: usize,
-) -> Option<Vec<f32>> {
-    let bytes = (len * std::mem::size_of::<f32>()) as u64;
-    let staging = device.create_buffer(&wgpu::BufferDescriptor {
-        label: Some("readback_f32"),
-        size: bytes,
-        usage: wgpu::BufferUsages::MAP_READ | wgpu::BufferUsages::COPY_DST,
-        mapped_at_creation: false,
-    });
-
-    let mut encoder = device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
-        label: Some("readback_f32_encoder"),
-    });
-    encoder.copy_buffer_to_buffer(src, 0, &staging, 0, bytes);
-    queue.submit(std::iter::once(encoder.finish()));
-    device.poll(wgpu::Maintain::Wait);
-
-    let slice = staging.slice(..);
-    slice.map_async(wgpu::MapMode::Read, |_| {});
-    device.poll(wgpu::Maintain::Wait);
-
-    let data = slice.get_mapped_range();
-    let out = bytemuck::cast_slice::<u8, f32>(&data).to_vec();
-    drop(data);
-    staging.unmap();
-    Some(out)
-}
-
 /// The function receives flat arrays from C++ and returns a heap-allocated array.
 #[no_mangle]
 pub extern "C" fn sonar_wgpu_compute(
@@ -504,9 +345,34 @@ pub extern "C" fn sonar_wgpu_compute(
 
     // map_async is asynchronous -> it requests CPU access to the buffer but doesn't block.
     // Map staging buffers (GPU work already done above) -> POLL 2
-    buf.stg_re.slice(..).map_async(wgpu::MapMode::Read, |_| {});
-    buf.stg_im.slice(..).map_async(wgpu::MapMode::Read, |_| {});
+    let re_ok = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
+    let im_ok = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
+    let re_ok_cb = std::sync::Arc::clone(&re_ok);
+    let im_ok_cb = std::sync::Arc::clone(&im_ok);
+
+    buf.stg_re
+        .slice(..)
+        .map_async(wgpu::MapMode::Read, move |r| {
+            re_ok_cb.store(r.is_ok(), std::sync::atomic::Ordering::Release);
+        });
+    buf.stg_im
+        .slice(..)
+        .map_async(wgpu::MapMode::Read, move |r| {
+            im_ok_cb.store(r.is_ok(), std::sync::atomic::Ordering::Release);
+        });
     device.poll(wgpu::Maintain::Wait);
+
+    let re_mapped = re_ok.load(std::sync::atomic::Ordering::Acquire);
+    let im_mapped = im_ok.load(std::sync::atomic::Ordering::Acquire);
+    if !re_mapped || !im_mapped {
+        eprintln!(
+            "[sonar_wgpu] map_async failed: stg_re_ok={}, stg_im_ok={}",
+            re_mapped, im_mapped
+        );
+        buf.stg_re.unmap();
+        buf.stg_im.unmap();
+        return std::ptr::null_mut();
+    }
 
     let (mut p_re, mut p_im) = {
         let re_data = buf.stg_re.slice(..).get_mapped_range();

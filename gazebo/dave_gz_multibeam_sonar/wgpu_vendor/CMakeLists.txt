@@ -2,7 +2,9 @@ cmake_minimum_required(VERSION 3.11)
 project(wgpu_vendor)
 
 find_package(ament_cmake REQUIRED)
-find_package(Vulkan REQUIRED)
+
+# WGPU can use Metal, DirectX, or Vulkan
+find_package(Vulkan QUIET)
 
 find_program(CARGO_EXECUTABLE cargo REQUIRED)
 
@@ -38,7 +40,10 @@ add_dependencies(sonar_wgpu_rust_static sonar_wgpu_rust)
 add_library(wgpu_vendor INTERFACE)
 add_dependencies(wgpu_vendor sonar_wgpu_rust_static)
 
-target_link_libraries(wgpu_vendor INTERFACE sonar_wgpu_rust_static dl pthread m Vulkan::Vulkan)
+target_link_libraries(wgpu_vendor INTERFACE sonar_wgpu_rust_static dl pthread m)
+if(Vulkan_FOUND)
+  target_link_libraries(wgpu_vendor INTERFACE Vulkan::Vulkan)
+endif()
 
 add_library(wgpu::wgpu_vendor ALIAS wgpu_vendor)
 
@@ -51,5 +56,7 @@ install(EXPORT wgpu_vendorTargets
   DESTINATION share/${PROJECT_NAME}/cmake)
 
 ament_export_targets(wgpu_vendorTargets HAS_LIBRARY_TARGET)
-ament_export_dependencies(Vulkan)
+if(Vulkan_FOUND)
+  ament_export_dependencies(Vulkan)
+endif()
 ament_package()

@@ -9,6 +9,9 @@ set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS TRUE CACHE BOOL
 
 cmake_policy(SET CMP0144 NEW)
 
+set(CUDA_ARCHITECTURE "native" CACHE STRING "Target CUDA SM version(s), e.g. native or 70;80;89")
+set(CMAKE_CUDA_ARCHITECTURES "${CUDA_ARCHITECTURE}")
+
 project(multibeam_sonar)
 
 find_package(ament_cmake REQUIRED)
@@ -25,6 +28,15 @@ find_package(OpenCV REQUIRED)
 find_package(marine_acoustic_msgs REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(wgpu_vendor REQUIRED)
+find_package(CUDAToolkit QUIET)
+
+if(CUDAToolkit_FOUND)
+  set(CMAKE_CUDA_COMPILER "${CUDAToolkit_NVCC_EXECUTABLE}" CACHE FILEPATH "CUDA compiler" FORCE)
+  enable_language(CUDA)
+  find_package(CUDA REQUIRED)
+  message(STATUS "CUDA ${CUDAToolkit_VERSION} found (SM ${CUDA_ARCHITECTURE}), enabling CUDA support.")
+  include_directories(${CUDA_INCLUDE_DIRS})
+endif()
 
 if(TARGET gz-rendering::ogre)
   add_definitions(-DWITH_OGRE)
@@ -33,11 +45,26 @@ if(TARGET gz-rendering::ogre2)
   add_definitions(-DWITH_OGRE2)
 endif()
 
-add_library(${PROJECT_NAME} SHARED
+set(SONAR_SOURCES
   MultibeamSonarSensor.cc
   sonar_compute_cpu.cc
   sonar_compute_wgpu.cc
+  sonar_compute_cuda.cc
 )
+
+if(CUDAToolkit_FOUND)
+  list(APPEND SONAR_SOURCES sonar_calculation_cuda.cu)
+endif()
+
+add_library(${PROJECT_NAME} SHARED ${SONAR_SOURCES})
+
+if(CUDAToolkit_FOUND)
+  set_target_properties(${PROJECT_NAME}
+    PROPERTIES
+    CUDA_SEPARABLE_COMPILATION ON
+  )
+  target_compile_definitions(${PROJECT_NAME} PRIVATE DAVE_HAS_CUDA_BACKEND=1)
+endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC
   ${gz-sensors_INCLUDE_DIRS}
@@ -53,12 +80,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   ${cv_bridge_INCLUDE_DIRS}
 )
 
-if(DEFINED ENV{ROS_DISTRO} AND EXISTS "/opt/ros/$ENV{ROS_DISTRO}/include/cv_bridge")
-  target_include_directories(${PROJECT_NAME} PUBLIC "/opt/ros/$ENV{ROS_DISTRO}/include/cv_bridge")
-elseif(EXISTS "/opt/ros/rolling/include/cv_bridge")
-  target_include_directories(${PROJECT_NAME} PUBLIC "/opt/ros/rolling/include/cv_bridge")
-endif()
-
 target_link_libraries(${PROJECT_NAME}
   gz-sim::gz-sim
   gz-sensors::gz-sensors
@@ -71,6 +92,32 @@ target_link_libraries(${PROJECT_NAME}
   ${OpenCV_LIBS}
   ${marine_acoustic_msgs_LIBRARIES}
 )
+
+if(TARGET cv_bridge::cv_bridge)
+  target_link_libraries(${PROJECT_NAME} cv_bridge::cv_bridge)
+elseif(TARGET cv_bridge)
+  target_link_libraries(${PROJECT_NAME} cv_bridge)
+elseif(cv_bridge_LIBRARIES)
+  target_link_libraries(${PROJECT_NAME} ${cv_bridge_LIBRARIES})
+endif()
+
+if(CUDAToolkit_FOUND)
+  find_library(CUBLAS_LIB cublas
+    HINTS
+      ${CUDAToolkit_LIBRARY_DIR}
+      /usr/local/cuda/lib64
+      /usr/lib/x86_64-linux-gnu
+      /usr/lib
+  )
+  if(NOT CUBLAS_LIB)
+    message(FATAL_ERROR "cuBLAS not found")
+  endif()
+  target_link_libraries(${PROJECT_NAME}
+    ${CUDA_LIBRARIES}
+    ${CUDA_CUFFT_LIBRARIES}
+    ${CUBLAS_LIB}
+  )
+endif()
 
 if(TARGET wgpu::wgpu_vendor)
   target_link_libraries(${PROJECT_NAME} wgpu::wgpu_vendor)
@@ -87,14 +134,6 @@ if(DEFINED wgpu_vendor_DIR)
   if(EXISTS "${_sonar_wgpu_static}")
     target_link_libraries(${PROJECT_NAME} "${_sonar_wgpu_static}")
   endif()
-endif()
-
-if(TARGET cv_bridge::cv_bridge)
-  target_link_libraries(${PROJECT_NAME} cv_bridge::cv_bridge)
-elseif(TARGET cv_bridge)
-  target_link_libraries(${PROJECT_NAME} cv_bridge)
-else()
-  target_link_libraries(${PROJECT_NAME} ${cv_bridge_LIBRARIES})
 endif()
 
 if(TARGET gz-sensors::gz-sensors-rendering)

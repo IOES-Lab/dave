@@ -281,52 +281,44 @@ fn compile_pipeline(
     })
 }
 
-/// GPU context initialization: Vulkan adapter enumeration, device request.
-fn init_gpu_context() -> Option<GpuContext> {
-    // TODO: These environment variable overrides are NVIDIA/Vulkan-specific (Linux only).
-    // Replace with wgpu::Backends::all() so the adapter selection works automatically
-    // on any platform (Metal on macOS, DX12 on Windows, Vulkan on Linux) without
-    // needing manual ICD path configuration.
-    if std::env::var("VK_ICD_FILENAMES").is_err() {
-        unsafe {
-            std::env::set_var("VK_ICD_FILENAMES", "/usr/share/vulkan/icd.d/nvidia_icd.json");
-        }
-    }
-    if std::env::var("VK_LAYER_PATH").is_err() {
-        unsafe {
-            std::env::set_var("DISABLE_LAYER_NV_optimus", "1");
-        }
-    }
+#[cfg(target_os = "linux")]
+const BACKEND_ATTEMPTS: &[(wgpu::Backends, &str)] = &[
+    (wgpu::Backends::VULKAN, "vulkan"),
+    (wgpu::Backends::all(), "all"),
+];
 
-    // Catch panic to prevent GPU init failure from crashing Gazebo.
+#[cfg(target_os = "windows")]
+const BACKEND_ATTEMPTS: &[(wgpu::Backends, &str)] = &[
+    (wgpu::Backends::DX12, "dx12"),
+    (wgpu::Backends::all(), "all"),
+];
+
+#[cfg(target_os = "macos")]
+const BACKEND_ATTEMPTS: &[(wgpu::Backends, &str)] = &[
+    (wgpu::Backends::METAL, "metal"),
+    (wgpu::Backends::all(), "all"),
+];
+
+#[cfg(not(any(target_os = "linux", target_os = "windows", target_os = "macos")))]
+const BACKEND_ATTEMPTS: &[(wgpu::Backends, &str)] = &[(wgpu::Backends::all(), "all")];
+
+fn try_init_gpu_context(backends: wgpu::Backends, label: &str) -> Option<GpuContext> {
+    eprintln!("[sonar_wgpu] Trying backend set: {label}");
+
+    // Catch panic to prevent GPU init failure from crashing Gazebo.Whtat
     let result = std::panic::catch_unwind(|| {
-        // TODO: Replace wgpu::Backends::VULKAN with wgpu::Backends::all() to support
-        // Metal (macOS), DX12 (Windows), and other backends automatically.
-        // The explicit VULKAN flag means this will fail silently on non-Vulkan platforms.
         let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
-            backends: wgpu::Backends::VULKAN,
+            backends,
             ..Default::default()
         });
 
-        // TODO: Same as above — enumerate_adapters(wgpu::Backends::all()) would pick up
-        // the best available backend on any platform instead of Vulkan-only.
-        let adapters: Vec<_> = instance
-            .enumerate_adapters(wgpu::Backends::VULKAN)
-            .into_iter()
-            .collect();
+        let adapter = pollster::block_on(instance.request_adapter(&wgpu::RequestAdapterOptions {
+            power_preference: wgpu::PowerPreference::HighPerformance,
+            compatible_surface: None,
+            force_fallback_adapter: false,
+        }))?;
 
-        eprintln!("[sonar_wgpu] Vulkan adapters found: {}", adapters.len());
-        for a in &adapters {
-            let info = a.get_info();
-            eprintln!("[sonar_wgpu]   {:?} -> {}", info.device_type, info.name);
-        }
-
-        let adapter = adapters
-            .iter()
-            .find(|a| a.get_info().device_type == wgpu::DeviceType::DiscreteGpu)
-            .or_else(|| adapters.first())?;
-
-        eprintln!("[sonar_wgpu] Selected adapter: {}", adapter.get_info().name);
+        eprintln!("[sonar_wgpu] [{label}] selected adapter: {}", adapter.get_info().name);
         let (device, queue) = pollster::block_on(adapter.request_device(
             &wgpu::DeviceDescriptor {
                 label: Some("sonar_wgpu_device"),
@@ -336,7 +328,7 @@ fn init_gpu_context() -> Option<GpuContext> {
             None,
         ))
         .map_err(|e| {
-            eprintln!("[sonar_wgpu] request_device failed: {e}");
+            eprintln!("[sonar_wgpu] [{label}] request_device failed: {e}");
             e
         })
         .ok()?;
@@ -360,18 +352,45 @@ fn init_gpu_context() -> Option<GpuContext> {
             &device, "fft_pipeline",
             include_str!("shaders/fft.wgsl"), &fft_bgl,
         );
-        eprintln!("[sonar_wgpu] GPU pipelines compiled in {:.0} ms -> ready.", t0.elapsed().as_millis());
+        eprintln!(
+            "[sonar_wgpu] [{label}] GPU pipelines compiled in {:.0} ms -> ready.",
+            t0.elapsed().as_millis()
+        );
 
-        Some(GpuContext { device, queue, bs_pipeline, bs_bgl, convert_pipeline, convert_bgl, mm_pipeline, mm_bgl, fft_pipeline, fft_bgl, buffers: std::sync::Mutex::new(None) })
+        Some(GpuContext {
+            device,
+            queue,
+            bs_pipeline,
+            bs_bgl,
+            convert_pipeline,
+            convert_bgl,
+            mm_pipeline,
+            mm_bgl,
+            fft_pipeline,
+            fft_bgl,
+            buffers: std::sync::Mutex::new(None),
+        })
     });
 
     match result {
         Ok(ctx) => ctx,
         Err(_) => {
-            eprintln!("[sonar_wgpu] GPU init panicked; falling back to CPU path");
+            eprintln!("[sonar_wgpu] [{label}] GPU init panicked; trying next backend set");
             None
         }
     }
+}
+
+/// GPU context initialization: adapter enumeration, device request.
+fn init_gpu_context() -> Option<GpuContext> {
+    for (backends, label) in BACKEND_ATTEMPTS {
+        if let Some(ctx) = try_init_gpu_context(*backends, label) {
+            return Some(ctx);
+        }
+    }
+
+    eprintln!("[sonar_wgpu] GPU init failed for all backend sets; falling back to CPU path");
+    None
 }
 
 /// Global singleton: lazily initializes GPU context on first access.

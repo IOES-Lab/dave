@@ -68,6 +68,8 @@ bool WgpuComputeBackend::Compute(const SonarComputeInput & input, SonarComputeOu
   {
     if (!this->cpuFallback)
     {
+      std::cerr << "[sonar_wgpu] GPU unavailable on first compute -> creating CPU fallback backend" 
+                << std::endl;
       this->cpuFallback = CreateComputeBackend("cpu");
       if (this->cpuFallback)
       {
@@ -112,7 +114,7 @@ bool WgpuComputeBackend::Compute(const SonarComputeInput & input, SonarComputeOu
   const float hPixelSize = static_cast<float>(input.hFOV) / std::max(1, nBeams - 1);
   const float vPixelSize = static_cast<float>(input.vFOV) / std::max(1, nRays - 1);
 
-  const int raySkipsFactor = std::max(1, input.raySkips);
+  const int raySkipsFactor = input.raySkips + 1;
   const float area_scaler = hPixelSize * vPixelSize * raySkipsFactor;
 
   // This transposes from OpenCV's [row=ray][col=beam] to [beam][ray] for WGPU.

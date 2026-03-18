@@ -12,21 +12,8 @@ nBeams = 512
 maxRange = 5
 xPlotRange = 10
 yPlotRange = xPlotRange * np.cos(45 * np.pi / 180)
-source_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
-inferred_root = source_root
-candidates = [
-    os.environ.get("DAVE_SOURCE_ROOT", ""),
-    os.getcwd(),
-    inferred_root,
-    os.path.join(inferred_root, "src", "dave"),
-]
-source_root = inferred_root
-for candidate in candidates:
-    if candidate and os.path.exists(os.path.join(candidate, "models", "dave_worlds", "worlds")):
-        source_root = candidate
-        break
 
-results_dir = os.path.join(source_root, "results")
+results_dir = os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "results")
 os.makedirs(results_dir, exist_ok=True)
 
 filename = os.path.join(results_dir, "SonarRawData_000001.csv")

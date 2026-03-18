@@ -62,7 +62,7 @@ def generate_launch_description():
             DeclareLaunchArgument(
                 "compute_backend",
                 default_value="auto",
-                description="Sonar backend selection: auto|wgpu|cpu",
+                description="Sonar backend selection: auto|wgpu|cuda|cpu",
             ),
             DeclareLaunchArgument("rviz", default_value="true", description="Open RViz."),
             SetEnvironmentVariable("DAVE_SONAR_COMPUTE_BACKEND", compute_backend),

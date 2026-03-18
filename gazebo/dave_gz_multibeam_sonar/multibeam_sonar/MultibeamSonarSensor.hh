@@ -164,6 +164,7 @@ private:
     std::string sonarImageRawTopicName;
     std::string sonarImageTopicName;
     std::string frameName;
+    std::string frameId;  // for non-optical frame id from sensor
 
     // Ray parameters
     int raySkips;
@@ -216,7 +217,7 @@ private:
       const std::string & /*_format*/);
     void ComputeSonarImage();
     cv::Mat ComputeNormalImage(cv::Mat & depth);
-    void ComputeCorrector();
+    void ComputeCorrector(int _snapshotWidth, int _nBeams);
 
     // Connections
     gz::common::ConnectionPtr rayConnection;
