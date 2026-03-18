@@ -68,7 +68,7 @@ bool WgpuComputeBackend::Compute(const SonarComputeInput & input, SonarComputeOu
   {
     if (!this->cpuFallback)
     {
-      std::cerr << "[sonar_wgpu] GPU unavailable on first compute -> creating CPU fallback backend" 
+      std::cerr << "[sonar_wgpu] GPU unavailable on first compute -> creating CPU fallback backend"
                 << std::endl;
       this->cpuFallback = CreateComputeBackend("cpu");
       if (this->cpuFallback)

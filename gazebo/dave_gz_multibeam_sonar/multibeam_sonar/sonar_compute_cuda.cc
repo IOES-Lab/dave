@@ -50,8 +50,9 @@ bool CudaComputeBackend::Compute(const SonarComputeInput & input, SonarComputeOu
     return false;
   }
 
-  if (!input.depthImage || !input.normalImage || !input.reflectivityImage ||
-      !input.window || !input.beamCorrector || input.elevation_angles.empty())
+  if (
+    !input.depthImage || !input.normalImage || !input.reflectivityImage || !input.window ||
+    !input.beamCorrector || input.elevation_angles.empty())
   {
     return false;
   }
@@ -62,33 +63,13 @@ bool CudaComputeBackend::Compute(const SonarComputeInput & input, SonarComputeOu
   const double vPixelSize = input.vFOV / static_cast<double>(input.nRays - 1);
 
   const NpsGazeboSonar::CArray2D beams = NpsGazeboSonar::sonar_calculation_wrapper(
-    *input.depthImage,
-    *input.normalImage,
-    hPixelSize,
-    vPixelSize,
-    input.hFOV,
-    input.vFOV,
-    hPixelSize,
-    input.vFOV / 180.0 * M_PI,
-    hPixelSize,
-    const_cast<float *>(input.elevation_angles.data()),
-    vPixelSize * (input.raySkips + 1),
-    input.soundSpeed,
-    input.maxDistance,
-    input.sourceLevel,
-    input.nBeams,
-    input.nRays,
-    input.raySkips,
-    input.sonarFreq,
-    input.bandwidth,
-    input.nFreq,
-    *input.reflectivityImage,
-    input.attenuation,
-    const_cast<float *>(input.window),
-    input.beamCorrector,
-    input.beamCorrectorSum,
-    false,
-    input.blazingFlag);
+    *input.depthImage, *input.normalImage, hPixelSize, vPixelSize, input.hFOV, input.vFOV,
+    hPixelSize, input.vFOV / 180.0 * M_PI, hPixelSize,
+    const_cast<float *>(input.elevation_angles.data()), vPixelSize * (input.raySkips + 1),
+    input.soundSpeed, input.maxDistance, input.sourceLevel, input.nBeams, input.nRays,
+    input.raySkips, input.sonarFreq, input.bandwidth, input.nFreq, *input.reflectivityImage,
+    input.attenuation, const_cast<float *>(input.window), input.beamCorrector,
+    input.beamCorrectorSum, false, input.blazingFlag);
 
   output.nBeams = input.nBeams;
   output.nFreq = input.nFreq;

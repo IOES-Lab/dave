@@ -14,8 +14,8 @@
 // TODO: Move CreateComputeBackend() into its own file (e.g. sonar_compute_factory.cc)
 // so that the CPU and WGPU backends are fully decoupled and the factory is the
 // only translation unit that needs to know about both.
-#include "sonar_compute_wgpu.hh"
 #include "sonar_compute_cuda.hh"
+#include "sonar_compute_wgpu.hh"
 
 namespace gz
 {
@@ -148,8 +148,9 @@ public:
 
 std::unique_ptr<ComputeBackend> CreateComputeBackend(const std::string & requestedBackend)
 {
-  std::cerr << "[sonar_compute_factory] CreateComputeBackend called with: " << requestedBackend << std::endl;
-  
+  std::cerr << "[sonar_compute_factory] CreateComputeBackend called with: " << requestedBackend
+            << std::endl;
+
   std::string backend = requestedBackend;
   std::transform(
     backend.begin(), backend.end(), backend.begin(),
@@ -157,7 +158,8 @@ std::unique_ptr<ComputeBackend> CreateComputeBackend(const std::string & request
 
   if (backend == "wgpu")
   {
-    std::cerr << "[sonar_compute_factory] Attempting WgpuComputeBackend initialization..." << std::endl;
+    std::cerr << "[sonar_compute_factory] Attempting WgpuComputeBackend initialization..."
+              << std::endl;
     auto wgpuBackend = std::make_unique<WgpuComputeBackend>();
     SonarComputeInput probe;
     if (wgpuBackend->Initialize(probe))
@@ -172,7 +174,8 @@ std::unique_ptr<ComputeBackend> CreateComputeBackend(const std::string & request
 
   if (backend == "cuda")
   {
-    std::cerr << "[sonar_compute_factory] Attempting CudaComputeBackend initialization..." << std::endl;
+    std::cerr << "[sonar_compute_factory] Attempting CudaComputeBackend initialization..."
+              << std::endl;
     auto cudaBackend = std::make_unique<CudaComputeBackend>();
     SonarComputeInput probe;
     if (cudaBackend->Initialize(probe))
@@ -180,7 +183,8 @@ std::unique_ptr<ComputeBackend> CreateComputeBackend(const std::string & request
       std::cerr << "[sonar_compute_factory] SUCCESS: CudaComputeBackend initialized!" << std::endl;
       return cudaBackend;
     }
-    std::cerr << "[sonar_compute_factory] CUDA backend requested but failed to initialize." << std::endl;
+    std::cerr << "[sonar_compute_factory] CUDA backend requested but failed to initialize."
+              << std::endl;
     return nullptr;
   }
 
@@ -208,7 +212,8 @@ std::unique_ptr<ComputeBackend> CreateComputeBackend(const std::string & request
                 << std::endl;
       return wgpuBackend;
     }
-    std::cerr << "[sonar_compute_factory] SUCCESS: Auto-selected CPU backend (both CUDA and WGPU unavailable)"
+    std::cerr << "[sonar_compute_factory] SUCCESS: Auto-selected CPU backend (both CUDA and WGPU "
+                 "unavailable)"
               << std::endl;
   }
 
