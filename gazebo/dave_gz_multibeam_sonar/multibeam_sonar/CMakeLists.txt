@@ -49,27 +49,34 @@ if(CUDAToolkit_FOUND)
   # Detected at configure time by presence of cargo.
   # If cargo is absent the wgpu sources are simply excluded — CUDA build is
   # completely unaffected.
-  find_program(CARGO_EXECUTABLE cargo DOC "Rust cargo package manager")
+
+  find_program(CARGO_EXECUTABLE cargo)
+
   if(CARGO_EXECUTABLE)
-    message(STATUS "[multibeam_sonar] cargo found — wgpu backend enabled.")
-    set(WGPU_DIR "${CMAKE_CURRENT_SOURCE_DIR}/wgpu_backend")
-    set(WGPU_LIB "${WGPU_DIR}/target/release/libsonar_wgpu_backend.a")
-    set(WGPU_HDR "${WGPU_DIR}/include/sonar_wgpu.h")
+    message(STATUS "[multibeam_sonar] WGPU backend ENABLED")
+
+    set(WGPU_DIR ${CMAKE_CURRENT_SOURCE_DIR}/wgpu_backend)
+    set(WGPU_LIB ${WGPU_DIR}/target/release/libsonar_wgpu_backend.a)
+
     add_custom_command(
-      OUTPUT  "${WGPU_LIB}" "${WGPU_HDR}"
-      COMMAND "${CARGO_EXECUTABLE}" build --release
-      WORKING_DIRECTORY "${WGPU_DIR}"
-      COMMENT "Building wgpu sonar backend (Rust/cargo)..."
-      VERBATIM
+      OUTPUT ${WGPU_LIB}
+      COMMAND cargo build --release
+      WORKING_DIRECTORY ${WGPU_DIR}
+      COMMENT "Building Rust WGPU backend"
     )
-    add_custom_target(sonar_wgpu_build DEPENDS "${WGPU_LIB}")
-    add_library(sonar_wgpu_static STATIC IMPORTED GLOBAL)
-    set_target_properties(sonar_wgpu_static PROPERTIES
-      IMPORTED_LOCATION "${WGPU_LIB}")
-    add_dependencies(sonar_wgpu_static sonar_wgpu_build)
+
+    add_custom_target(wgpu_backend_build ALL DEPENDS ${WGPU_LIB})
+
+    add_library(wgpu_backend STATIC IMPORTED)
+    set_target_properties(wgpu_backend PROPERTIES
+      IMPORTED_LOCATION ${WGPU_LIB}
+    )
+
+    add_dependencies(wgpu_backend wgpu_backend_build)
+
     set(HAVE_WGPU ON)
   else()
-    message(STATUS "[multibeam_sonar] cargo not found — wgpu backend disabled, CPU fallback active.")
+    message(STATUS "[multibeam_sonar] WGPU backend DISABLED (cargo not found)")
     set(HAVE_WGPU OFF)
   endif()
 
@@ -115,12 +122,15 @@ if(CUDAToolkit_FOUND)
   # Link wgpu static lib if built 
   if(HAVE_WGPU)
     target_compile_definitions(${PROJECT_NAME} PRIVATE HAVE_WGPU_BACKEND)
-    target_include_directories(${PROJECT_NAME} PRIVATE "${WGPU_DIR}/include")
-    add_dependencies(${PROJECT_NAME} sonar_wgpu_build)
+
+    target_include_directories(${PROJECT_NAME}
+      PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/wgpu_backend/include
+    )
+
     target_link_libraries(${PROJECT_NAME}
-      sonar_wgpu_static
-      dl        # vulkan loader
-      pthread   # wgpu async runtime
+      wgpu_backend
+      pthread
+      dl
     )
   endif()
 

@@ -1,9 +1,7 @@
 /*
  * Copyright (C) 2025 Open Source Robotics Foundation
- *
  * Licensed under the Apache License, Version 2.0
  */
-
 #ifndef GZ_SENSORS_SONAR_COMPUTE_WGPU_HH_
 #define GZ_SENSORS_SONAR_COMPUTE_WGPU_HH_
 
@@ -11,6 +9,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <cstdint>
 
 #include <opencv2/core.hpp>
 
@@ -19,55 +18,40 @@ namespace gz
 namespace sensors
 {
 
-// Per-frame data passed into the sonar pipeline
-// (directly mirrors Gazebo depth + normal render outputs)
 struct SonarComputeInput
 {
-  // Rendered images (row = ray, col = beam)
-  const cv::Mat * depthImage        = nullptr;   // distance [m]
-  const cv::Mat * normalImage       = nullptr;   // surface normals
-  const cv::Mat * reflectivityImage = nullptr;   // μ ∈ [0,1]
+  const cv::Mat * depthImage        = nullptr;
+  const cv::Mat * normalImage       = nullptr;
+  const cv::Mat * reflectivityImage = nullptr;
 
-  // Beam correction matrix W (applied after scattering)
   float ** beamCorrector    = nullptr;
   float    beamCorrectorSum = 1.0f;
+  float *  window           = nullptr;
 
-  // Optional windowing (used before IFFT if needed)
-  float * window = nullptr;
-
-  // Dimensions
-  int nBeams = 0;
-  int nRays  = 0;
-  int nFreq  = 0;
+  int nBeams   = 0;
+  int nRays    = 0;
+  int nFreq    = 0;
   int raySkips = 0;
 
-  // Acoustic parameters (from sonar model)
   double soundSpeed  = 1500.0;
   double maxDistance = 60.0;
   double sourceLevel = 220.0;
   double attenuation = 0.0;
   double bandwidth   = 2950.0;
 
-  // Sensor geometry
-  float sensorGain = 1.0f;
-  float hFOV = 1.5708f;   // 90°
-  float vFOV = 0.3491f;   // 20°
+  float    sensorGain = 1.0f;
+  float    hFOV       = 1.5708f;
+  float    vFOV       = 0.3491f;
 
-  // Frame-based seed (used for speckle / randomness on GPU)
   uint64_t frameIndex = 0;
   uint64_t seed       = 42;
 };
 
-// Output: complex spectrum per beam
-// (frequency-domain before optional IFFT → range profile)
 struct SonarComputeOutput
 {
   int nBeams = 0;
   int nFreq  = 0;
-
-  // Layout: [beam * nFreq + freq]
   std::vector<std::complex<float>> beamSpectrum;
-
   double computeMicros = 0.0;
 
   inline std::complex<float> & At(int b, int f)
@@ -76,47 +60,28 @@ struct SonarComputeOutput
   }
 };
 
-// Backend interface
-// Allows runtime switching: CPU / CUDA / WGPU
 class SonarComputeBackend
 {
 public:
   virtual ~SonarComputeBackend() = default;
-
-  // "wgpu", "cuda", "cpu"
   virtual const char * Name() const = 0;
-
-  // Allocate GPU / buffers etc.
   virtual bool Initialize(const SonarComputeInput & input) = 0;
-
-  // Run one frame
   virtual bool Compute(
     const SonarComputeInput & input,
     SonarComputeOutput & output) = 0;
 };
 
-// Factory (used by sensor plugin)
 std::unique_ptr<SonarComputeBackend>
 CreateComputeBackend(const std::string & name);
 
-// WGPU backend (Rust + WGSL)
-// Pipeline follows Choi et al. sonar model:
-//
-//   1. Backscatter     → amplitude + phase (Eq.14, Eq.8)
-//   2. Beam correction → W·P
-//   3. FFT             → frequency → time (range)
-//
-// Falls back to CPU if GPU is unavailable or fails at runtime.
 class WgpuComputeBackend : public SonarComputeBackend
 {
 public:
   WgpuComputeBackend()  = default;
-  ~WgpuComputeBackend() = default;
+  ~WgpuComputeBackend();
 
   const char * Name() const override;
-
   bool Initialize(const SonarComputeInput & input) override;
-
   bool Compute(
     const SonarComputeInput & input,
     SonarComputeOutput & output) override;
@@ -125,11 +90,17 @@ private:
   bool initialized_  = false;
   bool gpuAvailable_ = false;
 
-  // Used when GPU fails mid-run (device lost, bad config, etc.)
+  // Persistent GPU engine — class member, not static local.
+  // Safe for multiple simultaneous sonar sensor instances.
+  void * engine_ = nullptr;
+  int    engNb_  = 0;
+  int    engNr_  = 0;
+  int    engNf_  = 0;
+
   std::unique_ptr<SonarComputeBackend> cpuFallback_;
 };
 
 }  // namespace sensors
 }  // namespace gz
 
-#endif
+#endif  // GZ_SENSORS_SONAR_COMPUTE_WGPU_HH_
