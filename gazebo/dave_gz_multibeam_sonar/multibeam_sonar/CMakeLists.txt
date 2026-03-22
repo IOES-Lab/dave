@@ -1,23 +1,16 @@
 cmake_minimum_required(VERSION 3.11.0 FATAL_ERROR)
-
 # Suppress developer warnings for the entire workspace.
-
 set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS TRUE CACHE BOOL
     "Suppress developer warnings" FORCE)
 # Set CMP0144 to NEW to ensure find_package
 # uses upper-case <PACKAGENAME>_ROOT variables.
-
 cmake_policy(SET CMP0144 NEW)
-
 project(multibeam_sonar)
-
 set(CUDA_ARCHITECTURE "60" CACHE STRING "Target CUDA SM version")
-
 find_package(ament_cmake REQUIRED)
 find_package(CUDAToolkit QUIET)
 
 if(CUDAToolkit_FOUND)
-
   enable_language(CUDA)
   find_package(CUDA REQUIRED)
   message(STATUS "CUDA found, enabling CUDA support.")
@@ -47,17 +40,44 @@ if(CUDAToolkit_FOUND)
     set(GZ_RENDERING_TARGET gz-rendering${GZ_RENDERING_VER}-ogre)
     add_definitions(-DWITH_OGRE)
   endif()
-
   if(TARGET gz-rendering${GZ_RENDERING_VER}::ogre2)
     set(HAVE_OGRE2 TRUE)
     set(GZ_RENDERING_TARGET gz-rendering${GZ_RENDERING_VER}-ogre2)
     add_definitions(-DWITH_OGRE2)
   endif()
 
+  # Detected at configure time by presence of cargo.
+  # If cargo is absent the wgpu sources are simply excluded — CUDA build is
+  # completely unaffected.
+  find_program(CARGO_EXECUTABLE cargo DOC "Rust cargo package manager")
+  if(CARGO_EXECUTABLE)
+    message(STATUS "[multibeam_sonar] cargo found — wgpu backend enabled.")
+    set(WGPU_DIR "${CMAKE_CURRENT_SOURCE_DIR}/wgpu_backend")
+    set(WGPU_LIB "${WGPU_DIR}/target/release/libsonar_wgpu_backend.a")
+    set(WGPU_HDR "${WGPU_DIR}/include/sonar_wgpu.h")
+    add_custom_command(
+      OUTPUT  "${WGPU_LIB}" "${WGPU_HDR}"
+      COMMAND "${CARGO_EXECUTABLE}" build --release
+      WORKING_DIRECTORY "${WGPU_DIR}"
+      COMMENT "Building wgpu sonar backend (Rust/cargo)..."
+      VERBATIM
+    )
+    add_custom_target(sonar_wgpu_build DEPENDS "${WGPU_LIB}")
+    add_library(sonar_wgpu_static STATIC IMPORTED GLOBAL)
+    set_target_properties(sonar_wgpu_static PROPERTIES
+      IMPORTED_LOCATION "${WGPU_LIB}")
+    add_dependencies(sonar_wgpu_static sonar_wgpu_build)
+    set(HAVE_WGPU ON)
+  else()
+    message(STATUS "[multibeam_sonar] cargo not found — wgpu backend disabled, CPU fallback active.")
+    set(HAVE_WGPU OFF)
+  endif()
+
   add_library(${PROJECT_NAME}
     SHARED
       MultibeamSonarSensor.cc
       sonar_calculation_cuda.cu
+      sonar_compute_wgpu.cc        
   )
 
   set_target_properties(${PROJECT_NAME}
@@ -91,6 +111,18 @@ if(CUDAToolkit_FOUND)
     ${CUDA_CUFFT_LIBRARIES}
     ${CUBLAS_LIB}
   )
+
+  # Link wgpu static lib if built 
+  if(HAVE_WGPU)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE HAVE_WGPU_BACKEND)
+    target_include_directories(${PROJECT_NAME} PRIVATE "${WGPU_DIR}/include")
+    add_dependencies(${PROJECT_NAME} sonar_wgpu_build)
+    target_link_libraries(${PROJECT_NAME}
+      sonar_wgpu_static
+      dl        # vulkan loader
+      pthread   # wgpu async runtime
+    )
+  endif()
 
   install(TARGETS ${PROJECT_NAME}
     DESTINATION lib/${PROJECT_NAME}
