@@ -84,7 +84,7 @@ if(CUDAToolkit_FOUND)
     SHARED
       MultibeamSonarSensor.cc
       sonar_calculation_cuda.cu
-      sonar_compute_wgpu.cc        
+      sonar_compute_wgpu.cc
   )
 
   set_target_properties(${PROJECT_NAME}
@@ -119,7 +119,7 @@ if(CUDAToolkit_FOUND)
     ${CUBLAS_LIB}
   )
 
-  # Link wgpu static lib if built 
+  # Link wgpu static lib if built
   if(HAVE_WGPU)
     target_compile_definitions(${PROJECT_NAME} PRIVATE HAVE_WGPU_BACKEND)
 

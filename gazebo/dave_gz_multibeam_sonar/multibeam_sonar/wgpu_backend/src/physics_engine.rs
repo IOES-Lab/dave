@@ -227,7 +227,7 @@ impl SonarPhysicsEngine {
 
         let readback_buf = mk(spectrum, CD | MR);
 
-        //  uniforms 
+        //  uniforms
         let scatter_params = BackscatterParams {
             n_beams: config.n_beams,
             n_rays: config.n_rays,
@@ -296,7 +296,7 @@ impl SonarPhysicsEngine {
             source: wgpu::ShaderSource::Wgsl(include_str!("../shaders/fft.wgsl").into()),
         });
 
-        //  pipelines 
+        //  pipelines
         let scatter_bgl = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
             label: None,
             entries: &[

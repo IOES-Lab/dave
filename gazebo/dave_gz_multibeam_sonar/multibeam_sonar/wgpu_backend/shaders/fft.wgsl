@@ -47,7 +47,7 @@ fn main(
     let n = params.n_freq;
     let base = beam * n;
 
-    //  Step 1: load + bit-reversal 
+    //  Step 1: load + bit-reversal
     // FFT expects bit-reversed ordering before butterfly stages
     // each thread loads multiple elements (stride = workgroup size)
     for (var i = lid.x; i < n; i += 256u) {
@@ -59,7 +59,7 @@ fn main(
     }
     workgroupBarrier();
 
-    //  Step 2: butterfly stages 
+    //  Step 2: butterfly stages
     // log2(n) stages, each doubling the merge size
     for (var s = 0u; s < params.log2_n; s++) {
 
@@ -101,7 +101,7 @@ fn main(
         workgroupBarrier();
     }
 
-    //  Step 3: write back 
+    //  Step 3: write back
     // output is time-domain signal per beam
     // range mapping is handled outside (t → r conversion)
     for (var i = lid.x; i < n; i += 256u) {
