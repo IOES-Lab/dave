@@ -1,22 +1,11 @@
 /// C-FFI interface, Buffer initialization and write ups and reads + Bind groups created + encoder setup + memory free
-/// + Compute passes for each shader + gpu/cpu path selection
+/// + Compute passes for each shader
 
-mod fft;          // CPU FFT + Bluestein
 mod pipeline;     // GPU context + buffer management
 
 use bytemuck::{Pod, Zeroable};
-
-#[derive(Clone, Copy, Default)]
-pub struct ComplexF {
-    pub re: f32,
-    pub im: f32,
-}
 use std::sync::atomic::{AtomicU64, Ordering};
 use wgpu::util::DeviceExt;
-
-fn is_power_of_two(x: usize) -> bool {
-    x != 0 && (x & (x - 1)) == 0
-}
 
 #[repr(C)]
 #[derive(Clone, Copy, Pod, Zeroable)]
@@ -54,9 +43,10 @@ struct MatmulParams {
 #[repr(C)]
 #[derive(Clone, Copy, Pod, Zeroable)]
 struct FftParams {
-    n_beams: u32,
-    n_freq: u32,
-    log2_n: u32,
+    n_beams:  u32,
+    n_freq:   u32,   // actual number of frequency bins (may not be power-of-2)
+    padded_n: u32,   // next power of 2 >= n_freq (actual FFT size, <= 4096)
+    log2_n:   u32,   // log2(padded_n)
 }
 
 /// The function receives flat arrays from C++ and returns a heap-allocated array.
@@ -242,7 +232,8 @@ pub extern "C" fn sonar_wgpu_compute(
     });
 
     let spectrum_bytes = (spectrum_len * std::mem::size_of::<f32>()) as u64;
-    let gpu_fft = n_freq_us <= 4096 && is_power_of_two(n_freq_us);
+    // Zero-pad n_freq to the next power of 2 for the GPU FFT (max 4096 = shared memory limit).
+    let padded_n = (n_freq_us.next_power_of_two() as u32).min(4096);
 
     // ---- Single command encoder: all passes + staging copy in one GPU submission ----
     let mut enc = device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
@@ -300,44 +291,43 @@ pub extern "C" fn sonar_wgpu_compute(
         }
     }
 
-    // FFT Dispatch (optional, only if n_freq is power-of-two and <= 4096); re/im in same encoder
-    if gpu_fft {
-        // copy MM output → FFT buffers → dispatch fft shader → copy to staging
-        enc.copy_buffer_to_buffer(&buf.mm_re_out, 0, &buf.p_re_buf, 0, spectrum_bytes);
-        enc.copy_buffer_to_buffer(&buf.mm_im_out, 0, &buf.p_im_buf, 0, spectrum_bytes);
+    // FFT Dispatch: always runs on GPU via zero-padding to the next power of 2 (max 4096).
+    // Copy MM output -> FFT working buffers -> dispatch FFT shader -> copy to staging.
+    enc.copy_buffer_to_buffer(&buf.mm_re_out, 0, &buf.p_re_buf, 0, spectrum_bytes);
+    enc.copy_buffer_to_buffer(&buf.mm_im_out, 0, &buf.p_im_buf, 0, spectrum_bytes);
 
-        let fft_params = FftParams { n_beams, n_freq, log2_n: n_freq_us.ilog2() };
-        let fft_param_buf = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-            label: Some("fft_param"),
-            contents: bytemuck::bytes_of(&fft_params),
-            usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
+    let fft_params = FftParams {
+        n_beams,
+        n_freq,
+        padded_n,
+        log2_n: padded_n.ilog2(),
+    };
+    let fft_param_buf = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+        label: Some("fft_param"),
+        contents: bytemuck::bytes_of(&fft_params),
+        usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
+    });
+    let fft_bg = device.create_bind_group(&wgpu::BindGroupDescriptor {
+        label: Some("fft_bg"),
+        layout: &ctx.fft_bgl,
+        entries: &[
+            wgpu::BindGroupEntry { binding: 0, resource: fft_param_buf.as_entire_binding() },
+            wgpu::BindGroupEntry { binding: 1, resource: buf.p_re_buf.as_entire_binding() },
+            wgpu::BindGroupEntry { binding: 2, resource: buf.p_im_buf.as_entire_binding() },
+        ],
+    });
+    {
+        let mut pass = enc.begin_compute_pass(&wgpu::ComputePassDescriptor {
+            label: Some("fft_pass"),
+            timestamp_writes: None,
         });
-        let fft_bg = device.create_bind_group(&wgpu::BindGroupDescriptor {
-            label: Some("fft_bg"),
-            layout: &ctx.fft_bgl,
-            entries: &[
-                wgpu::BindGroupEntry { binding: 0, resource: fft_param_buf.as_entire_binding() },
-                wgpu::BindGroupEntry { binding: 1, resource: buf.p_re_buf.as_entire_binding() },
-                wgpu::BindGroupEntry { binding: 2, resource: buf.p_im_buf.as_entire_binding() },
-            ],
-        });
-        {
-            let mut pass = enc.begin_compute_pass(&wgpu::ComputePassDescriptor {
-                label: Some("fft_pass"),
-                timestamp_writes: None,
-            });
-            pass.set_pipeline(&ctx.fft_pipeline);
-            pass.set_bind_group(0, &fft_bg, &[]);
-            pass.dispatch_workgroups(n_beams, 1, 1);
-        }
-        // ... fft dispatch ... then copy FFT output to staging for readback, all in same encoder
-        enc.copy_buffer_to_buffer(&buf.p_re_buf, 0, &buf.stg_re, 0, spectrum_bytes);
-        enc.copy_buffer_to_buffer(&buf.p_im_buf, 0, &buf.stg_im, 0, spectrum_bytes);
-    } else {
-        // CPU FFT path: copy MM output directly to staging
-        enc.copy_buffer_to_buffer(&buf.mm_re_out, 0, &buf.stg_re, 0, spectrum_bytes);
-        enc.copy_buffer_to_buffer(&buf.mm_im_out, 0, &buf.stg_im, 0, spectrum_bytes);
+        pass.set_pipeline(&ctx.fft_pipeline);
+        pass.set_bind_group(0, &fft_bg, &[]);
+        pass.dispatch_workgroups(n_beams, 1, 1);
     }
+    // Copy FFT output to staging for CPU readback.
+    enc.copy_buffer_to_buffer(&buf.p_re_buf, 0, &buf.stg_re, 0, spectrum_bytes);
+    enc.copy_buffer_to_buffer(&buf.p_im_buf, 0, &buf.stg_im, 0, spectrum_bytes);
 
     // Submit the entire frame in a single GPU command -> POLL 1
     queue.submit(std::iter::once(enc.finish()));
@@ -383,25 +373,6 @@ pub extern "C" fn sonar_wgpu_compute(
     };
     buf.stg_re.unmap();
     buf.stg_im.unmap();
-
-    // CPU FFT fallback (n_freq not power-of-two; uses Bluestein O(N log N))
-    if !gpu_fft {
-        let fft_t0 = std::time::Instant::now();
-        let mut complex = vec![ComplexF::default(); spectrum_len];
-        for i in 0..spectrum_len {
-            complex[i].re = p_re[i];
-            complex[i].im = p_im[i];
-        }
-        let fallback = fft::fft_batched(&complex, n_beams_us, n_freq_us);
-        for i in 0..spectrum_len {
-            p_re[i] = fallback[i].re;
-            p_im[i] = fallback[i].im;
-        }
-        if gpu_frame == 0 || gpu_frame % 50 == 49 {
-            eprintln!("[sonar_wgpu] CPU FFT:  {:6.1} ms ({} beams x {} freq)",
-                fft_t0.elapsed().as_secs_f64() * 1000.0, n_beams, n_freq);
-        }
-    }
 
     // Matches CUDA's post-FFT * delta_f scaling
     let delta_f = bandwidth / (n_freq as f32);

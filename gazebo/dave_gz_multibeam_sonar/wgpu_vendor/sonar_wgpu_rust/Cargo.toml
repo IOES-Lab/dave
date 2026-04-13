@@ -10,8 +10,6 @@ crate-type = ["staticlib"]
 wgpu = { version = "0.20" }
 bytemuck = { version = "1", features = ["derive"] }
 pollster = "0.3"
-rayon = "1"
-rustfft = "6"
 
 [profile.release]
 opt-level = 3
