@@ -1,8 +1,12 @@
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction
-from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
-from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.actions import (
+    DeclareLaunchArgument,
+    IncludeLaunchDescription,
+    OpaqueFunction,
+)
 from launch.conditions import IfCondition
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.substitutions import FindPackageShare
 
 
@@ -15,6 +19,7 @@ def launch_setup(context, *args, **kwargs):
     verbose = LaunchConfiguration("verbose")
     namespace = LaunchConfiguration("namespace")
     world_name = LaunchConfiguration("world_name")
+    zoom_camera_delay = LaunchConfiguration("zoom_camera_delay")
     x = LaunchConfiguration("x")
     y = LaunchConfiguration("y")
     z = LaunchConfiguration("z")
@@ -22,16 +27,26 @@ def launch_setup(context, *args, **kwargs):
     pitch = LaunchConfiguration("pitch")
     yaw = LaunchConfiguration("yaw")
     use_ned_frame = LaunchConfiguration("use_ned_frame")
+    use_teleop = LaunchConfiguration("use_teleop")
+    use_web_joystick = LaunchConfiguration("use_web_joystick")
+    joystick_ws_host = LaunchConfiguration("joystick_ws_host")
+    joystick_ws_port = LaunchConfiguration("joystick_ws_port")
+    open_qgc = LaunchConfiguration("open_qgc")
+    open_virtual_joystick = LaunchConfiguration("open_virtual_joystick")
+    virtual_joystick_url = LaunchConfiguration("virtual_joystick_url")
+    ui_launch_delay = LaunchConfiguration("ui_launch_delay")
 
-    if world_name.perform(context) != "empty.sdf":
-        world_name = LaunchConfiguration("world_name").perform(context)
-        world_filename = f"{world_name}.world"
+    selected_world_name = LaunchConfiguration("world_name").perform(context)
+    if selected_world_name != "empty.sdf":
+        world_filename = f"{selected_world_name}.world"
         world_filepath = PathJoinSubstitution(
             [FindPackageShare("dave_worlds"), "worlds", world_filename]
         )
         gz_args = [world_filepath]
     else:
         gz_args = [world_name]
+
+    zoom_camera_value = "true" if selected_world_name == "dave_ocean_waves" else "false"
 
     if headless.perform(context) == "true":
         gz_args.append(" -s")
@@ -84,6 +99,16 @@ def launch_setup(context, *args, **kwargs):
             "pitch": pitch,
             "yaw": yaw,
             "use_ned_frame": use_ned_frame,
+            "use_teleop": use_teleop,
+            "use_web_joystick": use_web_joystick,
+            "joystick_ws_host": joystick_ws_host,
+            "joystick_ws_port": joystick_ws_port,
+            "zoom_camera": zoom_camera_value,
+            "zoom_camera_delay": zoom_camera_delay,
+            "open_qgc": open_qgc,
+            "open_virtual_joystick": open_virtual_joystick,
+            "virtual_joystick_url": virtual_joystick_url,
+            "ui_launch_delay": ui_launch_delay,
         }.items(),
     )
 
@@ -170,6 +195,51 @@ def generate_launch_description():
             "use_ned_frame",
             default_value="false",
             description="Flag to indicate whether to use the north-east-down frame",
+        ),
+        DeclareLaunchArgument(
+            "use_teleop",
+            default_value="true",
+            description="Launch BlueROV teleop bridge and keyboard controls",
+        ),
+        DeclareLaunchArgument(
+            "use_web_joystick",
+            default_value="true",
+            description="Launch websocket joystick bridge for virtual joystick",
+        ),
+        DeclareLaunchArgument(
+            "joystick_ws_host",
+            default_value="0.0.0.0",
+            description="Bind host for websocket joystick bridge",
+        ),
+        DeclareLaunchArgument(
+            "joystick_ws_port",
+            default_value="8765",
+            description="Bind port for websocket joystick bridge",
+        ),
+        DeclareLaunchArgument(
+            "open_qgc",
+            default_value="false",
+            description="Launch QGroundControl",
+        ),
+        DeclareLaunchArgument(
+            "open_virtual_joystick",
+            default_value="false",
+            description="Open the virtual joystick page in Firefox",
+        ),
+        DeclareLaunchArgument(
+            "virtual_joystick_url",
+            default_value=("https://ioes-lab.github.io/dave/extras/virtual_joystick.html"),
+            description="URL for the virtual joystick page",
+        ),
+        DeclareLaunchArgument(
+            "ui_launch_delay",
+            default_value="2.0",
+            description="Delay (seconds) before launching QGC/Firefox",
+        ),
+        DeclareLaunchArgument(
+            "zoom_camera_delay",
+            default_value="2.0",
+            description="Delay (seconds) before moving the GUI camera",
         ),
     ]
 

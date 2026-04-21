@@ -11,4 +11,4 @@ updates:
     # default location of `.github/workflows`
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"

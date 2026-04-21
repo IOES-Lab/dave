@@ -1,6 +1,7 @@
 # These settings were copied from ardupilot/Tools/autotest/default_params/sub-6dof.parm
 BARO_RND         0.02
 BATT_MONITOR     4
+FS_OPTIONS       0
 BTN0_FUNCTION    0
 BTN10_SFUNCTION  0
 BTN10_FUNCTION   22
@@ -69,7 +70,9 @@ AHRS_EKF_TYPE 3
 
 # Enable external nav
 # From https://ardupilot.org/copter/docs/common-vio-tracking-camera.html
-GPS_TYPE 0            # Disable GPS
+GPS_TYPE 1            # Enable GPS
+SIM_GPS_DISABLE 0     # Ensure sim GPS is enabled
+SIM_GPS_LOCK 1        # Simulate GPS lock
 VISO_TYPE 1           # External vision
 EK3_SRC1_POSXY 6      # External nav
 EK3_SRC1_VELXY 6      # External nav

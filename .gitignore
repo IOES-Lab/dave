@@ -41,3 +41,15 @@
 
 # Mac
 .DS_Store
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Ardupilot
+build/
+log/
+install/
+logs/
+eeprom.bin

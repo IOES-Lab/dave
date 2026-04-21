@@ -17,7 +17,7 @@ env:
 jobs:
   build-and-push-to-docker-hub:
     # runs-on: ubuntu-latest
-    runs-on: self-hosted
+    runs-on: [self-hosted, ARM64]
     timeout-minutes: 1440
     permissions:
       contents: read
@@ -30,8 +30,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Log in to the Container registry
-        uses: docker/login-action@v3
+      - name: Log in to the Docker Hub Container registry
+        uses: docker/login-action@v4
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}

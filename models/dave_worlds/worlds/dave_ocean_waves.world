@@ -55,8 +55,8 @@
 
     <!-- Origin placed somewhere in the middle of the North Sea  -->
     <spherical_coordinates>
-      <latitude_deg>56.71897669633431</latitude_deg>
-      <longitude_deg>3.515625</longitude_deg>
+      <latitude_deg>35.074823</latitude_deg>
+      <longitude_deg>129.084798</longitude_deg>
     </spherical_coordinates>
 
     <!-- Global light source -->
@@ -112,6 +112,14 @@
       <uri>https://fuel.gazebosim.org/1.0/hmoyen/models/Sand Heightmap</uri>
       <pose>0 0 -95 0 0 0</pose>
     </include>
+
+    <gui fullscreen='0'>
+      <camera name='user_camera'>
+        <pose frame=''>20.0 -1.2 -1.2 0.0 0.25 2.2</pose>
+        <view_controller>orbit</view_controller>
+        <projection_type>perspective</projection_type>
+      </camera>
+    </gui>
 
     <plugin
       filename="gz-sim-buoyancy-system"

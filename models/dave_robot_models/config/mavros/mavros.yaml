@@ -4,6 +4,7 @@ mavros:
     plugin_allowlist:
       - sys_status
       - command
+      - manual_control
       - imu
       - rc_io
       - param
@@ -12,7 +13,7 @@ mavros:
 
 mavros_node:
   ros__parameters:
-    fcu_url: "tcp://localhost"
+    fcu_url: "tcp://127.0.0.1:5760"
     gcs_url: "udp://@localhost:14550"
 
 mavros/local_position:

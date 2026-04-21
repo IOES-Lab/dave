@@ -88,32 +88,10 @@ ARG ROS_DISTRO="jazzy"
 # Update OS
 RUN apt update && apt full-upgrade -y && apt autoremove -y
 
-# Install ROS-Gazebo framework
+# Install ROS-Gazebo framework (including ardusub and mavros)
 ADD https://raw.githubusercontent.com/IOES-Lab/dave/$BRANCH/\
 extras/ros-jazzy-gz-harmonic-install.sh install.sh
 RUN sudo bash install.sh
-
-# Prereqs for Ardupilot - Ardusub
-ENV DEBIAN_FRONTEND=noninteractive
-ENV DEBCONF_NONINTERACTIVE_SEEN=true
-# hadolint ignore=DL3008
-ADD --chown=root:root --chmod=0644 https://raw.githubusercontent.com/osrf/osrf-rosdep/master/gz/00-gazebo.list /etc/ros/rosdep/sources.list.d/00-gazebo.list
-RUN wget https://packages.osrfoundation.org/gazebo.gpg -O /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg \
-    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] http://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" |  tee /etc/apt/sources.list.d/gazebo-stable.list > /dev/null \
-    && apt-get -q update && \
-    apt-get install -y --no-install-recommends \
-    python-is-python3 python3-future python3-wxgtk4.0 python3-pexpect \
-    libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev \
-    libgz-sim8-dev rapidjson-dev libopencv-dev libasio-dev \
-    gstreamer1.0-plugins-bad gstreamer1.0-libav gstreamer1.0-gl \
-    && rm -rf /var/lib/apt/lists/
-# Install mavros
-RUN apt-get update && \
-    apt-get -y install --no-install-recommends ros-jazzy-mavros* \
-    && rm -rf /tmp/*
-WORKDIR /tmp
-RUN wget https://raw.githubusercontent.com/mavlink/mavros/master/mavros/scripts/install_geographiclib_datasets.sh && \
-    bash ./install_geographiclib_datasets.sh
 
 # Download the background image from GitHub raw content URL
 # hadolint ignore=DL3047
@@ -127,10 +105,31 @@ extras/background.png && \
     cp /usr/share/backgrounds/warty-final-ubuntu.png \
         /usr/share/backgrounds/ubuntu-wallpaper-d.png
 
-# Install Ardupilot - Ardusub
+# Install QGroundControl
+RUN usermod -aG dialout "$(id -un)" && apt -y remove modemmanager
+RUN apt-get -q update && \
+    apt-get install -y --no-install-recommends \
+    ffmpeg python3-venv python3-websockets \
+    ros-${ROS_DISTRO}-joy-linux gstreamer1.0-tools gstreamer1.0-plugins-base \
+    gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly python3-gi python3-gst-1.0 \
+    libfuse2 libxcb-xinerama0 libxkbcommon-x11-0 libxcb-cursor-dev gstreamer1.0-qt6 \
+    gstreamer1.0-gl libqt6qml6 qml6-module-qtquick qml6-module-qtquick-window && \
+     rm -rf /var/lib/apt/lists/*
 USER docker
-RUN wget -O /tmp/install.sh https://raw.githubusercontent.com/IOES-Lab/dave/$BRANCH/extras/ardusub-ubuntu-install-local.sh
-RUN chmod +x /tmp/install.sh && bash /tmp/install.sh
+RUN mkdir ~/QGC && wget -O ~/QGC/QGroundControl-aarch64-DailyBuild.AppImage \
+    "https://d176tv9ibo4jno.cloudfront.net/builds/master/QGroundControl-aarch64.AppImage" && \
+    cd ~/QGC && chmod +x QGroundControl-aarch64-DailyBuild.AppImage && \
+    cd ~/QGC && ./QGroundControl-aarch64-DailyBuild.AppImage --appimage-extract && \
+    mv ~/QGC/squashfs-root/* ~/QGC/. && rm ~/QGC/QGroundControl-aarch64-DailyBuild.AppImage && \
+    mkdir -p /home/$USER/.local/bin && \
+    ln -sf /home/$USER/QGC/AppRun /home/$USER/.local/bin/qgroundcontrol
+
+# Install Firefox from Mozilla (aarch64 tarball)
+RUN curl -L "https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64-aarch64&lang=en-US" \
+        -o /tmp/firefox.tar.xz && \
+    tar -xJf /tmp/firefox.tar.xz -C /home/$USER && \
+    ln -sf /home/$USER/firefox/firefox /home/$USER/.local/bin/firefox && \
+    rm -f /tmp/firefox.tar.xz
 
 # Set up Dave workspace
 ENV DAVE_UNDERLAY=/home/$USER/dave_ws
@@ -139,29 +138,27 @@ RUN wget -O /home/$USER/dave_ws/dave.repos -q https://raw.githubusercontent.com/
 extras/repos/dave.$ROS_DISTRO.repos
 RUN vcs import --shallow --input "/home/$USER/dave_ws/dave.repos"
 
-USER root
 # hadolint ignore=DL3027
-RUN apt update && apt --fix-broken install && \
-    rosdep init && rosdep update --rosdistro $ROS_DISTRO && \
-    rosdep install --rosdistro $ROS_DISTRO -iy --from-paths . && \
-    rm -rf /var/lib/apt/lists/
-USER docker
+RUN rosdep update --rosdistro $ROS_DISTRO && \
+    rosdep install --rosdistro $ROS_DISTRO -iy --from-paths .
 
 # Build dave workspace
 WORKDIR $DAVE_UNDERLAY
-RUN . "/opt/ros/${ROS_DISTRO}/setup.sh" && colcon build
+RUN . "/opt/ros/${ROS_DISTRO}/setup.sh" && colcon build --symlink-install
 
 # Set User as user
 USER docker
-RUN echo "source /opt/ros/jazzy/setup.bash" >> ~/.bashrc && \
-    echo "source $DAVE_UNDERLAY/install/setup.bash" >> ~/.bashrc && \
-    echo "export GEOGRAPHICLIB_GEOID_PATH=/usr/local/share/GeographicLib/geoids" >> ~/.bashrc && \
-    echo "export PYTHONPATH=\$PYTHONPATH:/opt/gazebo/install/lib/python" >> ~/.bashrc && \
-    echo "export PATH=/home/$USER/ardusub_ws/ardupilot/Tools/autotest:\$PATH" >> ~/.bashrc && \
-    echo "export PATH=/home/$USER/ardusub_ws/ardupilot/build/sitl/bin:\$PATH" >> ~/.bashrc && \
-    echo "export GZ_SIM_SYSTEM_PLUGIN_PATH=/home/$USER/ardusub_ws/ardupilot_gazebo/build:\$GZ_SIM_SYSTEM_PLUGIN_PATH" >> ~/.bashrc && \
-    echo "export GZ_SIM_RESOURCE_PATH=/home/$USER/ardusub_ws/ardupilot_gazebo/models:/home/$USER/ardusub_ws/ardupilot_gazebo/worlds:\$GZ_SIM_RESOURCE_PATH" >> ~/.bashrc && \
-    echo "\n\n" >> ~/.bashrc && echo "if [ -d ~/HOST ]; then chown $USER:$USER ~/HOST; fi" >> ~/.bashrc  && \
+RUN echo "source $DAVE_UNDERLAY/install/setup.bash" >> ~/.bashrc && \
+    echo "source /opt/ros/jazzy/setup.bash" >> ~/.bashrc && \
+    echo "export PATH=/opt/ardusub_ws/ardupilot/Tools/autotest:\$PATH" >> ~/.bashrc && \
+    echo "export PATH=/opt/ardusub_ws/ardupilot/build/sitl/bin:\$PATH" >> ~/.bashrc && \
+    echo "export GEOGRAPHICLIB_GEOID_PATH=/usr/share/GeographicLib/geoids" >> ~/.bashrc && \
+    echo "export GZ_SIM_SYSTEM_PLUGIN_PATH=/opt/ardusub_ws/ardupilot_gazebo/build:\$GZ_SIM_SYSTEM_PLUGIN_PATH" >> ~/.bashrc && \
+    echo "export GZ_SIM_RESOURCE_PATH=/opt/ardusub_ws/ardupilot_gazebo/models:/opt/ardusub_ws/ardupilot_gazebo/worlds:\$GZ_SIM_RESOURCE_PATH" >> ~/.bashrc && \
+    echo "export GST_PLUGIN_PATH=/usr/lib/aarch64-linux-gnu/gstreamer-1.0:\$GST_PLUGIN_PATH" >> ~/.bashrc && \
+    echo "export QML2_IMPORT_PATH=/usr/lib/aarch64-linux-gnu/qt6/qml:\$QML2_IMPORT_PATH" >> ~/.bashrc && \
+    echo "export LD_LIBRARY_PATH=/usr/lib/aarch64-linux-gnu:\$LD_LIBRARY_PATH" >> ~/.bashrc && \
+    echo "\n" >> ~/.bashrc && echo "if [ -d ~/HOST ]; then chown $USER:$USER ~/HOST; fi" >> ~/.bashrc  && \
     echo "export PS1='\[\e[1;36m\]\u@DAVE_docker\[\e[0m\]\[\e[1;34m\](\$(hostname | cut -c1-12))\[\e[0m\]:\[\e[1;34m\]\w\[\e[0m\]\$ '" >>  ~/.bashrc
 
 # Other environment variables

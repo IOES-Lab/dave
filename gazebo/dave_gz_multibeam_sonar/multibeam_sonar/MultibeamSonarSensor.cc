@@ -1308,11 +1308,15 @@ void MultibeamSonarSensor::Implementation::ComputeSonarImage()
   // same stamp - the sim time when the depth frame was actually recorded -
   // so RViz TF lookups succeed and images don't flicker.
 
-  // FEEDBACK_NEEDED/TODO: Using frameName (from SDF <frameName> tag) as the ROS frame_id.
+  // FEEDBACK_NEEDED/TODO: Solved?
+  // Using frameName (from SDF <frameName> tag) as the ROS frame_id.
   // This is user-friendly but requires the SDF value to match an actual TF frame exactly.
   // The old approach used frameId (Gazebo's internal sensor ID) which was more likely
   // to match the TF tree automatically.
   // If TF lookup errors appear in RViz, shall revert back to frameId.
+  this->sonarRawDataMsg = marine_acoustic_msgs::msg::ProjectedSonarImage();
+
+  this->sonarRawDataMsg.header.frame_id = this->frameId;
 
   this->sonarRawDataMsg.header.frame_id = this->frameName;
 

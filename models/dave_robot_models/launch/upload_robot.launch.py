@@ -1,23 +1,19 @@
 from launch import LaunchDescription
 from launch.actions import (
     DeclareLaunchArgument,
-    RegisterEventHandler,
-    LogInfo,
     IncludeLaunchDescription,
-)
-from launch.substitutions import (
-    LaunchConfiguration,
-    PathJoinSubstitution,
+    LogInfo,
+    RegisterEventHandler,
 )
 from launch.conditions import IfCondition
-from launch_ros.substitutions import FindPackageShare
 from launch.event_handlers import OnProcessExit
-from launch_ros.actions import Node
 from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
+from launch_ros.actions import Node
+from launch_ros.substitutions import FindPackageShare
 
 
 def generate_launch_description():
-    gui = LaunchConfiguration("gui")
     use_sim_time = LaunchConfiguration("use_sim_time")
     namespace = LaunchConfiguration("namespace")
     x = LaunchConfiguration("x")
@@ -27,6 +23,16 @@ def generate_launch_description():
     pitch = LaunchConfiguration("pitch")
     yaw = LaunchConfiguration("yaw")
     use_ned_frame = LaunchConfiguration("use_ned_frame")
+    use_teleop = LaunchConfiguration("use_teleop")
+    use_web_joystick = LaunchConfiguration("use_web_joystick")
+    joystick_ws_host = LaunchConfiguration("joystick_ws_host")
+    joystick_ws_port = LaunchConfiguration("joystick_ws_port")
+    zoom_camera = LaunchConfiguration("zoom_camera")
+    zoom_camera_delay = LaunchConfiguration("zoom_camera_delay")
+    open_qgc = LaunchConfiguration("open_qgc")
+    open_virtual_joystick = LaunchConfiguration("open_virtual_joystick")
+    virtual_joystick_url = LaunchConfiguration("virtual_joystick_url")
+    ui_launch_delay = LaunchConfiguration("ui_launch_delay")
 
     args = [
         DeclareLaunchArgument(
@@ -41,7 +47,7 @@ def generate_launch_description():
         ),
         DeclareLaunchArgument(
             "namespace",
-            default_value="",
+            default_value="bluerov2",
             description="Namespace",
         ),
         DeclareLaunchArgument(
@@ -78,6 +84,59 @@ def generate_launch_description():
             "use_ned_frame",
             default_value="false",
             description="Use North-East-Down frame",
+        ),
+        DeclareLaunchArgument(
+            "use_teleop",
+            default_value="true",
+            description="Launch BlueROV teleop nodes",
+        ),
+        DeclareLaunchArgument(
+            "use_web_joystick",
+            default_value="true",
+            description="Launch websocket joystick bridge",
+        ),
+        DeclareLaunchArgument(
+            "joystick_ws_host",
+            default_value="0.0.0.0",
+            description="Bind host for websocket joystick bridge",
+        ),
+        DeclareLaunchArgument(
+            "joystick_ws_port",
+            default_value="8765",
+            description="Bind port for websocket joystick bridge",
+        ),
+        DeclareLaunchArgument(
+            "open_qgc",
+            default_value="false",
+            description="Launch QGroundControl",
+        ),
+        DeclareLaunchArgument(
+            "open_virtual_joystick",
+            default_value="false",
+            description="Open the virtual joystick page in Firefox",
+        ),
+        DeclareLaunchArgument(
+            "virtual_joystick_url",
+            default_value=(
+                "https://raw.githubusercontent.com/IOES-Lab/dave/"
+                "refs/heads/ros2/extras/virtual_joystick.html"
+            ),
+            description="URL for the virtual joystick page",
+        ),
+        DeclareLaunchArgument(
+            "ui_launch_delay",
+            default_value="2.0",
+            description="Delay (seconds) before launching QGC/Firefox",
+        ),
+        DeclareLaunchArgument(
+            "zoom_camera",
+            default_value="false",
+            description="Zoom the GUI camera after launch",
+        ),
+        DeclareLaunchArgument(
+            "zoom_camera_delay",
+            default_value="2.0",
+            description="Delay (seconds) before moving the GUI camera",
         ),
     ]
 
@@ -131,7 +190,6 @@ def generate_launch_description():
             yaw,
         ],
         output="both",
-        condition=IfCondition(gui),
         parameters=[{"use_sim_time": use_sim_time}],
     )
 
@@ -153,15 +211,26 @@ def generate_launch_description():
         ),
         launch_arguments={
             "namespace": namespace,
+            "use_teleop": use_teleop,
+            "use_web_joystick": use_web_joystick,
+            "joystick_ws_host": joystick_ws_host,
+            "joystick_ws_port": joystick_ws_port,
+            "zoom_camera": zoom_camera,
+            "zoom_camera_delay": zoom_camera_delay,
+            "open_qgc": open_qgc,
+            "open_virtual_joystick": open_virtual_joystick,
+            "virtual_joystick_url": virtual_joystick_url,
+            "ui_launch_delay": ui_launch_delay,
         }.items(),
     )
 
-    include = [robot_config]
-
     event_handlers = [
         RegisterEventHandler(
-            OnProcessExit(target_action=gz_spawner, on_exit=LogInfo(msg="Robot Model Uploaded"))
+            OnProcessExit(
+                target_action=gz_spawner,
+                on_exit=[LogInfo(msg="Robot Model Uploaded"), robot_config],
+            )
         )
     ]
 
-    return LaunchDescription(args + nodes + event_handlers + include)
+    return LaunchDescription(args + nodes + event_handlers)

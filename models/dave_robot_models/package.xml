@@ -6,6 +6,14 @@
   <maintainer email="rakeshvivek97@gmail.com">Rakesh Vivekanandan</maintainer>
   <license>Apache 2.0</license>
   <buildtool_depend>ament_cmake</buildtool_depend>
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+  <exec_depend>mavros</exec_depend>
+  <exec_depend>mavros_msgs</exec_depend>
+  <exec_depend>python3-websockets</exec_depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
   <export>
     <build_type>ament_cmake</build_type>
     <!-- This doesn't work yet https://github.com/gazebosim/ros_gz/pull/492 -->

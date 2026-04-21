@@ -17,16 +17,6 @@ RUN apt-get update && \
     x11-apps mesa-utils bison flex automake \
     && rm -rf /var/lib/apt/lists/
 
-# Prereqs for Ardupilot - Ardusub
-ADD --chown=root:root --chmod=0644 https://raw.githubusercontent.com/osrf/osrf-rosdep/master/gz/00-gazebo.list /etc/ros/rosdep/sources.list.d/00-gazebo.list
-RUN wget https://packages.osrfoundation.org/gazebo.gpg -O /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg \
-    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] http://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" |  tee /etc/apt/sources.list.d/gazebo-stable.list > /dev/null \
-    && apt-get update && apt-get install -y --no-install-recommends \
-    libgz-sim8-dev rapidjson-dev libopencv-dev \
-    libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev \
-    gstreamer1.0-plugins-bad gstreamer1.0-libav gstreamer1.0-gl \
-    && rm -rf /var/lib/apt/lists/
-
 # Locale for UTF-8
 RUN truncate -s0 /tmp/preseed.cfg && \
    (echo "tzdata tzdata/Areas select Etc" >> /tmp/preseed.cfg) && \
@@ -41,22 +31,26 @@ RUN apt-get update && \
 RUN locale-gen en_US en_US.UTF-8 && update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 && \
     export LANG=en_US.UTF-8
 
-# Install ROS-Gazebo framework
+# Install ROS-Gazebo framework (including ardusub and mavros)
 ADD https://raw.githubusercontent.com/IOES-Lab/dave/$BRANCH/\
 extras/ros-jazzy-gz-harmonic-install.sh install.sh
 RUN bash install.sh
 
-# Install Ardupilot - Ardusub
-ADD https://raw.githubusercontent.com/IOES-Lab/dave/$BRANCH/\
-extras/ardusub-ubuntu-install.sh install.sh
-RUN bash install.sh
-# Install mavros
-RUN apt-get update && \
-    apt-get -y install --no-install-recommends ros-jazzy-mavros* \
-    && rm -rf /tmp/*
-WORKDIR /tmp
-RUN wget https://raw.githubusercontent.com/mavlink/mavros/master/mavros/scripts/install_geographiclib_datasets.sh && \
-    bash ./install_geographiclib_datasets.sh
+# Install QGroundControl
+RUN mkdir -p /opt/QGC && cd /opt/QGC && wget -O /opt/QGC/QGroundControl-x86_64.AppImage \
+    "https://d176tv9ibo4jno.cloudfront.net/latest/QGroundControl-x86_64.AppImage" && \
+    chmod +x QGroundControl-x86_64.AppImage && \
+    ./QGroundControl-x86_64.AppImage --appimage-extract && \
+    mv squashfs-root/* /opt/QGC/ && rm QGroundControl-x86_64.AppImage && \
+    ln -sf /opt/QGC/AppRun /usr/local/bin/qgroundcontrol
+
+# Install Firefox from Mozilla (aarch64 tarball)
+RUN curl -L "https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=en-US" \
+        -o /tmp/firefox.tar.xz && \
+    mkdir -p /opt/firefox && \
+    tar -xJf /tmp/firefox.tar.xz -C /opt && \
+    ln -sf /opt/firefox/firefox /usr/local/bin/firefox && \
+    rm -f /tmp/firefox.tar.xz
 
 # Set up Dave workspace
 ENV DAVE_WS=/opt/dave_ws
@@ -74,16 +68,11 @@ RUN apt-get update && rosdep update && \
 # Compile Dave
 WORKDIR $DAVE_WS
 RUN . "/opt/ros/${ROS_DISTRO}/setup.sh" && \
-    colcon build
+    colcon build --symlink-install
 WORKDIR /
 
 # Set up bashrc for root
-RUN echo "source /opt/ros/jazzy/setup.bash" >> /root/.bashrc && \
-    echo "source /opt/dave_ws/install/setup.bash" >> /root/.bashrc && \
-    echo "export PATH=/opt/ardusub_ws/ardupilot/Tools/autotest:\$PATH" >> /root/.bashrc && \
-    echo "export PATH=/opt/ardusub_ws/ardupilot/build/sitl/bin:\$PATH" >> /root/.bashrc && \
-    echo "export GZ_SIM_SYSTEM_PLUGIN_PATH=/opt/ardusub_ws/ardupilot_gazebo/build:\$GZ_SIM_SYSTEM_PLUGIN_PATH" >> /root/.bashrc && \
-    echo "export GZ_SIM_RESOURCE_PATH=/opt/ardusub_ws/ardupilot_gazebo/models:/opt/ardusub_ws/ardupilot_gazebo/worlds:\$GZ_SIM_RESOURCE_PATH" >> /root/.bashrc && \
+RUN echo "source $DAVE_WS/install/setup.bash" >> /root/.bashrc && \
     echo "export PS1='\[\e[1;36m\]\u@DAVE_docker\[\e[0m\]\[\e[1;34m\](\$(hostname | cut -c1-12))\[\e[0m\]:\[\e[1;34m\]\w\[\e[0m\]\$ '" >> /root/.bashrc
 
 RUN touch /root/.dave_entrypoint && printf '\033[1;36m =====\n' >> /root/.dave_entrypoint && \

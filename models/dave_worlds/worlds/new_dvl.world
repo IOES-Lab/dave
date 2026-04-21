@@ -55,13 +55,13 @@
 			name="gz::sim::systems::DopplerVelocityLogSystem">
 		</plugin>
 
-		<!-- Origin placed somewhere in the middle of the North Sea -->
+		<!-- Origin placed at Korea Maritime and Ocean University -->
 		<spherical_coordinates>
-			<latitude_deg>56.71897669633431</latitude_deg>
-			<longitude_deg>3.515625</longitude_deg>
+			<latitude_deg>35.074823</latitude_deg>
+			<longitude_deg>129.084798</longitude_deg>
 		</spherical_coordinates>
-
-		<plugin filename="SphericalCoords" name="dave_ros_gz_plugins::SphericalCoords"> </plugin>
+				<latitude_deg>35.074823</latitude_deg>
+				<longitude_deg>129.084798</longitude_deg>
 
 		<!-- Global Light Source -->
 		<light type="directional" name="sun1">

@@ -4,7 +4,8 @@
 # shellcheck source=/dev/null
 source /opt/ros/jazzy/setup.bash
 
-export USER=docker
+USER_NAME=$(logname 2>/dev/null || echo "${SUDO_USER:-$USER}")
+export USER="$USER_NAME"
 
 # Really should do version pinning but Sub-4.5 is waaaay behind master
 # (e.g. it doesn't know about "noble" yet)

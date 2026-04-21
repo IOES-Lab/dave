@@ -107,7 +107,7 @@
               <color sid="diffuse">1 1 1 1</color>
             </diffuse>
             <transparent opaque="A_ONE">
-              <color sid="alpha">0 0 0 0.4</color>
+              <color sid="alpha">0 0 0 1</color>
             </transparent>
             <index_of_refraction>
               <float sid="ior">1.45</float>
@@ -161,7 +161,7 @@
               <color sid="diffuse">0.513725 0.513725 0.513725 1</color>
             </diffuse>
             <transparent opaque="A_ONE">
-              <color sid="alpha">0 0 0 0.1</color>
+              <color sid="alpha">0 0 0 1</color>
             </transparent>
             <index_of_refraction>
               <float sid="ior">1.45</float>
@@ -385,7 +385,7 @@
               <color sid="diffuse">1 1 1 1</color>
             </diffuse>
             <transparent opaque="A_ONE">
-              <color sid="alpha">0 0 0 0.5</color>
+              <color sid="alpha">0 0 0 1</color>
             </transparent>
             <index_of_refraction>
               <float sid="ior">1.45</float>
