@@ -1359,7 +1359,7 @@ void MultibeamSonarSensor::Implementation::ComputeSonarImage()
   sonar_image_data.beam_count = this->nBeams;
   // this->sonar_image_raw_msg_.data_size = 1;  // sizeof(float) * nFreq * nBeams;
   std::vector<float> intensities;
-  int Intensity[this->nBeams][this->nFreq];
+  // int Intensity[this->nBeams][this->nFreq];
 
   for (size_t r = 0; r < P_Beams[0].size(); r++)
   {

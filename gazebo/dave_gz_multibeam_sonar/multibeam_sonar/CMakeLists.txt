@@ -15,18 +15,19 @@ set(CMAKE_CUDA_ARCHITECTURES "${CUDA_ARCHITECTURE}")
 project(multibeam_sonar)
 
 find_package(ament_cmake REQUIRED)
-find_package(gz-cmake REQUIRED)
-find_package(gz-sim REQUIRED)
-find_package(gz-sensors REQUIRED)
-find_package(gz-rendering REQUIRED OPTIONAL_COMPONENTS ogre ogre2)
-find_package(gz-transport REQUIRED)
-find_package(gz-msgs REQUIRED)
+find_package(gz-cmake3 REQUIRED)
+find_package(gz-sim8 REQUIRED)
+find_package(gz-sensors8 REQUIRED)
+find_package(gz-rendering8 REQUIRED OPTIONAL_COMPONENTS ogre ogre2)
+find_package(gz-transport13 REQUIRED)
+find_package(gz-msgs10 REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(marine_acoustic_msgs REQUIRED)
 find_package(cv_bridge REQUIRED)
+find_package(Eigen3 REQUIRED)
 find_package(wgpu_vendor REQUIRED)
 find_package(CUDAToolkit QUIET)
 
@@ -67,31 +68,40 @@ if(CUDAToolkit_FOUND)
 endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC
-  ${gz-sensors_INCLUDE_DIRS}
-  ${gz-rendering_INCLUDE_DIRS}
-  ${gz-msgs_INCLUDE_DIRS}
-  ${gz-transport_INCLUDE_DIRS}
-  ${gz-sim_INCLUDE_DIRS}
+  ${gz-sensors8_INCLUDE_DIRS}
+  ${gz-rendering8_INCLUDE_DIRS}
+  ${gz-msgs10_INCLUDE_DIRS}
+  ${gz-transport13_INCLUDE_DIRS}
+  ${gz-sim8_INCLUDE_DIRS}
   ${rclcpp_INCLUDE_DIRS}
   ${sensor_msgs_INCLUDE_DIRS}
   ${geometry_msgs_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
+  ${EIGEN3_INCLUDE_DIRS}
   ${marine_acoustic_msgs_INCLUDE_DIRS}
   ${cv_bridge_INCLUDE_DIRS}
 )
 
 target_link_libraries(${PROJECT_NAME}
-  gz-sim::gz-sim
-  gz-sensors::gz-sensors
-  gz-msgs::gz-msgs
-  gz-transport::gz-transport
-  gz-rendering::gz-rendering
+  gz-sim8::gz-sim8
+  gz-sensors8::gz-sensors8
+  gz-msgs10::gz-msgs10
+  gz-transport13::gz-transport13
+  gz-rendering8::gz-rendering8
   ${rclcpp_LIBRARIES}
   ${sensor_msgs_LIBRARIES}
   ${geometry_msgs_LIBRARIES}
   ${OpenCV_LIBS}
+  Eigen3::Eigen
   ${marine_acoustic_msgs_LIBRARIES}
 )
+
+if(APPLE)
+  target_link_libraries(${PROJECT_NAME}
+    "-framework Metal"
+    "-framework QuartzCore"
+  )
+endif()
 
 if(TARGET cv_bridge::cv_bridge)
   target_link_libraries(${PROJECT_NAME} cv_bridge::cv_bridge)
@@ -136,10 +146,10 @@ if(DEFINED wgpu_vendor_DIR)
   endif()
 endif()
 
-if(TARGET gz-sensors::gz-sensors-rendering)
-  target_link_libraries(${PROJECT_NAME} gz-sensors::gz-sensors-rendering)
+if(TARGET gz-sensors::gz-sensors8-rendering)
+  target_link_libraries(${PROJECT_NAME} gz-sensors::gz-sensors8-rendering)
 else()
-  find_library(GZ_SENSORS_RENDERING_LIB gz-sensors-rendering)
+  find_library(GZ_SENSORS_RENDERING_LIB gz-sensors8-rendering)
   if(GZ_SENSORS_RENDERING_LIB)
     target_link_libraries(${PROJECT_NAME} ${GZ_SENSORS_RENDERING_LIB})
   endif()
