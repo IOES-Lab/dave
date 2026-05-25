@@ -14,7 +14,8 @@ extern "C"
     const float * beam_corrector_flat, const float * window_flat, uint32_t n_beams, uint32_t n_rays,
     uint32_t n_freq, uint32_t ray_skips, float sound_speed, float max_distance, float source_level,
     float attenuation, float sensor_gain, float bandwidth, float beam_corrector_sum,
-    float area_scaler, float h_fov, float v_fov, uint64_t frame_index, uint64_t seed);
+    float area_scaler, float h_fov, float v_fov, uint64_t frame_index, uint64_t seed,
+    bool debug_flag);
 
   void sonar_wgpu_free(float * ptr, size_t len);
 }
@@ -38,7 +39,8 @@ bool WgpuComputeBackend::Initialize(const SonarComputeInput &)
 
   float * probe = sonar_wgpu_compute(
     depth.data(), normal.data(), reflectivity.data(), beamCorrector.data(), window.data(), 1u, 1u,
-    4u, 0u, 1500.0f, 10.0f, 220.0f, 0.0f, 1.0f, 29500000.0f, 1.0f, 1e-6f, 0.0f, 0.0f, 0u, 1u);
+    4u, 0u, 1500.0f, 10.0f, 220.0f, 0.0f, 1.0f, 29500000.0f, 1.0f, 1e-6f, 0.0f, 0.0f, 0u, 1u,
+    false);
 
   if (probe)
   {
@@ -169,7 +171,8 @@ bool WgpuComputeBackend::Compute(const SonarComputeInput & input, SonarComputeOu
     static_cast<float>(input.soundSpeed), static_cast<float>(input.maxDistance),
     static_cast<float>(input.sourceLevel), static_cast<float>(input.attenuation), input.sensorGain,
     static_cast<float>(input.bandwidth), input.beamCorrectorSum, area_scaler,
-    static_cast<float>(input.hFOV), static_cast<float>(input.vFOV), input.frameIndex, input.seed);
+    static_cast<float>(input.hFOV), static_cast<float>(input.vFOV), input.frameIndex, input.seed,
+    input.debugFlag);
 
   if (!result)
   {

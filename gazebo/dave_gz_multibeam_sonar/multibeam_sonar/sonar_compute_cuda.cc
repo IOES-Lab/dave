@@ -69,7 +69,7 @@ bool CudaComputeBackend::Compute(const SonarComputeInput & input, SonarComputeOu
     input.soundSpeed, input.maxDistance, input.sourceLevel, input.nBeams, input.nRays,
     input.raySkips, input.sonarFreq, input.bandwidth, input.nFreq, *input.reflectivityImage,
     input.attenuation, const_cast<float *>(input.window), input.beamCorrector,
-    input.beamCorrectorSum, false, input.blazingFlag);
+    input.beamCorrectorSum, input.debugFlag, input.blazingFlag);
 
   output.nBeams = input.nBeams;
   output.nFreq = input.nFreq;

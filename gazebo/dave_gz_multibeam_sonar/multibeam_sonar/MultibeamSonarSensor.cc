@@ -750,6 +750,7 @@ bool MultibeamSonarSensor::Implementation::InitializeBeamArrangement(MultibeamSo
   prototype.soundSpeed = this->soundSpeed;
   prototype.attenuation = this->attenuation;
   prototype.sensorGain = this->sensorGain;
+  prototype.debugFlag = this->debugFlag;
   prototype.blazingFlag = this->blazingFlag;
   prototype.window = this->window;
   prototype.rangeVector = this->rangeVector;
@@ -1203,6 +1204,7 @@ void MultibeamSonarSensor::Implementation::ComputeSonarImage()
   input.soundSpeed = this->soundSpeed;
   input.attenuation = this->attenuation;
   input.sensorGain = this->sensorGain;
+  input.debugFlag = this->debugFlag;
   input.blazingFlag = this->blazingFlag;
   input.window = this->window;
   input.rangeVector = this->rangeVector;
@@ -1239,10 +1241,11 @@ void MultibeamSonarSensor::Implementation::ComputeSonarImage()
 
   if (debugFlag)
   {
+    double timeMs = duration.count() / 1000.0;
     RCLCPP_INFO_STREAM(
       this->ros_node_->get_logger(), this->computeBackend->Name()
-                                       << " Sonar Frame Calc Time " << duration.count() / 10000
-                                       << "/100 [s]\n");
+                                       << " Sonar Frame Calc Time " << std::fixed
+                                       << std::setprecision(3) << timeMs << " [ms]\n");
   }
 
   // CSV log write stream

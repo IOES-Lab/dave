@@ -1,6 +1,5 @@
 /// Adapters, device, queue setups + BUFFERS SETUP + PIPELINE SETUPS + PIPELINE COMPILE + GPU CONTEXT INIT all in pipeline.rs
 /// + Shaders compiled
-
 use std::sync::OnceLock;
 
 /// GPU buffer lifetime: persistent allocation across frames via queue.write_buffer.
@@ -43,7 +42,9 @@ impl SonarBuffers {
         let i32_bytes = |n: usize| (n * std::mem::size_of::<i32>()) as u64;
 
         SonarBuffers {
-            n_beams, n_rays, n_freq,
+            n_beams,
+            n_rays,
+            n_freq,
             depth_buf: device.create_buffer(&wgpu::BufferDescriptor {
                 label: Some("pb_depth"),
                 size: f32_bytes(depth_ray),
@@ -145,12 +146,12 @@ impl SonarBuffers {
 /// GPU compute context: device handle + compiled shader pipelines.
 /// Four pipelines compiled once at init: backscatter, convert, matmul, FFT.
 pub struct GpuContext {
-    pub device: wgpu::Device,   // the GPU -> used to create everything
-    pub queue: wgpu::Queue,     // the command queue -> used to submit work
+    pub device: wgpu::Device, // the GPU -> used to create everything
+    pub queue: wgpu::Queue,   // the command queue -> used to submit work
 
     // Backscatter kernel: ray-surface interactions with Lambert scatter.
-    pub bs_pipeline: wgpu::ComputePipeline,         // compiled backscatter shader
-    pub bs_bgl: wgpu::BindGroupLayout,              // describes bs shader's buffer slots
+    pub bs_pipeline: wgpu::ComputePipeline, // compiled backscatter shader
+    pub bs_bgl: wgpu::BindGroupLayout,      // describes bs shader's buffer slots
 
     // i32→f32 conversion: fixed-point atomic backscatter output to float spectrum.
     pub convert_pipeline: wgpu::ComputePipeline,
@@ -201,7 +202,9 @@ fn make_uniform_entry(binding: u32) -> wgpu::BindGroupLayoutEntry {
 }
 
 /// Bind group layout builder: defines buffer bindings for each shader.
-fn build_bgls(device: &wgpu::Device) -> (
+fn build_bgls(
+    device: &wgpu::Device,
+) -> (
     wgpu::BindGroupLayout,
     wgpu::BindGroupLayout,
     wgpu::BindGroupLayout,
@@ -211,13 +214,13 @@ fn build_bgls(device: &wgpu::Device) -> (
     let bs_bgl = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
         label: Some("bs_bgl"),
         entries: &[
-            make_uniform_entry(0),          // (params)
-            make_storage_entry(1, true),    // (depth)          true = read_only
-            make_storage_entry(2, true),    // (normal)
-            make_storage_entry(3, true),    // (reflectivity)
-            make_storage_entry(4, false),   // (out_re_i32)     false = read_write
-            make_storage_entry(5, false),   // (out_im_i32)
-            make_storage_entry(6, true),    // (window)
+            make_uniform_entry(0),        // (params)
+            make_storage_entry(1, true),  // (depth)          true = read_only
+            make_storage_entry(2, true),  // (normal)
+            make_storage_entry(3, true),  // (reflectivity)
+            make_storage_entry(4, false), // (out_re_i32)     false = read_write
+            make_storage_entry(5, false), // (out_im_i32)
+            make_storage_entry(6, true),  // (window)
         ],
     });
 
@@ -318,7 +321,10 @@ fn try_init_gpu_context(backends: wgpu::Backends, label: &str) -> Option<GpuCont
             force_fallback_adapter: false,
         }))?;
 
-        eprintln!("[sonar_wgpu] [{label}] selected adapter: {}", adapter.get_info().name);
+        eprintln!(
+            "[sonar_wgpu] [{label}] selected adapter: {}",
+            adapter.get_info().name
+        );
         let (device, queue) = pollster::block_on(adapter.request_device(
             &wgpu::DeviceDescriptor {
                 label: Some("sonar_wgpu_device"),
@@ -337,20 +343,28 @@ fn try_init_gpu_context(backends: wgpu::Backends, label: &str) -> Option<GpuCont
         let t0 = std::time::Instant::now();
         let (bs_bgl, mm_bgl, fft_bgl, convert_bgl) = build_bgls(&device);
         let bs_pipeline = compile_pipeline(
-            &device, "bs_pipeline",
-            include_str!("shaders/backscatter.wgsl"), &bs_bgl,
+            &device,
+            "bs_pipeline",
+            include_str!("shaders/backscatter.wgsl"),
+            &bs_bgl,
         );
         let convert_pipeline = compile_pipeline(
-            &device, "convert_pipeline",
-            include_str!("shaders/convert.wgsl"), &convert_bgl,
+            &device,
+            "convert_pipeline",
+            include_str!("shaders/convert.wgsl"),
+            &convert_bgl,
         );
         let mm_pipeline = compile_pipeline(
-            &device, "mm_pipeline",
-            include_str!("shaders/matmul.wgsl"), &mm_bgl,
+            &device,
+            "mm_pipeline",
+            include_str!("shaders/matmul.wgsl"),
+            &mm_bgl,
         );
         let fft_pipeline = compile_pipeline(
-            &device, "fft_pipeline",
-            include_str!("shaders/fft.wgsl"), &fft_bgl,
+            &device,
+            "fft_pipeline",
+            include_str!("shaders/fft.wgsl"),
+            &fft_bgl,
         );
         eprintln!(
             "[sonar_wgpu] [{label}] GPU pipelines compiled in {:.0} ms -> ready.",
@@ -398,46 +412,3 @@ fn init_gpu_context() -> Option<GpuContext> {
 pub fn get_or_init() -> Option<&'static GpuContext> {
     GPU_CONTEXT.get_or_init(init_gpu_context).as_ref()
 }
-
-
-/*
-Data flow with buffer names:
-
-    CPU INPUT DATA
-        │
-        ▼
-    depth_buf    [n_beams × n_rays]      f32   COPY_DST | STORAGE
-    normal_buf   [n_beams × n_rays × 3]  f32   COPY_DST | STORAGE
-    refl_buf     [n_beams × n_rays]      f32   COPY_DST | STORAGE
-    window_buf   [n_freq]                f32   COPY_DST | STORAGE
-    bc_buf       [n_beams × n_beams]     f32   COPY_DST | STORAGE
-        │
-        ▼ backscatter.wgsl (reads above, writes below)
-        │
-    out_re_i32   [n_beams × n_freq]      i32   COPY_DST | STORAGE  ← atomic accumulators
-    out_im_i32   [n_beams × n_freq]      i32   COPY_DST | STORAGE  ← zeroed each frame
-        │
-        ▼ convert.wgsl (i32 → f32)
-        │
-    mm_re_in     [n_beams × n_freq]      f32   STORAGE
-    mm_im_in     [n_beams × n_freq]      f32   STORAGE
-        │
-        ▼ matmul.wgsl (beam correction)
-        │
-    mm_re_out    [n_beams × n_freq]      f32   STORAGE | COPY_SRC
-    mm_im_out    [n_beams × n_freq]      f32   STORAGE | COPY_SRC
-        │
-        ▼ copied into FFT buffers
-        │
-    p_re_buf     [n_beams × n_freq]      f32   STORAGE | COPY_SRC | COPY_DST
-    p_im_buf     [n_beams × n_freq]      f32   STORAGE | COPY_SRC | COPY_DST
-        │
-        ▼ fft.wgsl (in-place FFT)
-        │
-        ▼ copied to staging
-        │
-    stg_re       [n_beams × n_freq]      f32   MAP_READ | COPY_DST
-    stg_im       [n_beams × n_freq]      f32   MAP_READ | COPY_DST
-        │
-        ▼ CPU reads back final result
-    */

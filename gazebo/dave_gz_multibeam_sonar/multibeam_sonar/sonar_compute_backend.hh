@@ -31,6 +31,7 @@ struct SonarComputeInput
   double attenuation{0.0};
 
   float sensorGain{0.02f};
+  bool debugFlag{false};
   bool blazingFlag{false};
 
   const float * window{nullptr};

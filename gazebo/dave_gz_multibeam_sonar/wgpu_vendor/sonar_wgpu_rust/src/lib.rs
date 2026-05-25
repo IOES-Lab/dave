@@ -4,6 +4,8 @@
 mod pipeline;     // GPU context + buffer management
 
 use bytemuck::{Pod, Zeroable};
+use std::fs::OpenOptions;
+use std::io::Write;
 use std::sync::atomic::{AtomicU64, Ordering};
 use wgpu::util::DeviceExt;
 
@@ -49,6 +51,19 @@ struct FftParams {
     log2_n:   u32,   // log2(padded_n)
 }
 
+fn emit_debug_timing(line: &str) {
+    eprintln!("{line}");
+
+    if let Ok(mut file) = OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open("wgpu_debug_timings.txt")
+    {
+        let _ = writeln!(file, "{line}");
+        let _ = file.flush();
+    }
+}
+
 /// The function receives flat arrays from C++ and returns a heap-allocated array.
 #[no_mangle]
 pub extern "C" fn sonar_wgpu_compute(
@@ -73,6 +88,7 @@ pub extern "C" fn sonar_wgpu_compute(
     v_fov: f32,
     frame_index: u64,
     seed: u64,
+    debug_flag: bool,
 ) -> *mut f32 {
     if depth_flat.is_null()
         || normal_flat.is_null()
@@ -392,6 +408,13 @@ pub extern "C" fn sonar_wgpu_compute(
     }
 
     let elapsed_ms = gpu_t0.elapsed().as_secs_f64() * 1000.0;
+    if debug_flag {
+        emit_debug_timing(&format!(
+            "Total WGPU Calculation Wrapper Time: {:.3} ms",
+            elapsed_ms
+        ));
+    }
+
     // Log on the very first frame and then every 50 frames.
     if gpu_frame == 0 || gpu_frame % 50 == 49 {
         let active_rays = (n_rays + std::cmp::max(1, ray_skips) - 1) / std::cmp::max(1, ray_skips);
