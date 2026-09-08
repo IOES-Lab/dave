@@ -1,6 +1,7 @@
 // Cooley-Tukey FFT with zero-padding to the next power of 2.
 // Supports any n_freq <= 4096. The input is padded to padded_n (next power of 2 >= n_freq)
-// in shared memory; only the first n_freq output bins are written back per beam.
+// in shared memory. The padded FFT is then sampled back onto the original n_freq
+// physical range grid before writeback.
 
 struct Params {
   n_beams:  u32,
@@ -88,9 +89,19 @@ fn main(
     workgroupBarrier();
   }
 
-  // Writeback: only the first n_real bins per beam; buffer layout stays n_beams * n_freq.
+  // Range-preserving writeback.
+  //
+  // A target at original-grid bin k appears at approximately
+  // k * padded_n / n_real in the padded FFT. Copying smem[k] directly therefore
+  // stretches the reported range by padded_n / n_real and drops the far-range
+  // tail. Sample the padded spectrum at that scaled coordinate and linearly
+  // interpolate the complex components back to n_real output bins.
   for (var i: u32 = lid.x; i < n_real; i = i + 256u) {
-    p_re[base + i] = smem_re[i];
-    p_im[base + i] = smem_im[i];
+    let src = f32(i) * f32(n) / f32(n_real);
+    let lo = min(u32(floor(src)), n - 1u);
+    let hi = min(lo + 1u, n - 1u);
+    let alpha = src - f32(lo);
+    p_re[base + i] = mix(smem_re[lo], smem_re[hi], alpha);
+    p_im[base + i] = mix(smem_im[lo], smem_im[hi], alpha);
   }
 }
