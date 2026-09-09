@@ -33,6 +33,12 @@ export DO_AP_STM_ENV=0
 # Do not activate the Ardupilot venv by default
 export DO_PYTHON_VENV_ENV=0
 sed -i 's/ python-argparse//g' Tools/environment_install/install-prereqs-ubuntu.sh
+# This system-wide helper is invoked by the root-owned Docker build. The pinned
+# ArduPilot prerequisite script rejects EUID 0 before using sudo for the same
+# package operations, so remove only that guard in this container installer.
+# shellcheck disable=SC2016
+sed -i '/^if \[ \$EUID == 0 \]; then$/,/^fi$/d' \
+  Tools/environment_install/install-prereqs-ubuntu.sh
 Tools/environment_install/install-prereqs-ubuntu.sh -y
 
 # Build ArduSub
