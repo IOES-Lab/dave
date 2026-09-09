@@ -52,8 +52,10 @@ sudo rm -f /usr/share/keyrings/ros2-latest-archive-keyring.gpg && \
 sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key \
     -o /usr/share/keyrings/ros-archive-keyring.gpg
 sudo apt update && sudo apt install -y jq
-UBUNTU_CODENAME="$(. /etc/os-release && echo "${UBUNTU_CODENAME:-${VERSION_CODENAME}}")" && \
-    ROS_APT_SOURCE_VERSION=$(curl -s https://api.github.com/repos/ros-infrastructure/ros-apt-source/releases/latest | jq -r '.tag_name') && \
+# shellcheck disable=SC1091
+. /etc/os-release
+UBUNTU_CODENAME="${UBUNTU_CODENAME:-${VERSION_CODENAME}}"
+ROS_APT_SOURCE_VERSION=$(curl -s https://api.github.com/repos/ros-infrastructure/ros-apt-source/releases/latest | jq -r '.tag_name') && \
     curl -L -o /tmp/ros2-apt-source.deb \
     "https://github.com/ros-infrastructure/ros-apt-source/releases/download/${ROS_APT_SOURCE_VERSION}/ros2-apt-source_${ROS_APT_SOURCE_VERSION}.${UBUNTU_CODENAME}_all.deb" && \
     sudo apt-get install -y /tmp/ros2-apt-source.deb && \
@@ -70,10 +72,10 @@ sudo apt update && sudo apt install -y \
     python3-colcon-core \
     python3-colcon-common-extensions \
     python3-vcstool \
-    ros-$DIST-desktop-full \
-    ros-$DIST-ros-gz \
-    ros-$DIST-gz-ros2-control \
-    ros-$DIST-marine-acoustic-msgs \
+    "ros-${DIST}-desktop-full" \
+    "ros-${DIST}-ros-gz" \
+    "ros-${DIST}-gz-ros2-control" \
+    "ros-${DIST}-marine-acoustic-msgs" \
     ros-dev-tools
 
 sudo rosdep init 2>/dev/null || true
@@ -86,7 +88,7 @@ sudo apt update && sudo apt install -y \
     libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev \
     gstreamer1.0-plugins-bad gstreamer1.0-libav gstreamer1.0-gl \
     ffmpeg python3-venv python3-websockets \
-    ros-${DIST}-joy-linux gstreamer1.0-tools gstreamer1.0-plugins-good gstreamer1.0-plugins-base \
+    "ros-${DIST}-joy-linux" gstreamer1.0-tools gstreamer1.0-plugins-good gstreamer1.0-plugins-base \
     gstreamer1.0-plugins-ugly python3-gi python3-gst-1.0 \
     libfuse2 libxcb-xinerama0 libxkbcommon-x11-0 libxcb-cursor-dev \
     cython3 python3-dev python3-lxml

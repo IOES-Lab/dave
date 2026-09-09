@@ -2,8 +2,8 @@
 set -euo pipefail
 
 # Source Ros and Gazebo
-# shellcheck source=/dev/null
 ROS_DISTRO="${ROS_DISTRO:-lyrical}"
+# shellcheck disable=SC1090
 source "/opt/ros/${ROS_DISTRO}/setup.bash"
 
 # Commit used by the verified Lyrical / Python 3.14 build.

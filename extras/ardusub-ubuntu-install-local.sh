@@ -2,8 +2,8 @@
 set -euo pipefail
 
 # Source Ros and Gazebo
-# shellcheck source=/dev/null
 ROS_DISTRO="${ROS_DISTRO:-lyrical}"
+# shellcheck disable=SC1090
 source "/opt/ros/${ROS_DISTRO}/setup.bash"
 
 USER_NAME=$(logname 2>/dev/null || echo "${SUDO_USER:-$USER}")
