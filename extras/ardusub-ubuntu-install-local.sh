@@ -7,11 +7,13 @@ set +u
 # shellcheck disable=SC1090
 source "/opt/ros/${ROS_DISTRO}/setup.bash"
 set -u
+export GZ_VERSION="${GZ_VERSION:-jetty}"
 
 USER_NAME=$(logname 2>/dev/null || echo "${SUDO_USER:-$USER}")
 export USER="$USER_NAME"
 
 ARDUPILOT_COMMIT="${ARDUPILOT_COMMIT:-30257f01185471ab4c1ac544e47d1b4437e44c98}"
+ARDUPILOT_GAZEBO_COMMIT="${ARDUPILOT_GAZEBO_COMMIT:-082a0fe231f6e63bc8d1598f1cba461d9e2ea7f5}"
 mkdir -p "/home/$USER/ardusub_ws" && cd "/home/$USER/ardusub_ws" || exit
 git clone https://github.com/ArduPilot/ardupilot.git --recurse-submodules
 cd "/home/$USER/ardusub_ws/ardupilot" || exit
@@ -33,15 +35,19 @@ export DO_AP_STM_ENV=0
 # Do not activate the Ardupilot venv by default
 export DO_PYTHON_VENV_ENV=0
 sed -i 's/ python-argparse//g' Tools/environment_install/install-prereqs-ubuntu.sh
+sed -i 's/-U pip setuptools wheel/-U pip "setuptools<80" wheel/' \
+  Tools/environment_install/install-prereqs-ubuntu.sh
 Tools/environment_install/install-prereqs-ubuntu.sh -y
 
 # Build ArduSub
-modules/waf/waf-light configure --board sitl \
-  && modules/waf/waf-light build --target bin/ardusub
+python3 modules/waf/waf-light configure --board sitl
+python3 modules/waf/waf-light build --target bin/ardusub
 
 # Clone ardupilot_gazebo code
 cd "/home/$USER/ardusub_ws" || exit
 git clone https://github.com/ArduPilot/ardupilot_gazebo.git
+cd "/home/$USER/ardusub_ws/ardupilot_gazebo" || exit
+git checkout --detach "$ARDUPILOT_GAZEBO_COMMIT"
 
 # Install ardupilot_gazebo plugin
 # Check if the directory creation was successful

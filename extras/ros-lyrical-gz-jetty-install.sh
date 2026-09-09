@@ -110,7 +110,10 @@ sudo wget https://raw.githubusercontent.com/mavlink/mavros/master/mavros/scripts
 sudo chmod +x install_geographiclib_datasets.sh && sudo bash ./install_geographiclib_datasets.sh
 
 # Environment variables setup (write to ~/.dave/env and source from shell rc)
-TARGET_USER="${SUDO_USER:-$USER}"
+TARGET_USER="${SUDO_USER:-${USER:-}}"
+if [[ -z "$TARGET_USER" ]]; then
+    TARGET_USER="$(id -un)"
+fi
 TARGET_HOME="$(getent passwd "$TARGET_USER" | cut -d: -f6)"
 TARGET_SHELL="$(getent passwd "$TARGET_USER" | cut -d: -f7)"
 
@@ -132,6 +135,7 @@ fi
 export PATH=/opt/ardusub_ws/ardupilot/Tools/autotest:\$PATH
 export PATH=/opt/ardusub_ws/ardupilot/build/sitl/bin:\$PATH
 export GEOGRAPHICLIB_GEOID_PATH=/usr/share/GeographicLib/geoids
+export GZ_VERSION=jetty
 export GZ_SIM_SYSTEM_PLUGIN_PATH=/opt/ardusub_ws/ardupilot_gazebo/build:\${GZ_SIM_SYSTEM_PLUGIN_PATH:-}
 export GZ_SIM_RESOURCE_PATH=/opt/ardusub_ws/ardupilot_gazebo/models:/opt/ardusub_ws/ardupilot_gazebo/worlds:\${GZ_SIM_RESOURCE_PATH:-}
 EOF

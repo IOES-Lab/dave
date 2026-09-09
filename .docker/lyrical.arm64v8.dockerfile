@@ -95,6 +95,7 @@ EXPOSE 22/tcp
 
 # --- ROS 2 Lyrical + Gazebo Jetty ---
 ARG ROS_DISTRO="lyrical"
+ENV GZ_VERSION=jetty
 
 RUN apt update && apt full-upgrade -y && apt autoremove -y
 
@@ -133,6 +134,7 @@ RUN . "/opt/ros/${ROS_DISTRO}/setup.sh" && \
 # Pinned to the commit used by the verified Ubuntu 26.04 / Python 3.14 build.
 USER root
 ARG ARDUSUB_COMMIT="30257f01185471ab4c1ac544e47d1b4437e44c98"
+ARG ARDUPILOT_GAZEBO_COMMIT="082a0fe231f6e63bc8d1598f1cba461d9e2ea7f5"
 WORKDIR /home/$USER
 RUN git clone --recurse-submodules https://github.com/ArduPilot/ardupilot.git && \
     cd ardupilot && git fetch --tags && git checkout --detach "$ARDUSUB_COMMIT" && \
@@ -150,14 +152,20 @@ ENV PIP_BREAK_SYSTEM_PACKAGES=1
 RUN chown -R $USER:$USER /home/$USER/ardupilot /home/$USER/imp_shim && \
     cd /home/$USER/ardupilot && \
     sed -i "s/ python-argparse//g" Tools/environment_install/install-prereqs-ubuntu.sh && \
+    sed -i 's/-U pip setuptools wheel/-U pip "setuptools<80" wheel/' \
+      Tools/environment_install/install-prereqs-ubuntu.sh && \
     su $USER -c "git config --global --add safe.directory /home/$USER/ardupilot" && \
     su $USER -c "cd /home/$USER/ardupilot && Tools/environment_install/install-prereqs-ubuntu.sh -y" && \
-    su $USER -c "cd /home/$USER/ardupilot && ./waf configure --board sitl && ./waf sub" && \
+    su $USER -c "cd /home/$USER/ardupilot && python3 modules/waf/waf-light configure --board sitl" && \
+    su $USER -c "cd /home/$USER/ardupilot && python3 modules/waf/waf-light build --target bin/ardusub" && \
     cp /home/$USER/ardupilot/build/sitl/bin/ardusub /usr/local/bin/ardusub
 
 # Build the Gazebo Jetty ArduPilot plugin against the ROS vendor packages.
 RUN git clone --depth 1 https://github.com/ArduPilot/ardupilot_gazebo.git \
       /home/$USER/ardupilot_gazebo && \
+    cd /home/$USER/ardupilot_gazebo && \
+    git fetch --depth 1 origin "$ARDUPILOT_GAZEBO_COMMIT" && \
+    git checkout --detach "$ARDUPILOT_GAZEBO_COMMIT" && \
     chown -R $USER:$USER /home/$USER/ardupilot_gazebo && \
     mkdir -p /home/$USER/ardupilot_gazebo/build && \
     cd /home/$USER/ardupilot_gazebo/build && \
