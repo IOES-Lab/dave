@@ -14,7 +14,7 @@ jobs:
   #   ament_lint:
   #     runs-on: ubuntu-latest
   #     container:
-  #       image: rostooling/setup-ros-docker:ubuntu-noble-ros-jazzy-desktop-latest
+  #       image: rostooling/setup-ros-docker:ubuntu-resolute-ros-lyrical-desktop-latest
   #       options: -u root
   #     strategy:
   #       fail-fast: false
