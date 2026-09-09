@@ -24,6 +24,10 @@ env:
   IMAGE_NAME: ioeslab/dave
   ROS_DISTRO: lyrical
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-and-push-to-docker-hub:
     # Never execute untrusted fork code on a self-hosted runner.
