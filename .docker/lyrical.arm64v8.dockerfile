@@ -73,6 +73,7 @@ RUN apt-get update && \
     xterm vim net-tools \
     curl wget git build-essential cmake cppcheck \
     gnupg libeigen3-dev libgles2-mesa-dev \
+    libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev \
     lsb-release pkg-config protobuf-compiler \
     python3-pip python3-venv \
     nano xauth htop libtool \
