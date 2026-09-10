@@ -108,6 +108,7 @@ RUN export ROS_APT_SOURCE_VERSION=$(curl -s https://api.github.com/repos/ros-inf
     apt update && \
     apt install -y --no-install-recommends \
       ros-${ROS_DISTRO}-desktop ros-${ROS_DISTRO}-ros-gz \
+      ros-${ROS_DISTRO}-image-view \
       python3-rosdep python3-vcstool python3-colcon-common-extensions
 
 # --- DAVE workspace ---
@@ -187,6 +188,8 @@ RUN apt-get update && \
     gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly python3-gi python3-gst-1.0 \
     libfuse2 libxcb-xinerama0 libxkbcommon-x11-0 libxcb-cursor-dev gstreamer1.0-qt6 \
     gstreamer1.0-gl libqt6qml6 qml6-module-qtquick qml6-module-qtquick-window && \
+    /opt/ros/${ROS_DISTRO}/lib/mavros/install_geographiclib_datasets.sh && \
+    test -r /usr/share/GeographicLib/geoids/egm96-5.pgm && \
     rm -rf /var/lib/apt/lists/*
 
 USER $USER
