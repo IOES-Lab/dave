@@ -114,13 +114,20 @@ bool SphericalCoords::TransformFromSphericalCoord(
   const std::shared_ptr<dave_interfaces::srv::TransformFromSphericalCoord::Request> request,
   std::shared_ptr<dave_interfaces::srv::TransformFromSphericalCoord::Response> response)
 {
-  gz::math::Vector3d scVec =
-    gz::math::Vector3d(request->latitude_deg, request->longitude_deg, request->altitude);
+  gz::math::Angle lat, lon;
+  lat.SetDegree(request->latitude_deg);
+  lon.SetDegree(request->longitude_deg);
+  auto scVec = gz::math::CoordinateVector3::Spherical(lat, lon, request->altitude);
 
-  gzmsg << "Called FROM and latitude: " << scVec.X() << std::endl;
+  gzmsg << "Called FROM and latitude: " << request->latitude_deg << std::endl;
 
   auto coords = this->dataPtr->world.SphericalCoordinates(*this->dataPtr->ecm);
-  gz::math::Vector3d cartVec = coords->LocalFromSphericalPosition(scVec);
+  gz::math::Vector3d cartVec = gz::math::Vector3d::Zero;
+  auto cartOpt = coords->LocalFromSphericalPosition(scVec);
+  if (cartOpt && cartOpt->AsMetricVector())
+  {
+    cartVec = *cartOpt->AsMetricVector();
+  }
 
   response->output.x = cartVec.X();
   response->output.y = cartVec.Y();
@@ -133,17 +140,17 @@ bool SphericalCoords::TransformToSphericalCoord(
   const std::shared_ptr<dave_interfaces::srv::TransformToSphericalCoord::Request> request,
   std::shared_ptr<dave_interfaces::srv::TransformToSphericalCoord::Response> response)
 {
-  gz::math::Vector3d cartVec =
-    gz::math::Vector3d(request->input.x, request->input.y, request->input.z);
+  auto cartVec =
+    gz::math::CoordinateVector3::Metric(request->input.x, request->input.y, request->input.z);
 
-  gzmsg << "Called TO and X: " << cartVec.X() << std::endl;
+  gzmsg << "Called TO and X: " << request->input.x << std::endl;
 
   auto coords = this->dataPtr->world.SphericalCoordinates(*this->dataPtr->ecm);
-  gz::math::Vector3d scVec = coords->SphericalFromLocalPosition(cartVec);
+  auto scOpt = coords->SphericalFromLocalPosition(cartVec);
 
-  response->latitude_deg = scVec.X();
-  response->longitude_deg = scVec.Y();
-  response->altitude = scVec.Z();
+  response->latitude_deg = (scOpt && scOpt->Lat()) ? scOpt->Lat()->Degree() : 0.0;
+  response->longitude_deg = (scOpt && scOpt->Lon()) ? scOpt->Lon()->Degree() : 0.0;
+  response->altitude = (scOpt && scOpt->Z()) ? *scOpt->Z() : 0.0;
 
   return true;
 }

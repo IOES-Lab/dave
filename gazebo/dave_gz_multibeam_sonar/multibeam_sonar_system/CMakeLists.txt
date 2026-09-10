@@ -5,28 +5,21 @@ find_package(ament_cmake REQUIRED)
 find_package(CUDAToolkit QUIET)
 
 if(CUDAToolkit_FOUND)
-  find_package(gz-cmake3 REQUIRED)
-  find_package(gz-common5 REQUIRED COMPONENTS profiler)
-  find_package(gz-plugin2 REQUIRED COMPONENTS register)
-  find_package(gz-rendering8 REQUIRED OPTIONAL_COMPONENTS ogre ogre2)
-  find_package(gz-sim8 REQUIRED)
-  find_package(gz-sensors8 REQUIRED)
+  find_package(tinyxml2 CONFIG REQUIRED)
+  find_package(gz-cmake 5 REQUIRED)
+  find_package(gz-common 7 REQUIRED COMPONENTS profiler)
+  find_package(gz-plugin 4 REQUIRED COMPONENTS register)
+  find_package(gz-rendering 10 REQUIRED OPTIONAL_COMPONENTS ogre ogre2)
+  find_package(gz-sim 10 REQUIRED)
+  find_package(gz-sensors 10 REQUIRED)
 
-  set(GZ_COMMON_VER ${gz-common5_VERSION_MAJOR})
-  set(GZ_PLUGIN_VER ${gz-plugin2_VERSION_MAJOR})
-  set(GZ_SIM_VER ${gz-sim8_VERSION_MAJOR})
-  set(GZ_RENDERING_VER ${gz-rendering8_VERSION_MAJOR})
-  set(GZ_SENSORS_VER ${gz-sensors8_VERSION_MAJOR})
-
-  if(TARGET gz-rendering${GZ_RENDERING_VER}::ogre)
+  if(TARGET gz-rendering::ogre)
     set(HAVE_OGRE TRUE)
-    set(GZ_RENDERING_TARGET gz-rendering${GZ_RENDERING_VER}-ogre)
     add_definitions(-DWITH_OGRE)
   endif()
 
-  if(TARGET gz-rendering${GZ_RENDERING_VER}::ogre2)
+  if(TARGET gz-rendering::ogre2)
     set(HAVE_OGRE2 TRUE)
-    set(GZ_RENDERING_TARGET gz-rendering${GZ_RENDERING_VER}-ogre2)
     add_definitions(-DWITH_OGRE2)
   endif()
 
@@ -34,25 +27,16 @@ if(CUDAToolkit_FOUND)
 
   add_library(${PROJECT_NAME} SHARED MultibeamSonarSystem.cc)
   target_link_libraries(${PROJECT_NAME}
-      gz-common${GZ_COMMON_VER}::gz-common${GZ_COMMON_VER}
-      gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
-      gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
-      gz-sensors${GZ_SENSORS_VER}::gz-sensors${GZ_SENSORS_VER}
+      gz-common::gz-common
+      gz-plugin::gz-plugin
+      gz-sim::gz-sim
+      gz-sensors::gz-sensors
       multibeam_sonar
   )
   target_include_directories(${PROJECT_NAME}
     PUBLIC
       ../multibeam_sonar
   )
-
-  ament_target_dependencies(${PROJECT_NAME}
-    gz-common${GZ_COMMON_VER}
-    ${GZ_RENDERING_TARGET}
-    gz-plugin${GZ_PLUGIN_VER}
-    gz-sim${GZ_SIM_VER}
-    gz-sensors${GZ_SENSORS_VER}
-  )
-
   # Install targets
   install(TARGETS ${PROJECT_NAME}
     DESTINATION lib/${PROJECT_NAME}

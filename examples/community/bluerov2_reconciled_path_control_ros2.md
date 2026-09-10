@@ -6,8 +6,8 @@ for DAVE / Gazebo:
 [BlueROV2 reconciled path control](https://github.com/drwa92/bluerov2_reconciled_path_control_ros2)
 
 > [!NOTE]
-> This package is developed and released outside DAVE. ROS 2 Jazzy startup and package
-> discovery fixes found during DAVE validation are tracked in the
+> This package is developed and released outside DAVE. Startup and package-discovery
+> fixes found during DAVE validation are tracked in the
 > [external compatibility PR](https://github.com/drwa92/bluerov2_reconciled_path_control_ros2/pull/1).
 > Check that PR before following the external project's quick-start instructions.
 

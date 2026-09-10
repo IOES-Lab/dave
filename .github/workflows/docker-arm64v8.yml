@@ -1,22 +1,39 @@
 ---
-name: Publish a Docker image (ARM64; Apple Silicon)
+name: Build Lyrical / Jetty Docker image (ARM64)
 
 # yamllint disable-line rule:truthy
 on:
+  workflow_dispatch:
+  pull_request:
+    branches: [ros2]
+    paths:
+      - ".docker/**"
+      - ".dockerignore"
+      - ".github/workflows/docker-arm64v8.yml"
+      - "dave_interfaces/**"
+      - "examples/**"
+      - "extras/**"
+      - "gazebo/**"
+      - "models/**"
+      - "README.md"
   push:
     tags: ["*"]
-    branches:
-      - ros2
-      - dockertest
+    branches: [ros2, dockertest]
 
 env:
-  IMAGE_NAME: ${{ github.repository }}
-  ROS_DISTRO: jazzy
-  BRANCH: ${{ github.ref_name }}
+  IMAGE_NAME: ioeslab/dave
+  ROS_DISTRO: lyrical
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build-and-push-to-docker-hub:
-    # runs-on: ubuntu-latest
+    # Never execute untrusted fork code on a self-hosted runner.
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name == github.repository
     runs-on: [self-hosted, ARM64]
     timeout-minutes: 1440
     permissions:
@@ -24,39 +41,42 @@ jobs:
       packages: write
 
     steps:
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Log in to the Docker Hub Container registry
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          # On a macOS launchd runner, the docker-container driver can try to
+          # open Docker Desktop's interactive Keychain credential helper.
+          # The native driver avoids that dependency for this single-platform
+          # ARM64 build and works with Docker Desktop's containerd image store.
+          driver: docker
+
+      - name: Log in to Docker Hub
+        if: github.event_name != 'pull_request'
         uses: docker/login-action@v4
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Docker meta
+      - name: Docker metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ioeslab/dave
-          tags: ros2-arm-rdp
+          images: ${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=ros2-arm-rdp,enable=${{ github.event_name != 'pull_request' }}
+            type=ref,event=pr
 
-      - name: Build and push Docker image
+      - name: Build Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
-          push: true
+          push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          file: .docker/jazzy.arm64v8.dockerfile
+          file: .docker/lyrical.arm64v8.dockerfile
           platforms: linux/arm64/v8
           build-args: |
             ROS_DISTRO=${{ env.ROS_DISTRO }}
-            BRANCH=${{ env.BRANCH }}
-
-      - name: Debug environment variables
-        run: |
-          echo "ROS_DISTRO: ${ROS_DISTRO}"
-          echo "BRANCH: ${BRANCH}"

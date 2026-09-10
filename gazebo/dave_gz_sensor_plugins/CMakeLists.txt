@@ -3,28 +3,29 @@ project(dave_gz_sensor_plugins)
 
 # Find required packages
 find_package(ament_cmake REQUIRED)
-find_package(gz-cmake3 REQUIRED)
-find_package(gz-plugin2 REQUIRED COMPONENTS register)
+find_package(tinyxml2 CONFIG REQUIRED)
+find_package(gz-cmake 5 REQUIRED)
+find_package(gz-plugin 4 REQUIRED COMPONENTS register)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(gz-common5 REQUIRED COMPONENTS profiler)
-find_package(gz-sim8 REQUIRED)
+find_package(gz-common 7 REQUIRED COMPONENTS profiler)
+find_package(gz-sim 10 REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(dave_interfaces REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(Protobuf REQUIRED)
-find_package(gz-msgs10 REQUIRED)
+find_package(gz-msgs 12 REQUIRED)
 find_package(OpenCV REQUIRED)
 
 # Set version variables
-set(GZ_PLUGIN_VER ${gz-plugin2_VERSION_MAJOR})
-set(GZ_COMMON_VER ${gz-common5_VERSION_MAJOR})
-set(GZ_SIM_VER ${gz-sim8_VERSION_MAJOR})
-set(GZ_MSGS_VER ${gz-msgs10_VERSION_MAJOR})
+set(GZ_PLUGIN_VER "")
+set(GZ_COMMON_VER "")
+set(GZ_SIM_VER "")
+set(GZ_MSGS_VER "")
 
 include_directories(${OpenCV_INCLUDE_DIRS})
 
-message(STATUS "Compiling against Gazebo Harmonic")
+message(STATUS "Compiling against Gazebo Jetty")
 
 add_library(UsblTransceiver SHARED src/UsblTransceiver.cc)
 add_library(UsblTransponder SHARED src/UsblTransponder.cc)
@@ -54,30 +55,30 @@ target_link_libraries(UnderwaterCamera
 )
 
 # Specify dependencies for FullSystem using ament_target_dependencies
-ament_target_dependencies(UsblTransceiver
-  dave_interfaces
-  sensor_msgs
-  rclcpp
-  geometry_msgs
-  std_msgs
+target_link_libraries(UsblTransceiver
+  ${dave_interfaces_TARGETS}
+  ${sensor_msgs_TARGETS}
+  rclcpp::rclcpp
+  ${geometry_msgs_TARGETS}
+  ${std_msgs_TARGETS}
 )
 
-ament_target_dependencies(UsblTransponder
-  dave_interfaces
-  rclcpp
-  std_msgs
+target_link_libraries(UsblTransponder
+  ${dave_interfaces_TARGETS}
+  rclcpp::rclcpp
+  ${std_msgs_TARGETS}
 )
 
-ament_target_dependencies(sea_pressure_sensor
-  rclcpp
-  std_msgs
-  sensor_msgs
-  geometry_msgs
+target_link_libraries(sea_pressure_sensor
+  rclcpp::rclcpp
+  ${std_msgs_TARGETS}
+  ${sensor_msgs_TARGETS}
+  ${geometry_msgs_TARGETS}
 )
 
-ament_target_dependencies(UnderwaterCamera
-  rclcpp
-  sensor_msgs
+target_link_libraries(UnderwaterCamera
+  rclcpp::rclcpp
+  ${sensor_msgs_TARGETS}
 )
 
 # Install targets
