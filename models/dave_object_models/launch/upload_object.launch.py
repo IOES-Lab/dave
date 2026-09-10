@@ -26,7 +26,6 @@ def validate_description(context, *args, **kwargs):
 
 
 def generate_launch_description():
-    gui = LaunchConfiguration("gui")
     use_sim_time = LaunchConfiguration("use_sim_time")
     namespace = LaunchConfiguration("namespace")
     x = LaunchConfiguration("x")
@@ -140,7 +139,6 @@ def generate_launch_description():
             yaw,
         ],
         output="both",
-        condition=IfCondition(gui),
         parameters=[{"use_sim_time": use_sim_time}],
     )
 
@@ -152,9 +150,6 @@ def generate_launch_description():
         )
     ]
 
-    validate_object_description = OpaqueFunction(
-        function=validate_description,
-        condition=IfCondition(gui),
-    )
+    validate_object_description = OpaqueFunction(function=validate_description)
 
     return LaunchDescription(args + [validate_object_description] + nodes + event_handlers)

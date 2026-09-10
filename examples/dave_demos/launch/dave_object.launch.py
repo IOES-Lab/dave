@@ -2,7 +2,6 @@ from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.conditions import IfCondition
 from launch_ros.substitutions import FindPackageShare
 
 
@@ -33,7 +32,10 @@ def launch_setup(context, *args, **kwargs):
     else:
         gz_args = [world_name]
 
-    if headless.perform(context) == "true":
+    run_server_only = (
+        headless.perform(context).lower() == "true" or gui.perform(context).lower() == "false"
+    )
+    if run_server_only:
         gz_args.append(" -s")
     if paused.perform(context) == "false":
         gz_args.append(" -r")
@@ -56,7 +58,6 @@ def launch_setup(context, *args, **kwargs):
         launch_arguments=[
             ("gz_args", gz_args),
         ],
-        condition=IfCondition(gui),
     )
 
     object_launch = IncludeLaunchDescription(
@@ -99,7 +100,7 @@ def generate_launch_description():
         DeclareLaunchArgument(
             "gui",
             default_value="true",
-            description="Flag to enable the gazebo gui",
+            description="Show the Gazebo graphical client; false runs server-only",
         ),
         DeclareLaunchArgument(
             "use_sim_time",
@@ -114,7 +115,7 @@ def generate_launch_description():
         DeclareLaunchArgument(
             "headless",
             default_value="false",
-            description="Flag to enable the gazebo headless mode",
+            description="Run Gazebo server-only without the graphical client",
         ),
         DeclareLaunchArgument(
             "verbose",
