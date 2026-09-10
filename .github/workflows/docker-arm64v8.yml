@@ -46,6 +46,12 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+        with:
+          # On a macOS launchd runner, the docker-container driver can try to
+          # open Docker Desktop's interactive Keychain credential helper.
+          # The native driver avoids that dependency for this single-platform
+          # ARM64 build and works with Docker Desktop's containerd image store.
+          driver: docker
 
       - name: Log in to Docker Hub
         if: github.event_name != 'pull_request'
