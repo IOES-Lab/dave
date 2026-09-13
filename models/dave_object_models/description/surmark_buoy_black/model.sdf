@@ -1,0 +1,57 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+    <model name="surmark_buoy_black">
+        <plugin
+            filename="wave-hydrodynamics-system"
+            name="gz::sim::systems::Hydrodynamics">
+        </plugin>
+        <link name="base_link">
+            <inertial>
+                <pose>0 0 0 0 0 0</pose>
+                <mass>18.15</mass>
+                <inertia>
+                    <!-- <ixx>2.316</ixx> -->
+                    <ixx>2316</ixx>
+                    <ixy>0</ixy>
+                    <ixz>0</ixz>
+                    <!-- <iyy>2.316</iyy> -->
+                    <iyy>2316</iyy>
+                    <iyz>0</iyz>
+                    <izz>0.225</izz>
+                </inertia>
+            </inertial>
+            <collision name="collision_inner">
+                <pose>0 0 0.3637 0 0 0</pose>
+                <geometry>
+                    <cylinder>
+                        <radius>0.15</radius>
+                        <length>1.26</length>
+                    </cylinder>
+                </geometry>
+            </collision>
+            <collision name="collision_outer">
+                <pose>0 0 -0.1117 0 0 0</pose>
+                <geometry>
+                    <cylinder>
+                        <radius>0.24</radius>
+                        <length>0.15</length>
+                    </cylinder>
+                </geometry>
+            </collision>
+            <visual name="visual">
+                <pose>0 0 0 0 0 0</pose>
+                <geometry>
+                    <mesh>
+                        <uri>meshes/surmark950410.dae</uri>
+                        <scale>2 2 1</scale>
+                    </mesh>
+                </geometry>
+                <material>
+                    <ambient>0 0 0 1</ambient>
+                    <diffuse>0 0 0 1</diffuse>
+                    <specular>1 1 1 1</specular>
+                </material>
+            </visual>
+        </link>
+    </model>
+</sdf>
