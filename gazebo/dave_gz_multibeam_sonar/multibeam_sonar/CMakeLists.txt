@@ -25,7 +25,6 @@ find_package(sensor_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(marine_acoustic_msgs REQUIRED)
-find_package(cv_bridge REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(wgpu_vendor REQUIRED)
 find_package(CUDAToolkit QUIET)
@@ -76,7 +75,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   ${OpenCV_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIRS}
   ${marine_acoustic_msgs_INCLUDE_DIRS}
-  ${cv_bridge_INCLUDE_DIRS}
 )
 
 target_link_libraries(${PROJECT_NAME}
@@ -100,14 +98,6 @@ if(APPLE)
   )
 endif()
 
-if(TARGET cv_bridge::cv_bridge)
-  target_link_libraries(${PROJECT_NAME} cv_bridge::cv_bridge)
-elseif(TARGET cv_bridge)
-  target_link_libraries(${PROJECT_NAME} cv_bridge)
-elseif(cv_bridge_LIBRARIES)
-  target_link_libraries(${PROJECT_NAME} ${cv_bridge_LIBRARIES})
-endif()
-
 if(CUDAToolkit_FOUND)
   find_library(CUBLAS_LIB cublas
     HINTS
@@ -126,16 +116,19 @@ if(CUDAToolkit_FOUND)
   )
 endif()
 
+set(_wgpu_target_linked FALSE)
 if(TARGET wgpu::wgpu_vendor)
   target_link_libraries(${PROJECT_NAME} wgpu::wgpu_vendor)
+  set(_wgpu_target_linked TRUE)
 elseif(TARGET wgpu_vendor)
   target_link_libraries(${PROJECT_NAME} wgpu_vendor)
+  set(_wgpu_target_linked TRUE)
 endif()
 
 # Ensure the Rust static archive is linked into this shared library. The
 # exported interface target may not always propagate non-installed imported
 # targets across package boundaries in overlay builds.
-if(DEFINED wgpu_vendor_DIR)
+if(NOT _wgpu_target_linked AND DEFINED wgpu_vendor_DIR)
   get_filename_component(
     _wgpu_vendor_prefix "${wgpu_vendor_DIR}/../../.." ABSOLUTE)
   set(_sonar_wgpu_static "${_wgpu_vendor_prefix}/lib/libsonar_wgpu.a")
