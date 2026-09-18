@@ -1,2 +1,5 @@
 prepend-non-duplicate;GZ_SIM_SYSTEM_PLUGIN_PATH;lib/@PROJECT_NAME@/
 prepend-non-duplicate;LD_LIBRARY_PATH;lib/@PROJECT_NAME@/
+prepend-non-duplicate;LD_LIBRARY_PATH;lib/multibeam_sonar/
+prepend-non-duplicate;DYLD_LIBRARY_PATH;lib/@PROJECT_NAME@/
+prepend-non-duplicate;DYLD_LIBRARY_PATH;lib/multibeam_sonar/

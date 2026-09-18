@@ -49,12 +49,13 @@
 
 #include <sys/stat.h>
 #include <cstdlib>
-#include <cv_bridge/cv_bridge.hpp>
+#include <cstring>
 #include <geometry_msgs/msg/vector3.hpp>
 #include <marine_acoustic_msgs/msg/ping_info.hpp>
 #include <marine_acoustic_msgs/msg/sonar_image_data.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/opencv.hpp>
+#include <sensor_msgs/image_encodings.hpp>
 
 namespace gz
 {
@@ -172,6 +173,41 @@ private:
 private:
   const GridT * zData{nullptr};
 };
+
+/// \brief Copy an 8-bit OpenCV image into a ROS image message.
+///
+/// The sonar only publishes BGR8 and RGB8 visualization images here. Keeping
+/// this small conversion local avoids requiring cv_bridge for a byte-for-byte
+/// copy and prevents OpenCV major-version coupling at runtime.
+void CopyImageToMessage(
+  const cv::Mat & _image, const std::string & _encoding, sensor_msgs::msg::Image & _message)
+{
+  _message.height = static_cast<uint32_t>(_image.rows);
+  _message.width = static_cast<uint32_t>(_image.cols);
+  _message.encoding = _encoding;
+  _message.is_bigendian = false;
+  _message.step = static_cast<uint32_t>(_image.cols * _image.elemSize());
+
+  const auto dataSize = static_cast<size_t>(_message.step) * _message.height;
+  _message.data.resize(dataSize);
+  if (dataSize == 0)
+  {
+    return;
+  }
+
+  if (_image.isContinuous())
+  {
+    std::memcpy(_message.data.data(), _image.data, dataSize);
+    return;
+  }
+
+  for (int row = 0; row < _image.rows; ++row)
+  {
+    std::memcpy(
+      _message.data.data() + static_cast<size_t>(row) * _message.step, _image.ptr(row),
+      _message.step);
+  }
+}
 
 }  // namespace
 
@@ -653,9 +689,10 @@ bool MultibeamSonarSensor::Implementation::InitializeBeamArrangement(MultibeamSo
   this->pointMsg.set_height(this->raySensor->VerticalRangeCount());
   this->pointMsg.set_row_step(this->pointMsg.point_step() * this->pointMsg.width());
 
-  this->rayConnection = this->raySensor->ConnectNewGpuRaysFrame(std::bind(
-    &MultibeamSonarSensor::Implementation::OnNewFrame, this, std::placeholders::_1,
-    std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5));
+  this->rayConnection = this->raySensor->ConnectNewGpuRaysFrame(
+    std::bind(
+      &MultibeamSonarSensor::Implementation::OnNewFrame, this, std::placeholders::_1,
+      std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5));
 
   // Transmission path properties (typical model used here)
   // More sophisticated model by Francois-Garrison model is available
@@ -1377,9 +1414,6 @@ void MultibeamSonarSensor::Implementation::ComputeSonarImage()
   this->sonarRawDataMsg.image = sonar_image_data;
   this->sonarImageRawPub->publish(this->sonarRawDataMsg);
 
-  // Construct visual sonar image for rqt plot in sensor::image msg format
-  cv_bridge::CvImage img_bridge;
-
   // Generate image of CV_8UC1
   cv::Mat Intensity_image = cv::Mat::zeros(cv::Size(this->nBeams, this->nFreq), CV_8UC1);
 
@@ -1468,10 +1502,7 @@ void MultibeamSonarSensor::Implementation::ComputeSonarImage()
   this->sonarImgMsg.header.stamp.nanosec =
     static_cast<uint32_t>(capturedStamp.nanoseconds() % 1000000000);
 
-  img_bridge = cv_bridge::CvImage(
-    this->sonarImgMsg.header, sensor_msgs::image_encodings::BGR8, Itensity_image_color);
-  // from cv_bridge to sensor_msgs::Image
-  img_bridge.toImageMsg(this->sonarImgMsg);
+  CopyImageToMessage(Itensity_image_color, sensor_msgs::image_encodings::BGR8, this->sonarImgMsg);
   this->sonarImagePub->publish(this->sonarImgMsg);
 
   this->normalImgMsg.header.frame_id = this->frameName;
@@ -1481,10 +1512,7 @@ void MultibeamSonarSensor::Implementation::ComputeSonarImage()
 
   cv::Mat normal_image8;
   normal_image.convertTo(normal_image8, CV_8UC3, 255.0);
-  img_bridge = cv_bridge::CvImage(
-    this->normalImgMsg.header, sensor_msgs::image_encodings::RGB8, normal_image8);
-  img_bridge.toImageMsg(this->normalImgMsg);
-  // from cv_bridge to sensor_msgs::Image
+  CopyImageToMessage(normal_image8, sensor_msgs::image_encodings::RGB8, this->normalImgMsg);
   this->normalImagePub->publish(this->normalImgMsg);
 
   // ---------------------------------------- End of sonar calculation
