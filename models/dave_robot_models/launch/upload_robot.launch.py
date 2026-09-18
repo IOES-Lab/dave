@@ -33,6 +33,7 @@ def generate_launch_description():
     open_virtual_joystick = LaunchConfiguration("open_virtual_joystick")
     virtual_joystick_url = LaunchConfiguration("virtual_joystick_url")
     ui_launch_delay = LaunchConfiguration("ui_launch_delay")
+    world_name = LaunchConfiguration("world_name")
 
     args = [
         DeclareLaunchArgument(
@@ -138,6 +139,11 @@ def generate_launch_description():
             default_value="2.0",
             description="Delay (seconds) before moving the GUI camera",
         ),
+        DeclareLaunchArgument(
+            "world_name",
+            default_value="empty",
+            description="Gazebo world entity name",
+        ),
     ]
 
     description_file = PathJoinSubstitution(
@@ -221,6 +227,7 @@ def generate_launch_description():
             "open_virtual_joystick": open_virtual_joystick,
             "virtual_joystick_url": virtual_joystick_url,
             "ui_launch_delay": ui_launch_delay,
+            "world_name": world_name,
         }.items(),
     )
 

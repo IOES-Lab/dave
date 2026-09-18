@@ -3,23 +3,24 @@ project(dave_ros_gz_plugins)
 
 # Find required packages
 find_package(ament_cmake REQUIRED)
-find_package(gz-cmake3 REQUIRED)
-find_package(gz-plugin2 REQUIRED COMPONENTS register)
+find_package(tinyxml2 CONFIG REQUIRED)
+find_package(gz-cmake 5 REQUIRED)
+find_package(gz-plugin 4 REQUIRED COMPONENTS register)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(gz-common5 REQUIRED COMPONENTS profiler)
-find_package(gz-sim8 REQUIRED)
+find_package(gz-common 7 REQUIRED COMPONENTS profiler)
+find_package(gz-sim 10 REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(dave_interfaces REQUIRED)
 find_package(dave_gz_world_plugins REQUIRED)
-find_package(Boost REQUIRED COMPONENTS system)
+find_package(Boost REQUIRED)
 
 # Set version variables
-set(GZ_PLUGIN_VER ${gz-plugin2_VERSION_MAJOR})
-set(GZ_COMMON_VER ${gz-common5_VERSION_MAJOR})
-set(GZ_SIM_VER ${gz-sim8_VERSION_MAJOR})
+set(GZ_PLUGIN_VER "")
+set(GZ_COMMON_VER "")
+set(GZ_SIM_VER "")
 
-message(STATUS "Compiling against Gazebo Harmonic")
+message(STATUS "Compiling against Gazebo Jetty")
 
 # Libraries
 add_library(SphericalCoords SHARED src/SphericalCoords.cc)
@@ -50,24 +51,27 @@ target_link_libraries(OceanCurrentPlugin
 )
 
 # Specify dependencies using ament_target_dependencies
-ament_target_dependencies(SphericalCoords
-  dave_interfaces
-  rclcpp
-  geometry_msgs
-  std_msgs
+target_link_libraries(SphericalCoords
+  ${dave_interfaces_TARGETS}
+  rclcpp::rclcpp
+  ${geometry_msgs_TARGETS}
+  ${std_msgs_TARGETS}
 )
-ament_target_dependencies(DVLBridge
-  dave_interfaces
-  rclcpp
-  geometry_msgs
-  std_msgs
+target_link_libraries(DVLBridge
+  ${dave_interfaces_TARGETS}
+  rclcpp::rclcpp
+  ${geometry_msgs_TARGETS}
+  ${std_msgs_TARGETS}
 )
-ament_target_dependencies(OceanCurrentPlugin
-  rclcpp
-  std_msgs
-  geometry_msgs
-  dave_interfaces
-  dave_gz_world_plugins
+target_link_libraries(OceanCurrentPlugin
+  rclcpp::rclcpp
+  ${std_msgs_TARGETS}
+  ${geometry_msgs_TARGETS}
+  ${dave_interfaces_TARGETS}
+  dave_gz_world_plugins::OceanCurrentWorldPlugin
+  dave_gz_world_plugins::gauss_markov_process
+  dave_gz_world_plugins::tidal_oscillation
+  dave_gz_world_plugins::dave_gz_world_plugins-msgs
 )
 
 # Install targets
@@ -93,10 +97,10 @@ install(
 ament_export_include_directories("include/${PROJECT_NAME}")
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_dependencies(
-  gz-cmake3
-  gz-plugin2
-  gz-common5
-  gz-sim8
+  gz-cmake
+  gz-plugin
+  gz-common
+  gz-sim
   geometry_msgs
   std_msgs
   dave_interfaces

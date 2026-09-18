@@ -195,6 +195,11 @@ void UsblTransponder::Configure(
   if (_sdf->HasElement("sigma"))
   {
     this->dataPtr->m_noiseSigma = _sdf->Get<double>("sigma");
+    if (this->dataPtr->m_noiseSigma < 0.0)
+    {
+      gzwarn << "Negative USBL sigma is invalid; using deterministic sigma=0" << std::endl;
+      this->dataPtr->m_noiseSigma = 0.0;
+    }
   }
 
   // Get transceiver model name
@@ -257,19 +262,27 @@ void UsblTransponder::Configure(
 
 void UsblTransponder::sendLocation()
 {
-  // randomly generate from normal distribution for noise
-  std::random_device rd{};
-  std::mt19937 gen{rd()};
-  std::normal_distribution<> d(this->dataPtr->m_noiseMu, this->dataPtr->m_noiseSigma);
+  double noiseX = this->dataPtr->m_noiseMu;
+  double noiseY = this->dataPtr->m_noiseMu;
+  double noiseZ = this->dataPtr->m_noiseMu;
+  if (this->dataPtr->m_noiseSigma > 0.0)
+  {
+    std::random_device rd{};
+    std::mt19937 gen{rd()};
+    std::normal_distribution<> distribution(this->dataPtr->m_noiseMu, this->dataPtr->m_noiseSigma);
+    noiseX = distribution(gen);
+    noiseY = distribution(gen);
+    noiseZ = distribution(gen);
+  }
 
   gz::math::Pose3d pose = worldPose(this->dataPtr->linkEntity, *this->dataPtr->ecm);
   gz::math::Vector3<double> position = pose.Pos();
   auto pub_msg = gz::msgs::Vector3d();
   // std::cout << position.X() << " " << position.Y() << " "
   //           << position.Z() << std::endl;
-  pub_msg.set_x(position.X() + d(gen));
-  pub_msg.set_y(position.Y() + d(gen));
-  pub_msg.set_z(position.Z() + d(gen));
+  pub_msg.set_x(position.X() + noiseX);
+  pub_msg.set_y(position.Y() + noiseY);
+  pub_msg.set_z(position.Z() + noiseZ);
   this->dataPtr->m_globalPosPub.Publish(pub_msg);
 }
 
@@ -379,11 +392,8 @@ void UsblTransponder::commandRosCallback(const dave_interfaces::msg::UsblCommand
 void UsblTransponder::PostUpdate(
   const gz::sim::UpdateInfo & _info, const gz::sim::EntityComponentManager & _ecm)
 {
-  if (!_info.paused)
-  {
-    // gzdbg << "dave_gz_sensor_plugins::UsblTransponder::PostUpdate" << std::endl;
-    rclcpp::spin_some(this->ros_node_);
-  }
+  // ROS callbacks are wall-time events and must remain responsive while paused.
+  rclcpp::spin_some(this->ros_node_);
 }
 
 }  // namespace dave_gz_sensor_plugins

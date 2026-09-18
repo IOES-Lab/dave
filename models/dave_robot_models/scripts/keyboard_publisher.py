@@ -7,6 +7,7 @@ import time
 import tty
 
 import rclpy
+from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
 from sensor_msgs.msg import Joy
 
@@ -55,13 +56,18 @@ class KeyboardJoyPublisher(Node):
 
         self.timer = self.create_timer(1.0 / PUBLISH_HZ, self.on_timer)
 
-        self.get_logger().info(
-            "Keyboard teleop ready on "
-            f"{output_topic} | "
-            "c: arm, x: disarm, w/s: forward/back, "
-            "a/d: yaw, r/f: ascend/descend, "
-            "h: ALT_HOLD, j: STABILIZE, space: stop, q: quit"
-        )
+        if self.input_stream is not None:
+            self.get_logger().info(
+                "Keyboard teleop ready on "
+                f"{output_topic} | "
+                "c: arm, x: disarm, w/s: forward/back, "
+                "a/d: yaw, r/f: ascend/descend, "
+                "h: ALT_HOLD, j: STABILIZE, space: stop, q: quit"
+            )
+        else:
+            self.get_logger().info(
+                "Keyboard teleop disabled because no interactive TTY is available"
+            )
 
     def _open_input_stream(self):
         if sys.stdin.isatty():
@@ -71,7 +77,7 @@ class KeyboardJoyPublisher(Node):
             # Use unbuffered binary mode for reliable single-key reads.
             return open("/dev/tty", "rb", buffering=0)
         except OSError as exc:
-            self.get_logger().warn(
+            self.get_logger().warning(
                 "No interactive TTY for keyboard teleop " f"({exc}). Run launch from a terminal."
             )
             return None
@@ -188,8 +194,11 @@ def main():
 
     try:
         rclpy.spin(node)
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, ExternalShutdownException):
         pass
+    except RuntimeError:
+        if rclpy.ok():
+            raise
     finally:
         node.destroy_node()
         if rclpy.ok():

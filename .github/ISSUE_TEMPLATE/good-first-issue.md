@@ -28,7 +28,7 @@ Nothing. This issue is meant to welcome you to Open Source :) We are happy to wa
 
 - [ ] 🙋 **Claim this issue**: Comment below. If someone else has claimed it, ask if they've opened a pull request already and if they're stuck -- maybe you can help them solve a problem or move it along!
 
-- [ ] 🗄️ **Create a local workspace** for making your changes and testing [following these instructions](https://docs.ros.org/en/jazzy/Tutorials/Workspace/Creating-A-Workspace.html)
+- [ ] 🗄️ **Create a local workspace** for making your changes and testing [following these instructions](https://docs.ros.org/en/lyrical/Tutorials/Beginner-Client-Libraries/Creating-A-Workspace.html)
 
 - [ ] 🍴 **Fork the repository** using the handy button at the top of the repository page and **clone** it into `~/ros2_ws/src/dave`, [here is a guide that you can follow](https://guides.github.com/activities/forking/) (You will have to remove or empty the existing `dave` folder before cloning your own fork)
 

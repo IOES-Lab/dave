@@ -4,6 +4,8 @@
   <version>0.1.0</version>
   <description>Dave robot model description files are placed here.</description>
   <maintainer email="rakeshvivek97@gmail.com">Rakesh Vivekanandan</maintainer>
+  <maintainer email="wschoi@kmou.ac.kr">Woen-Sug Choi</maintainer>
+  <maintainer email="kys50728@g.kmou.ac.kr">Ye-Seol Kwon</maintainer>
   <license>Apache 2.0</license>
   <buildtool_depend>ament_cmake</buildtool_depend>
   <exec_depend>launch</exec_depend>

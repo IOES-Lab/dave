@@ -1,5 +1,6 @@
 #include "dave_gz_sensor_plugins/sea_pressure_sensor.hh"
 #include <gz/msgs/fluid_pressure.pb.h>
+#include <algorithm>
 #include <chrono>
 #include <geometry_msgs/msg/point_stamped.hpp>
 #include <gz/math/Pose3.hh>
@@ -34,6 +35,7 @@ public:
   double saturation;
   gz::sim::EntityComponentManager * ecm = nullptr;
   std::chrono::steady_clock::duration lastMeasurementTime{0};
+  bool hasMeasurement = false;
   bool estimateDepth;
   double standardPressure = 101.325;
   double kPaPerM = 9.80638;
@@ -46,6 +48,7 @@ public:
   std::string topic;
   double noiseAmp = 0.0;
   double noiseSigma = 3.0;
+  double updateRate = 0.0;
   double inferredDepth = 0.0;
   double pressure = 0.0;
   std::string modelName;
@@ -129,6 +132,11 @@ void SubseaPressureSensorPlugin::Configure(
     this->dataPtr->kPaPerM = 9.80638;
   }
 
+  if (_sdf->HasElement("update_rate"))
+  {
+    this->dataPtr->updateRate = std::max(0.0, _sdf->Get<double>("update_rate"));
+  }
+
   // this->dataPtr->gazeboNode->Init();
   this->dataPtr->modelEntity = GetModelEntity(this->dataPtr->robotNamespace, _ecm);
 
@@ -190,12 +198,9 @@ void SubseaPressureSensorPlugin::PreUpdate(
 {
   // Get model pose
   gz::math::Pose3d sea_pressure_sensor_pos = GetModelPose(this->dataPtr->modelEntity, _ecm);
-  double depth = std::abs(sea_pressure_sensor_pos.Z());
-  this->dataPtr->pressure = this->dataPtr->standardPressure;
-  if (depth >= 0)
-  {
-    this->dataPtr->pressure += depth * this->dataPtr->kPaPerM;
-  }
+  // DAVE worlds use ENU with the water surface at z=0.
+  const double depth = std::max(0.0, -sea_pressure_sensor_pos.Z());
+  this->dataPtr->pressure = this->dataPtr->standardPressure + depth * this->dataPtr->kPaPerM;
 
   // not adding gaussian noise for now, Future Work (TODO)
   // pressure += this->dataPtr->GetGaussianNoise(this->dataPtr->noiseAmp);
@@ -212,12 +217,32 @@ void SubseaPressureSensorPlugin::PreUpdate(
 void SubseaPressureSensorPlugin::PostUpdate(
   const gz::sim::UpdateInfo & _info, const gz::sim::EntityComponentManager & _ecm)
 {
+  if (this->dataPtr->hasMeasurement && this->dataPtr->updateRate > 0.0)
+  {
+    const auto period = std::chrono::duration_cast<std::chrono::steady_clock::duration>(
+      std::chrono::duration<double>(1.0 / this->dataPtr->updateRate));
+    if (
+      _info.simTime >= this->dataPtr->lastMeasurementTime &&
+      _info.simTime - this->dataPtr->lastMeasurementTime < period)
+    {
+      return;
+    }
+  }
+
   this->dataPtr->lastMeasurementTime = _info.simTime;
+  this->dataPtr->hasMeasurement = true;
+
+  // The pressure model uses kPa internally, while both Gazebo and ROS
+  // FluidPressure messages require Pa (and Pa^2 for variance).
+  constexpr double kPaToPa = 1000.0;
+  const double pressurePa = this->dataPtr->pressure * kPaToPa;
+  const double variancePa2 =
+    this->dataPtr->noiseSigma * this->dataPtr->noiseSigma * kPaToPa * kPaToPa;
 
   // Publishing Sea_Pressure and depth estimate on gazebo topic
   gz::msgs::FluidPressure gzPressureMsg;
-  gzPressureMsg.set_pressure(this->dataPtr->pressure);
-  gzPressureMsg.set_variance(this->dataPtr->noiseSigma * this->dataPtr->noiseSigma);
+  gzPressureMsg.set_pressure(pressurePa);
+  gzPressureMsg.set_variance(variancePa2);
 
   // Publishing the pressure message
   this->dataPtr->gz_pressure_sensor_pub.Publish(gzPressureMsg);
@@ -229,8 +254,8 @@ void SubseaPressureSensorPlugin::PostUpdate(
   rosPressureMsg.header.stamp.nanosec =
     std::chrono::duration_cast<std::chrono::nanoseconds>(_info.simTime).count() %
     1000000000;  // Time in nanoseconds
-  rosPressureMsg.fluid_pressure = this->dataPtr->pressure;
-  rosPressureMsg.variance = this->dataPtr->noiseSigma * this->dataPtr->noiseSigma;
+  rosPressureMsg.fluid_pressure = pressurePa;
+  rosPressureMsg.variance = variancePa2;
   this->dataPtr->ros_pressure_sensor_pub->publish(rosPressureMsg);
 
   // publishing depth message

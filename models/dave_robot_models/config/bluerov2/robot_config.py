@@ -17,6 +17,8 @@ from launch_ros.substitutions import FindPackageShare
 
 def launch_setup(context, *args, **kwargs):
     namespace = LaunchConfiguration("namespace").perform(context)
+    world_name = LaunchConfiguration("world_name").perform(context)
+    imu_gz_topic = f"/world/{world_name}/model/{namespace}/link/base_link/" "sensor/imu_sensor/imu"
     use_ardusub = LaunchConfiguration("use_ardusub")
     use_teleop = LaunchConfiguration("use_teleop")
     use_web_joystick = LaunchConfiguration("use_web_joystick")
@@ -41,7 +43,7 @@ def launch_setup(context, *args, **kwargs):
             "nav_msgs/msg/Odometry[gz.msgs.OdometryWithCovariance"
         ),
         f"/model/{namespace}/pose@geometry_msgs/msg/PoseArray[gz.msgs.Pose_V",
-        f"/model/{namespace}/imu@sensor_msgs/msg/Imu[gz.msgs.IMU",
+        f"{imu_gz_topic}@sensor_msgs/msg/Imu[gz.msgs.IMU",
         f"/model/{namespace}/magnetometer@sensor_msgs/msg/MagneticField[gz.msgs.Magnetometer",
     ]
 
@@ -49,6 +51,7 @@ def launch_setup(context, *args, **kwargs):
         package="ros_gz_bridge",
         executable="parameter_bridge",
         arguments=bluerov2_arguments,
+        remappings=[(imu_gz_topic, f"/model/{namespace}/imu")],
         output="screen",
     )
 
@@ -59,8 +62,8 @@ def launch_setup(context, *args, **kwargs):
 
     imu_wait_cmd = (
         "while true; do "
-        f'if gz topic -l | grep -q "/model/{namespace}/imu"; then exit 0; fi; '
-        "sleep 1; "
+        f"if timeout 2 gz topic -e -t '{imu_gz_topic}' -n 1 "
+        ">/dev/null 2>&1; then exit 0; fi; "
         "done"
     )
 
@@ -78,6 +81,8 @@ def launch_setup(context, *args, **kwargs):
     ardusub_process = ExecuteProcess(
         cmd=[
             "ardusub",
+            "--speedup",
+            "1",
             "-w",
             "--model",
             ardusub_model,
@@ -328,6 +333,11 @@ def generate_launch_description():
             "ui_launch_delay",
             default_value="2.0",
             description="Delay (seconds) before launching QGC/Firefox",
+        ),
+        DeclareLaunchArgument(
+            "world_name",
+            default_value="empty",
+            description="Gazebo world entity name",
         ),
     ]
 

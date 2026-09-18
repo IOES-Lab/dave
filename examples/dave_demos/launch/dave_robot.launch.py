@@ -1,10 +1,11 @@
+import xml.etree.ElementTree as ET
+
 from launch import LaunchDescription
 from launch.actions import (
     DeclareLaunchArgument,
     IncludeLaunchDescription,
     OpaqueFunction,
 )
-from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.substitutions import FindPackageShare
@@ -42,13 +43,21 @@ def launch_setup(context, *args, **kwargs):
         world_filepath = PathJoinSubstitution(
             [FindPackageShare("dave_worlds"), "worlds", world_filename]
         )
+        world_element = ET.parse(world_filepath.perform(context)).getroot().find("world")
+        if world_element is None or not world_element.get("name"):
+            raise ValueError(f"World file [{world_filename}] does not declare a world name")
+        world_entity_name = world_element.get("name")
         gz_args = [world_filepath]
     else:
+        world_entity_name = "empty"
         gz_args = [world_name]
 
     zoom_camera_value = "true" if selected_world_name == "dave_ocean_waves" else "false"
 
-    if headless.perform(context) == "true":
+    run_server_only = (
+        headless.perform(context).lower() == "true" or gui.perform(context).lower() == "false"
+    )
+    if run_server_only:
         gz_args.append(" -s")
     if paused.perform(context) == "false":
         gz_args.append(" -r")
@@ -72,7 +81,6 @@ def launch_setup(context, *args, **kwargs):
         launch_arguments=[
             ("gz_args", gz_args),
         ],
-        condition=IfCondition(gui),
     )
 
     # Include the second launch file with model name
@@ -109,6 +117,7 @@ def launch_setup(context, *args, **kwargs):
             "open_virtual_joystick": open_virtual_joystick,
             "virtual_joystick_url": virtual_joystick_url,
             "ui_launch_delay": ui_launch_delay,
+            "world_name": world_entity_name,
         }.items(),
     )
 
@@ -129,7 +138,7 @@ def generate_launch_description():
         DeclareLaunchArgument(
             "gui",
             default_value="true",
-            description="Flag to enable the gazebo gui",
+            description="Show the Gazebo graphical client; false runs server-only",
         ),
         DeclareLaunchArgument(
             "use_sim_time",
@@ -144,7 +153,7 @@ def generate_launch_description():
         DeclareLaunchArgument(
             "headless",
             default_value="false",
-            description="Flag to enable the gazebo headless mode",
+            description="Run Gazebo server-only without the graphical client",
         ),
         DeclareLaunchArgument(
             "verbose",

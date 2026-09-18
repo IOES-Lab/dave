@@ -10,29 +10,30 @@ add_compile_options(-Wno-psabi)
 add_definitions(-DBOOST_BIND_GLOBAL_PLACEHOLDERS)
 
 find_package(ament_cmake REQUIRED)
-find_package(Boost REQUIRED COMPONENTS system)
-find_package(gz-cmake3 REQUIRED)
-find_package(gz-plugin2 REQUIRED COMPONENTS register)
+find_package(tinyxml2 CONFIG REQUIRED)
+find_package(Boost REQUIRED)
+find_package(gz-cmake 5 REQUIRED)
+find_package(gz-plugin 4 REQUIRED COMPONENTS register)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(gz-common5 REQUIRED COMPONENTS profiler)
-find_package(gz-sim8 REQUIRED)
+find_package(gz-common 7 REQUIRED COMPONENTS profiler)
+find_package(gz-sim 10 REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(dave_interfaces REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(Protobuf REQUIRED)
-find_package(gz-msgs10 REQUIRED)
+find_package(gz-msgs 12 REQUIRED)
 find_package(ament_index_cpp REQUIRED)
 
-# Set version variables with gazebo Harmonic
-set(GZ_PLUGIN_VER ${gz-plugin2_VERSION_MAJOR})
-set(GZ_COMMON_VER ${gz-common5_VERSION_MAJOR})
-set(GZ_SIM_VER ${gz-sim8_VERSION_MAJOR})
-set(GZ_MSGS_VER ${gz-msgs10_VERSION_MAJOR})
-message(STATUS "compiling against Gazebo Harmonic")
+# Use the unversioned Gazebo Jetty vendor targets
+set(GZ_PLUGIN_VER "")
+set(GZ_COMMON_VER "")
+set(GZ_SIM_VER "")
+set(GZ_MSGS_VER "")
+message(STATUS "Compiling against Gazebo Jetty")
 
 # Define a variable 'GZ_MSGS_VER' holding the version number
-set(GZ_MSGS_VER ${gz-msgs10_VERSION_MAJOR})
+set(GZ_MSGS_VER "")
 
 # Define a variable 'MSGS_PROTOS' listing the .proto files
 # cmake-lint: disable=C0301
@@ -94,27 +95,27 @@ target_link_libraries(tidal_oscillation
   gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
 )
 
-ament_target_dependencies(OceanCurrentWorldPlugin
-  rclcpp
-  std_msgs
-  geometry_msgs
-  dave_interfaces
-  ament_index_cpp
-  gz-msgs${GZ_MSGS_VER}
+target_link_libraries(OceanCurrentWorldPlugin
+  rclcpp::rclcpp
+  ${std_msgs_TARGETS}
+  ${geometry_msgs_TARGETS}
+  ${dave_interfaces_TARGETS}
+  ament_index_cpp::ament_index_cpp
+  gz-msgs::gz-msgs
 )
 
-ament_target_dependencies(gauss_markov_process
-  rclcpp
-  std_msgs
-  geometry_msgs
-  dave_interfaces
+target_link_libraries(gauss_markov_process
+  rclcpp::rclcpp
+  ${std_msgs_TARGETS}
+  ${geometry_msgs_TARGETS}
+  ${dave_interfaces_TARGETS}
 )
 
-ament_target_dependencies(tidal_oscillation
-  rclcpp
-  std_msgs
-  geometry_msgs
-  dave_interfaces
+target_link_libraries(tidal_oscillation
+  rclcpp::rclcpp
+  ${std_msgs_TARGETS}
+  ${geometry_msgs_TARGETS}
+  ${dave_interfaces_TARGETS}
 )
 
 # Install targets
@@ -139,11 +140,11 @@ install(DIRECTORY include/
 ament_export_include_directories("include/${PROJECT_NAME}")
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_dependencies(
-  gz-cmake3
-  gz-plugin2
-  gz-msgs10
-  gz-common5
-  gz-sim8
+  gz-cmake
+  gz-plugin
+  gz-msgs
+  gz-common
+  gz-sim
   geometry_msgs
   sensor_msgs
   std_msgs
