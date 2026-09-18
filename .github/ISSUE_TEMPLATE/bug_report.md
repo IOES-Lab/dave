@@ -25,7 +25,7 @@ If applicable, add screenshots to help explain your problem.
 
 **Environment (please complete the following information):**
  - Machine [e.g. Mac VMWare, Linux Ubuntu]
- - OS Version: [e.g. Ubuntu 24.04]
+ - OS Version: [e.g. Ubuntu 26.04]
 - Anything that may be unusual about your environment
 
 **Additional context**

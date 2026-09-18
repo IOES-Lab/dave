@@ -224,11 +224,11 @@ void UnderwaterCamera::Configure(
 
   if (!_sdf->HasElement("attenuationR"))
   {
-    this->dataPtr->attenuation[0] = 1.f / 30.f;
+    this->dataPtr->attenuation[2] = 1.f / 30.f;
   }
   else
   {
-    this->dataPtr->attenuation[0] = _sdf->Get<float>("attenuationR");
+    this->dataPtr->attenuation[2] = _sdf->Get<float>("attenuationR");
   }
 
   if (!_sdf->HasElement("attenuationG"))
@@ -242,20 +242,20 @@ void UnderwaterCamera::Configure(
 
   if (!_sdf->HasElement("attenuationB"))
   {
-    this->dataPtr->attenuation[2] = 1.f / 30.f;
+    this->dataPtr->attenuation[0] = 1.f / 30.f;
   }
   else
   {
-    this->dataPtr->attenuation[2] = _sdf->Get<float>("attenuationB");
+    this->dataPtr->attenuation[0] = _sdf->Get<float>("attenuationB");
   }
 
   if (!_sdf->HasElement("backgroundR"))
   {
-    this->dataPtr->background[0] = (unsigned char)0;
+    this->dataPtr->background[2] = (unsigned char)0;
   }
   else
   {
-    this->dataPtr->background[0] = (unsigned char)_sdf->Get<int>("backgroundR");
+    this->dataPtr->background[2] = (unsigned char)_sdf->Get<int>("backgroundR");
   }
 
   if (!_sdf->HasElement("backgroundG"))
@@ -269,11 +269,11 @@ void UnderwaterCamera::Configure(
 
   if (!_sdf->HasElement("backgroundB"))
   {
-    this->dataPtr->background[2] = (unsigned char)0;
+    this->dataPtr->background[0] = (unsigned char)0;
   }
   else
   {
-    this->dataPtr->background[2] = (unsigned char)_sdf->Get<int>("backgroundB");
+    this->dataPtr->background[0] = (unsigned char)_sdf->Get<int>("backgroundB");
   }
 
   // Gazebo camera subscriber

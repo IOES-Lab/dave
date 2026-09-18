@@ -1,62 +1,107 @@
 ---
-name: Publish a Docker image (ARM64; Apple Silicon)
+name: Build Lyrical / Jetty Docker image (ARM64)
 
 # yamllint disable-line rule:truthy
 on:
+  workflow_dispatch:
+  pull_request:
+    branches: [ros2]
+    paths:
+      - ".docker/**"
+      - ".dockerignore"
+      - ".github/workflows/docker-arm64v8.yml"
+      - "dave_interfaces/**"
+      - "examples/**"
+      - "extras/**"
+      - "gazebo/**"
+      - "models/**"
+      - "README.md"
   push:
     tags: ["*"]
-    branches:
-      - ros2
-      - dockertest
+    branches: [ros2, dockertest]
 
 env:
-  IMAGE_NAME: ${{ github.repository }}
-  ROS_DISTRO: jazzy
-  BRANCH: ${{ github.ref_name }}
+  IMAGE_NAME: ioeslab/dave
+  ROS_DISTRO: lyrical
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build-and-push-to-docker-hub:
-    # runs-on: ubuntu-latest
+    # Never execute untrusted fork code on a self-hosted runner.
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name == github.repository
     runs-on: [self-hosted, ARM64]
     timeout-minutes: 1440
     permissions:
       contents: read
       packages: write
-
     steps:
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - name: Configure non-interactive Docker credentials
+        run: |
+          docker_config="$RUNNER_TEMP/docker-config"
+          mkdir -p "$docker_config"
+          printf '{}\n' > "$docker_config/config.json"
+          echo "DOCKER_CONFIG=$docker_config" >> "$GITHUB_ENV"
 
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Log in to the Docker Hub Container registry
-        uses: docker/login-action@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          # On a macOS launchd runner, the docker-container driver can try to
+          # open Docker Desktop's interactive Keychain credential helper.
+          # The native driver avoids that dependency for this single-platform
+          # ARM64 build and works with Docker Desktop's containerd image store.
+          driver: docker
 
-      - name: Docker meta
+      - name: Configure Docker Hub authentication
+        if: github.event_name != 'pull_request'
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: |
+          # Avoid Docker Desktop's interactive macOS Keychain helper. BuildKit
+          # reads this short-lived Docker config directly during the push.
+          python3 - <<'PY'
+          import base64
+          import json
+          import os
+          from pathlib import Path
+
+          raw = f"{os.environ['DOCKERHUB_USERNAME']}:{os.environ['DOCKERHUB_TOKEN']}"
+          auth = base64.b64encode(raw.encode()).decode()
+          config = {"auths": {"https://index.docker.io/v1/": {"auth": auth}}}
+          path = Path(os.environ["DOCKER_CONFIG"]) / "config.json"
+          path.write_text(json.dumps(config), encoding="utf-8")
+          path.chmod(0o600)
+          PY
+
+      - name: Docker metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ioeslab/dave
-          tags: ros2-arm-rdp
+          images: ${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=ros2-arm-rdp,enable=${{ github.event_name != 'pull_request' }}
+            type=ref,event=pr
 
-      - name: Build and push Docker image
+      - name: Build Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
-          push: true
+          push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          file: .docker/jazzy.arm64v8.dockerfile
+          file: .docker/lyrical.arm64v8.dockerfile
           platforms: linux/arm64/v8
           build-args: |
             ROS_DISTRO=${{ env.ROS_DISTRO }}
-            BRANCH=${{ env.BRANCH }}
 
-      - name: Debug environment variables
-        run: |
-          echo "ROS_DISTRO: ${ROS_DISTRO}"
-          echo "BRANCH: ${BRANCH}"
+      - name: Clear Docker Hub credentials
+        if: always() && github.event_name != 'pull_request'
+        run: printf '{}\n' > "$DOCKER_CONFIG/config.json"

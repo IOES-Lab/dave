@@ -600,10 +600,10 @@ void UsblTransceiver::calculateRelativePose(
 void UsblTransceiver::PostUpdate(
   const gz::sim::UpdateInfo & _info, const gz::sim::EntityComponentManager & _ecm)
 {
+  // ROS callbacks are wall-time events and must remain responsive while paused.
+  rclcpp::spin_some(this->ros_node_);
   if (!_info.paused)
   {
-    rclcpp::spin_some(this->ros_node_);
-
     if (!this->dataPtr->setGlobalMode)
     {
       std_msgs::msg::String mode;

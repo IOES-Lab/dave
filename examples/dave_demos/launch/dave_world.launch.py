@@ -13,6 +13,7 @@ def launch_setup(context, *args, **kwargs):
 
     world_name = LaunchConfiguration("world_name").perform(context)
     verbose_flag = LaunchConfiguration("verbose").perform(context)
+    headless_flag = LaunchConfiguration("headless").perform(context)
     world_file_name = f"{world_name}.world"
 
     world_path = os.path.join(pkg_dave_worlds, "worlds", world_file_name)
@@ -21,6 +22,8 @@ def launch_setup(context, *args, **kwargs):
     gz_args = f"-r {world_path}"
     if verbose_flag.lower() == "true":
         gz_args += " --verbose"
+    if headless_flag.lower() == "true":
+        gz_args += " -s"
 
     gz_sim = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(os.path.join(pkg_ros_gz_sim, "launch", "gz_sim.launch.py")),
@@ -42,6 +45,11 @@ def generate_launch_description():
                 "verbose",
                 default_value="false",
                 description="Enable verbose mode for Gazebo simulation",
+            ),
+            DeclareLaunchArgument(
+                "headless",
+                default_value="false",
+                description="Run Gazebo server-only without the graphical client",
             ),
             OpaqueFunction(function=launch_setup),
         ]

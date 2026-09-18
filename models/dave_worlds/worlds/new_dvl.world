@@ -83,7 +83,7 @@
 		<!-- Virtual north, east and down frame -->
 		<include>
 			<uri>
-				https://fuel.gazebosim.org/1.0/hmoyen/models/North-East-Down frame
+				https://fuel.gazebosim.org/1.0/hmoyen/models/North East Down frame
 			</uri>
 			<pose>0 0 0 0 0 0</pose>
 		</include>

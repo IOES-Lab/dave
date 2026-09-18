@@ -38,7 +38,6 @@ def launch_setup(context, *args, **kwargs):
 
 
 def generate_launch_description():
-    gui = LaunchConfiguration("gui")
     use_sim_time = LaunchConfiguration("use_sim_time")
     namespace = LaunchConfiguration("namespace")
     x = LaunchConfiguration("x")
@@ -152,7 +151,6 @@ def generate_launch_description():
             yaw,
         ],
         output="both",
-        condition=IfCondition(gui),
         parameters=[{"use_sim_time": use_sim_time}],
     )
 

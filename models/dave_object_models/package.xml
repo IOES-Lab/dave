@@ -4,8 +4,11 @@
   <version>0.1.0</version>
   <description>Dave object model description files are placed here.</description>
   <maintainer email="rakeshvivek97@gmail.com">Rakesh Vivekanandan</maintainer>
+  <maintainer email="wschoi@kmou.ac.kr">Woen-Sug Choi</maintainer>
+  <maintainer email="kys50728@g.kmou.ac.kr">Ye-Seol Kwon</maintainer>
   <license>Apache 2.0</license>
   <buildtool_depend>ament_cmake</buildtool_depend>
+  <exec_depend>ament_index_python</exec_depend>
   <export>
     <build_type>ament_cmake</build_type>
     <!-- This doesn't work yet https://github.com/gazebosim/ros_gz/pull/492 -->
