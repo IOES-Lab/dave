@@ -689,10 +689,9 @@ bool MultibeamSonarSensor::Implementation::InitializeBeamArrangement(MultibeamSo
   this->pointMsg.set_height(this->raySensor->VerticalRangeCount());
   this->pointMsg.set_row_step(this->pointMsg.point_step() * this->pointMsg.width());
 
-  this->rayConnection = this->raySensor->ConnectNewGpuRaysFrame(
-    std::bind(
-      &MultibeamSonarSensor::Implementation::OnNewFrame, this, std::placeholders::_1,
-      std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5));
+  this->rayConnection = this->raySensor->ConnectNewGpuRaysFrame(std::bind(
+    &MultibeamSonarSensor::Implementation::OnNewFrame, this, std::placeholders::_1,
+    std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5));
 
   // Transmission path properties (typical model used here)
   // More sophisticated model by Francois-Garrison model is available
