@@ -169,5 +169,5 @@ jobs:
           docker buildx imagetools create --tag "$IMAGE_NAME:pr-$PR_NUMBER" \
             "$IMAGE_NAME:pr-$PR_NUMBER-amd64-$SOURCE_SHA" \
             "$IMAGE_NAME:pr-$PR_NUMBER-arm64-$SOURCE_SHA"
-          printf 'Published `%s:pr-%s` for `%s` (AMD64 + ARM64).\n' \
+          printf 'Published %s:pr-%s for %s (AMD64 + ARM64).\n' \
             "$IMAGE_NAME" "$PR_NUMBER" "$SOURCE_SHA" >> "$GITHUB_STEP_SUMMARY"
