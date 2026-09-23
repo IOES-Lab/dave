@@ -43,8 +43,10 @@ jobs:
       - name: Install Python dependencies
         run: pip install black flake8 cmakelang
 
-      - name: Install ClangFormat
-        run: sudo apt-get install -y clang-format
+      - name: Install system lint dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-format libxml2-utils
 
       - name: Run Linters for python and C++
         uses: wearerequired/lint-action@v2
@@ -54,9 +56,6 @@ jobs:
           flake8: true
           flake8_args: --max-line-length=100
           clang_format: true
-
-      - name: Install XML Linting tools
-        run: sudo apt-get install -y libxml2-utils
 
       - name: Run XML Linter for URDF, SDF, Xacro, XML files
         run: |
