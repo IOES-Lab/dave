@@ -96,13 +96,15 @@ EXPOSE 22/tcp
 
 # --- ROS 2 Lyrical + Gazebo Jetty ---
 ARG ROS_DISTRO="lyrical"
+ARG ROS_APT_SOURCE_VERSION="1.3.0"
 ENV GZ_VERSION=jetty
 
 RUN apt update && apt full-upgrade -y && apt autoremove -y
 
 # Gazebo Jetty is vendored by ros-lyrical-ros-gz on apt already — no separate Gazebo source build
-RUN export ROS_APT_SOURCE_VERSION=$(curl -s https://api.github.com/repos/ros-infrastructure/ros-apt-source/releases/latest | grep -F "tag_name" | awk -F\" '{print $4}') && \
-    curl -L -o /tmp/ros2-apt-source.deb \
+# Pin the bootstrap package to avoid unauthenticated GitHub API rate limits.
+RUN curl --fail --show-error --location --retry 5 --retry-delay 2 \
+      -o /tmp/ros2-apt-source.deb \
       "https://github.com/ros-infrastructure/ros-apt-source/releases/download/${ROS_APT_SOURCE_VERSION}/ros2-apt-source_${ROS_APT_SOURCE_VERSION}.$(. /etc/os-release && echo ${UBUNTU_CODENAME:-${VERSION_CODENAME}})_all.deb" && \
     dpkg -i /tmp/ros2-apt-source.deb && \
     apt update && \
