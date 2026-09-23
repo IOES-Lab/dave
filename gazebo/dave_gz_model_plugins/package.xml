@@ -4,6 +4,8 @@
   <version>0.0.0</version>
   <description>Dave Model Plugins</description>
   <maintainer email="gaurav.og.9920@gmail.com">Gaurav Kumar</maintainer>
+  <maintainer email="wschoi@kmou.ac.kr">Woen-Sug Choi</maintainer>
+  <maintainer email="kys50728@g.kmou.ac.kr">Ye-Seol Kwon</maintainer>
   <license>Apache 2.0</license>
   <buildtool_depend>ament_cmake</buildtool_depend>
   <depend>dave_gz_world_plugins</depend>

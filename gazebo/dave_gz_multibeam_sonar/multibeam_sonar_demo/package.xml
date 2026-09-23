@@ -3,7 +3,8 @@
   <name>dave_multibeam_sonar_demo</name>
   <version>0.1.0</version>
   <description>A package for multibeam sonar demo files</description>
-  <maintainer email="woensug.choi@gmail.com">Woen-Sug Choi</maintainer>
+  <maintainer email="wschoi@kmou.ac.kr">Woen-Sug Choi</maintainer>
+  <maintainer email="kys50728@g.kmou.ac.kr">Ye-Seol Kwon</maintainer>
   <license>Apache 2.0</license>
   <buildtool_depend>ament_cmake</buildtool_depend>
   <export>
