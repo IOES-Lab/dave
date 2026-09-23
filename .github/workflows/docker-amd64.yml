@@ -24,11 +24,10 @@ jobs:
     # Keep publishing builds on the existing self-hosted runner.
     runs-on: >-
       ${{ fromJSON(github.event_name == 'pull_request'
-          && '["ubuntu-24.04"]' || '["self-hosted", "x64"]') }}
+          && '["ubuntu-26.04"]' || '["self-hosted", "x64"]') }}
     timeout-minutes: ${{ github.event_name == 'pull_request' && 360 || 1440 }}
     permissions:
       contents: read
-      packages: write
 
     steps:
       - name: Checkout repository
@@ -60,9 +59,22 @@ jobs:
         with:
           context: .
           push: ${{ github.event_name != 'pull_request' }}
+          outputs: >-
+            ${{ github.event_name == 'pull_request'
+                && format('type=oci,dest={0}/pr-image.tar', runner.temp) || '' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           file: .docker/lyrical.amd64.dockerfile
           platforms: linux/amd64
           build-args: |
             ROS_DISTRO=${{ env.ROS_DISTRO }}
+
+      - name: Upload PR image for trusted publishing
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: dave-pr-image-amd64
+          path: ${{ runner.temp }}/pr-image.tar
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 3
