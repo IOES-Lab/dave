@@ -10,62 +10,59 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 
-jobs:
-  #   ament_lint:
-  #     runs-on: ubuntu-latest
-  #     container:
-  #       image: rostooling/setup-ros-docker:ubuntu-resolute-ros-lyrical-desktop-latest
-  #       options: -u root
-  #     strategy:
-  #       fail-fast: false
-  #       matrix:
-  #         linter: [flake8, mypy, pep8, xmllint]
-  #     steps:
-  #       - uses: actions/checkout@v2
-  #       - uses: ros-tooling/action-ros-lint@master
-  #         with:
-  #           linter: ${{ matrix.linter }}
-  #           package-name: .
+permissions:
+  contents: read
 
+jobs:
   run-linters:
     name: Run Linters for Code Format Check
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
 
     steps:
       - name: Check out Git repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7.0.1
 
       - name: Set up Python 3.12
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v7.0.0
         with:
           python-version: 3.12
 
       - name: Install Python dependencies
-        run: pip install black flake8 cmakelang
+        # Match the formatter versions used by .pre-commit-config.yaml.
+        run: >-
+          python -m pip install black==24.10.0 flake8==7.1.1
+          clang-format==19.1.6 cmakelang==0.6.13 yamllint==1.35.1
 
       - name: Install system lint dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang-format libxml2-utils
+          sudo apt-get install -y libxml2-utils
 
-      - name: Run Linters for python and C++
-        uses: wearerequired/lint-action@v2
-        with:
-          black: true
-          black_args: --line-length 100
-          flake8: true
-          flake8_args: --max-line-length=100
-          clang_format: true
+      - name: Check Python formatting
+        run: black --check --diff --line-length 99 --exclude tools/code_check .
+
+      - name: Lint Python
+        if: ${{ !cancelled() }}
+        run: flake8 --ignore=E203,W503,E501 --exclude=tools/code_check .
+
+      - name: Check C and C++ formatting
+        if: ${{ !cancelled() }}
+        run: |
+          git ls-files -z '*.c' '*.cc' '*.cpp' '*.h' '*.hpp' '*.m' '*.mm' | \
+            xargs -0 -r clang-format --dry-run --Werror --fallback-style=none
 
       - name: Run XML Linter for URDF, SDF, Xacro, XML files
+        if: ${{ !cancelled() }}
         run: |
           find . \( -iname '*.urdf' -o -iname '*.sdf' -o -iname '*.xacro' \
           -o -iname '*.xml' -o -iname '*.launch' -o -iname '*.world' \) -print0 | xargs -0 xmllint --noout
 
       - name: Run ShellCheck
-        uses: ludeeus/action-shellcheck@master
+        if: ${{ !cancelled() }}
+        uses: ludeeus/action-shellcheck@2.0.0
 
       - name: Run Yamllint on YAML and .launch files
+        if: ${{ !cancelled() }}
         run: |
             find . \( -iname '*.yml' -o -iname '*.yaml' \) -print0 | xargs -0 yamllint -d "{
                 extends: default,
@@ -76,4 +73,5 @@ jobs:
             }"
 
       - name: Lint CMake files
+        if: ${{ !cancelled() }}
         run: find . \( -iname 'CMakeLists.txt' -o -iname '*.cmake' \) -print0 | xargs -0 cmake-lint
