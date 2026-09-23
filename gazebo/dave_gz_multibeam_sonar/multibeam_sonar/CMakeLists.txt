@@ -35,7 +35,8 @@ if(CUDAToolkit_FOUND)
   enable_language(CUDA)
   find_package(CUDA REQUIRED)
   message(STATUS
-    "CUDA ${CUDAToolkit_VERSION} found (SM ${CUDA_ARCHITECTURE}), enabling CUDA support.")
+    "CUDA ${CUDAToolkit_VERSION} found (SM ${CUDA_ARCHITECTURE}), "
+    "enabling CUDA support.")
   include_directories(${CUDA_INCLUDE_DIRS})
 endif()
 
