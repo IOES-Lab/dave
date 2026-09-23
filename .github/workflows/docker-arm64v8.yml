@@ -6,16 +6,6 @@ on:
   workflow_dispatch:
   pull_request:
     branches: [ros2]
-    paths:
-      - ".docker/**"
-      - ".dockerignore"
-      - ".github/workflows/docker-arm64v8.yml"
-      - "dave_interfaces/**"
-      - "examples/**"
-      - "extras/**"
-      - "gazebo/**"
-      - "models/**"
-      - "README.md"
   push:
     tags: ["*"]
     branches: [ros2, dockertest]
@@ -30,12 +20,12 @@ concurrency:
 
 jobs:
   build-and-push-to-docker-hub:
-    # Never execute untrusted fork code on a self-hosted runner.
-    if: >-
-      github.event_name != 'pull_request' ||
-      github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: [self-hosted, ARM64]
-    timeout-minutes: 1440
+    # Validate all PRs on disposable hosted runners, including fork PRs.
+    # Keep publishing builds on the existing self-hosted runner.
+    runs-on: >-
+      ${{ fromJSON(github.event_name == 'pull_request'
+          && '["ubuntu-24.04-arm"]' || '["self-hosted", "ARM64"]') }}
+    timeout-minutes: ${{ github.event_name == 'pull_request' && 360 || 1440 }}
     permissions:
       contents: read
       packages: write
