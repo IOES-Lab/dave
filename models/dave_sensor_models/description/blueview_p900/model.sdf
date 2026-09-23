@@ -85,6 +85,8 @@
             <verticalFOV>12</verticalFOV>
             <sonarFreq>900e3</sonarFreq>
             <bandwidth>29.9e3</bandwidth>
+            <!-- To verify CPU fallback in case of non-power-of-2 FFTs -->
+            <!-- <bandwidth>38.4e3</bandwidth> -->
             <soundSpeed>1500</soundSpeed>
             <sourceLevel>220</sourceLevel>
             <maxDistance>10</maxDistance>

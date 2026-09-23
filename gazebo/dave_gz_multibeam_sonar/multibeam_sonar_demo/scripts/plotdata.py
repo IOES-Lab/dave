@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -10,11 +12,17 @@ nBeams = 512
 maxRange = 5
 xPlotRange = 10
 yPlotRange = xPlotRange * np.cos(45 * np.pi / 180)
-filename = "SonarRawData_000001.csv"
-beam_angle_file = "SonarRawData_beam_angles.csv"
+
+results_dir = os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "results")
+os.makedirs(results_dir, exist_ok=True)
+
+filename = os.path.join(results_dir, "SonarRawData_000001.csv")
+beam_angle_file = os.path.join(results_dir, "SonarRawData_beam_angles.csv")
 bw = 29.9e3
 plotSkips = 1
 epsilon = 1e-10
+scatter_output_file = os.path.join(results_dir, "SonarScatter.png")
+beam_output_file = os.path.join(results_dir, "SonarBeamProfiles.png")
 
 
 # -------------------------------------------
@@ -71,7 +79,8 @@ plt.xlim(1.02 * np.array([0, xPlotRange]))
 plt.ylim(1.02 * np.array([-yPlotRange, yPlotRange]))
 plt.gca().set_facecolor("k")
 plt.tight_layout()
-plt.show()
+plt.savefig(scatter_output_file, dpi=200)
+plt.close()
 
 # -------------------------------------------
 # LINE PLOTS FOR INDIVIDUAL BEAMS
@@ -91,4 +100,8 @@ for i, idx in enumerate(iPlots[1:-1], start=1):
 
 plt.suptitle("Beam Profiles")
 plt.tight_layout()
-plt.show()
+plt.savefig(beam_output_file, dpi=200)
+plt.close()
+
+print(f"Saved {scatter_output_file}")
+print(f"Saved {beam_output_file}")

@@ -6,16 +6,6 @@ on:
   workflow_dispatch:
   pull_request:
     branches: [ros2]
-    paths:
-      - ".docker/**"
-      - ".dockerignore"
-      - ".github/workflows/docker-amd64.yml"
-      - "dave_interfaces/**"
-      - "examples/**"
-      - "extras/**"
-      - "gazebo/**"
-      - "models/**"
-      - "README.md"
   push:
     tags: ["*"]
     branches: [ros2, dockertest]
@@ -30,15 +20,14 @@ concurrency:
 
 jobs:
   build-and-push-to-docker-hub:
-    # Never execute untrusted fork code on a self-hosted runner.
-    if: >-
-      github.event_name != 'pull_request' ||
-      github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: [self-hosted, x64]
-    timeout-minutes: 1440
+    # Validate all PRs on disposable hosted runners, including fork PRs.
+    # Keep publishing builds on the existing self-hosted runner.
+    runs-on: >-
+      ${{ fromJSON(github.event_name == 'pull_request'
+          && '["ubuntu-26.04"]' || '["self-hosted", "x64"]') }}
+    timeout-minutes: ${{ github.event_name == 'pull_request' && 360 || 1440 }}
     permissions:
       contents: read
-      packages: write
 
     steps:
       - name: Checkout repository
@@ -70,9 +59,22 @@ jobs:
         with:
           context: .
           push: ${{ github.event_name != 'pull_request' }}
+          outputs: >-
+            ${{ github.event_name == 'pull_request'
+                && format('type=oci,dest={0}/pr-image.tar', runner.temp) || '' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           file: .docker/lyrical.amd64.dockerfile
           platforms: linux/amd64
           build-args: |
             ROS_DISTRO=${{ env.ROS_DISTRO }}
+
+      - name: Upload PR image for trusted publishing
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: dave-pr-image-amd64
+          path: ${{ runner.temp }}/pr-image.tar
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 3
