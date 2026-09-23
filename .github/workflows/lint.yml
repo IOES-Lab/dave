@@ -70,7 +70,9 @@ jobs:
           element_prefix_pattern = re.compile(rb"</?([A-Za-z_][\w.-]*):[A-Za-z_][\w.-]*(?=[\s>/])")
           attribute_prefix_pattern = re.compile(rb"\s([A-Za-z_][\w.-]*):[A-Za-z_][\w.-]*(?=\s*=)")
           namespace_pattern = re.compile(rb"\bxmlns:([A-Za-z_][\w.-]*)=")
-          root_tag_pattern = re.compile(rb"<([A-Za-z_][\w.-]*)(?=[\s>])")
+          root_tag_pattern = re.compile(
+              rb"<([A-Za-z_][\w.-]*)(?:\"[^\"]*\"|'[^']*'|[^'\">])*>"
+          )
           files = sorted(
               path for path in Path(".").rglob("*")
               if path.is_file() and path.suffix.lower() in xml_extensions
@@ -93,7 +95,7 @@ jobs:
                           b' xmlns:' + prefix + b'="urn:ci:' + prefix + b'"'
                           for prefix in missing_prefixes
                       )
-                      insert_at = xml_bytes.find(b">", root_match.start())
+                      insert_at = root_match.end() - 1
                       xml_bytes = (
                           xml_bytes[:insert_at] + insertion + xml_bytes[insert_at:]
                       )
