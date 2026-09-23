@@ -1,3 +1,5 @@
+import xml.etree.ElementTree as ET
+
 from launch import LaunchDescription
 from launch.actions import (
     DeclareLaunchArgument,
@@ -42,8 +44,13 @@ def launch_setup(context, *args, **kwargs):
         world_filepath = PathJoinSubstitution(
             [FindPackageShare("dave_worlds"), "worlds", world_filename]
         )
+        world_element = ET.parse(world_filepath.perform(context)).getroot().find("world")
+        if world_element is None or not world_element.get("name"):
+            raise ValueError(f"World file [{world_filename}] does not declare a world name")
+        world_entity_name = world_element.get("name")
         gz_args = [world_filepath]
     else:
+        world_entity_name = "empty"
         gz_args = [world_name]
 
     zoom_camera_value = "true" if selected_world_name == "dave_ocean_waves" else "false"
@@ -109,6 +116,7 @@ def launch_setup(context, *args, **kwargs):
             "open_virtual_joystick": open_virtual_joystick,
             "virtual_joystick_url": virtual_joystick_url,
             "ui_launch_delay": ui_launch_delay,
+            "world_name": world_entity_name,
         }.items(),
     )
 
