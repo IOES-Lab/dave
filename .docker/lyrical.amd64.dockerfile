@@ -40,7 +40,8 @@ COPY . dave
 RUN vcs import --shallow --skip-existing \
       --input dave/extras/repos/dave.lyrical.repos
 
-RUN rosdep update --rosdistro "$ROS_DISTRO" && \
+RUN apt-get update && \
+    rosdep update --rosdistro "$ROS_DISTRO" && \
     rosdep install --rosdistro "$ROS_DISTRO" -iy --from-paths . && \
     rm -rf /var/lib/apt/lists/*
 

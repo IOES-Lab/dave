@@ -124,8 +124,11 @@ RUN vcs import --shallow --skip-existing \
       --input dave/extras/repos/dave.lyrical.repos && \
     chown -R $USER:$USER $DAVE_UNDERLAY
 
-RUN rosdep init 2>/dev/null || true && rosdep update --rosdistro $ROS_DISTRO && \
-    rosdep install --rosdistro $ROS_DISTRO -iy --from-paths .
+RUN apt-get update && \
+    (rosdep init 2>/dev/null || true) && \
+    rosdep update --rosdistro $ROS_DISTRO && \
+    rosdep install --rosdistro $ROS_DISTRO -iy --from-paths . && \
+    rm -rf /var/lib/apt/lists/*
 
 USER $USER
 WORKDIR $DAVE_UNDERLAY
