@@ -6,7 +6,6 @@ from launch.actions import (
     IncludeLaunchDescription,
     OpaqueFunction,
 )
-from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.substitutions import FindPackageShare
@@ -55,7 +54,10 @@ def launch_setup(context, *args, **kwargs):
 
     zoom_camera_value = "true" if selected_world_name == "dave_ocean_waves" else "false"
 
-    if headless.perform(context) == "true":
+    run_server_only = (
+        headless.perform(context).lower() == "true" or gui.perform(context).lower() == "false"
+    )
+    if run_server_only:
         gz_args.append(" -s")
     if paused.perform(context) == "false":
         gz_args.append(" -r")
@@ -79,7 +81,6 @@ def launch_setup(context, *args, **kwargs):
         launch_arguments=[
             ("gz_args", gz_args),
         ],
-        condition=IfCondition(gui),
     )
 
     # Include the second launch file with model name
@@ -137,7 +138,7 @@ def generate_launch_description():
         DeclareLaunchArgument(
             "gui",
             default_value="true",
-            description="Flag to enable the gazebo gui",
+            description="Show the Gazebo graphical client; false runs server-only",
         ),
         DeclareLaunchArgument(
             "use_sim_time",
@@ -152,7 +153,7 @@ def generate_launch_description():
         DeclareLaunchArgument(
             "headless",
             default_value="false",
-            description="Flag to enable the gazebo headless mode",
+            description="Run Gazebo server-only without the graphical client",
         ),
         DeclareLaunchArgument(
             "verbose",
