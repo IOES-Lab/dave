@@ -57,6 +57,51 @@ jobs:
           flake8_args: --max-line-length=100
           clang_format: true
 
+      - name: Run XML Linter for URDF, SDF, Xacro, XML files
+        run: |
+          python - <<'PY'
+          import re
+          import sys
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+
+          xml_extensions = {".urdf", ".sdf", ".xacro", ".xml", ".launch", ".world"}
+          prefix_pattern = re.compile(r"(?<!xmlns:)\b([A-Za-z_][\w.-]*):[A-Za-z_][\w.-]*")
+          root_tag_pattern = re.compile(r"<([A-Za-z_][\w.-]*)(?=[\s>])")
+          namespace_pattern = re.compile(r"\bxmlns:([A-Za-z_][\w.-]*)=")
+          files = sorted(
+              path for path in Path(".").rglob("*")
+              if path.is_file() and path.suffix.lower() in xml_extensions
+          )
+          failures = []
+
+          for path in files:
+              text = path.read_text(encoding="utf-8")
+              missing_prefixes = sorted(set(prefix_pattern.findall(text)) -
+                                        set(namespace_pattern.findall(text)))
+              if missing_prefixes:
+                  root_match = root_tag_pattern.search(text)
+                  if root_match:
+                      insertion = "".join(
+                          f' xmlns:{prefix}="urn:ci:{prefix}"' for prefix in missing_prefixes
+                      )
+                      insert_at = text.find(">", root_match.start())
+                      text = f"{text[:insert_at]}{insertion}{text[insert_at:]}"
+
+              try:
+                  ET.fromstring(text)
+              except ET.ParseError as exc:
+                  failures.append(f"{path}: {exc}")
+
+          if failures:
+              print("XML validation failed for the following files:", file=sys.stderr)
+              for failure in failures:
+                  print(failure, file=sys.stderr)
+              sys.exit(1)
+
+          print(f"Validated {len(files)} XML files")
+          PY
+
       - name: Run ShellCheck
         uses: ludeeus/action-shellcheck@master
 
