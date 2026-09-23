@@ -6,7 +6,7 @@
 #   setup below is the adapted version of what that base image contained, plus the xrdp
 #   group-permission fix required by the verified Apple Silicon build.
 # - ROS_DISTRO=lyrical; ros-lyrical-ros-gz supplies the Gazebo Jetty vendor packages.
-# - The current CUDA sonar remains disabled on ARM64; the open WGPU PR is intentionally excluded.
+# - The sonar uses the portable WGPU backend when CUDA is unavailable on ARM64.
 # - ArduSub SITL includes the Python 3.14 compatibility shims validated on Ubuntu 26.04
 #   (imp/pipes modules, python-argparse removal, and PEP 668 handling).
 

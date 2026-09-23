@@ -35,15 +35,15 @@ add_custom_target(sonar_wgpu_rust ALL
   COMMENT "Ensuring sonar_wgpu Rust static library is built"
 )
 
-add_library(sonar_wgpu_rust_static STATIC IMPORTED GLOBAL)
-set_target_properties(sonar_wgpu_rust_static PROPERTIES
-  IMPORTED_LOCATION ${RUST_LIB})
-add_dependencies(sonar_wgpu_rust_static sonar_wgpu_rust)
-
 add_library(wgpu_vendor INTERFACE)
-add_dependencies(wgpu_vendor sonar_wgpu_rust_static)
+add_dependencies(wgpu_vendor sonar_wgpu_rust)
 
-target_link_libraries(wgpu_vendor INTERFACE sonar_wgpu_rust_static dl pthread m)
+# Export the installed archive, not an imported target from this build tree.
+target_link_libraries(wgpu_vendor INTERFACE
+  "$<BUILD_INTERFACE:${RUST_LIB}>"
+  "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/lib/libsonar_wgpu.a>"
+  dl pthread m
+)
 if(Vulkan_FOUND)
   target_link_libraries(wgpu_vendor INTERFACE Vulkan::Vulkan)
 endif()
@@ -53,12 +53,9 @@ add_library(wgpu::wgpu_vendor ALIAS wgpu_vendor)
 install(FILES ${RUST_LIB} DESTINATION lib)
 
 install(TARGETS wgpu_vendor EXPORT wgpu_vendorTargets)
-install(EXPORT wgpu_vendorTargets
-  NAMESPACE wgpu::
-  FILE wgpu_vendorTargets.cmake
-  DESTINATION share/${PROJECT_NAME}/cmake)
 
-ament_export_targets(wgpu_vendorTargets HAS_LIBRARY_TARGET)
+# Match the public wgpu::wgpu_vendor target used by the sonar sensor.
+ament_export_targets(wgpu_vendorTargets HAS_LIBRARY_TARGET NAMESPACE wgpu::)
 if(Vulkan_FOUND)
   ament_export_dependencies(Vulkan)
 endif()

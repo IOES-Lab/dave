@@ -6,6 +6,8 @@
   <maintainer email="noreply@example.com">DAVE Maintainers</maintainer>
   <license>Apache-2.0</license>
   <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>cargo</buildtool_depend>
+  <buildtool_depend>rustc</buildtool_depend>
   <export>
     <build_type>ament_cmake</build_type>
   </export>
