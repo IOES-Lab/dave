@@ -66,9 +66,11 @@ jobs:
           from pathlib import Path
 
           xml_extensions = {".urdf", ".sdf", ".xacro", ".xml", ".launch", ".world"}
-          prefix_pattern = re.compile(r"(?<!xmlns:)\b([A-Za-z_][\w.-]*):[A-Za-z_][\w.-]*")
-          root_tag_pattern = re.compile(r"<([A-Za-z_][\w.-]*)(?=[\s>])")
-          namespace_pattern = re.compile(r"\bxmlns:([A-Za-z_][\w.-]*)=")
+          tag_pattern = re.compile(rb"<[^!?][^>]*>")
+          element_prefix_pattern = re.compile(rb"</?([A-Za-z_][\w.-]*):[A-Za-z_][\w.-]*(?=[\s>/])")
+          attribute_prefix_pattern = re.compile(rb"\s([A-Za-z_][\w.-]*):[A-Za-z_][\w.-]*(?=\s*=)")
+          namespace_pattern = re.compile(rb"\bxmlns:([A-Za-z_][\w.-]*)=")
+          root_tag_pattern = re.compile(rb"<([A-Za-z_][\w.-]*)(?=[\s>])")
           files = sorted(
               path for path in Path(".").rglob("*")
               if path.is_file() and path.suffix.lower() in xml_extensions
@@ -76,20 +78,28 @@ jobs:
           failures = []
 
           for path in files:
-              text = path.read_text(encoding="utf-8")
-              missing_prefixes = sorted(set(prefix_pattern.findall(text)) -
-                                        set(namespace_pattern.findall(text)))
+              xml_bytes = path.read_bytes()
+              tags = b" ".join(tag_pattern.findall(xml_bytes))
+              missing_prefixes = sorted(
+                  (
+                      set(element_prefix_pattern.findall(tags))
+                      | set(attribute_prefix_pattern.findall(tags))
+                  ) - set(namespace_pattern.findall(tags))
+              )
               if missing_prefixes:
-                  root_match = root_tag_pattern.search(text)
+                  root_match = root_tag_pattern.search(xml_bytes)
                   if root_match:
-                      insertion = "".join(
-                          f' xmlns:{prefix}="urn:ci:{prefix}"' for prefix in missing_prefixes
+                      insertion = b"".join(
+                          b' xmlns:' + prefix + b'="urn:ci:' + prefix + b'"'
+                          for prefix in missing_prefixes
                       )
-                      insert_at = text.find(">", root_match.start())
-                      text = f"{text[:insert_at]}{insertion}{text[insert_at:]}"
+                      insert_at = xml_bytes.find(b">", root_match.start())
+                      xml_bytes = (
+                          xml_bytes[:insert_at] + insertion + xml_bytes[insert_at:]
+                      )
 
               try:
-                  ET.fromstring(text)
+                  ET.fromstring(xml_bytes)
               except ET.ParseError as exc:
                   failures.append(f"{path}: {exc}")
 
