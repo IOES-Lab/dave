@@ -30,7 +30,10 @@ add_custom_command(
   VERBATIM
 )
 
-add_custom_target(sonar_wgpu_rust ALL DEPENDS ${RUST_LIB})
+add_custom_target(sonar_wgpu_rust ALL
+  DEPENDS ${RUST_LIB}
+  COMMENT "Ensuring sonar_wgpu Rust static library is built"
+)
 
 add_library(sonar_wgpu_rust_static STATIC IMPORTED GLOBAL)
 set_target_properties(sonar_wgpu_rust_static PROPERTIES
