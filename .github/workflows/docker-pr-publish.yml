@@ -1,0 +1,173 @@
+---
+name: Publish PR Docker images
+
+# This workflow must be on ros2 (the default branch) to receive workflow_run.
+# Never check out or execute PR code here: only copy completed image archives.
+# yamllint disable-line rule:truthy
+on:
+  workflow_run:
+    workflows:
+      - Build Lyrical / Jetty Docker image (AMD64)
+      - Build Lyrical / Jetty Docker image (ARM64)
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: Successful PR Docker build run ID to publish
+        required: true
+        type: string
+
+permissions:
+  actions: read
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: publish-pr-docker-images
+  cancel-in-progress: false
+
+jobs:
+  identify:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.event == 'pull_request' &&
+       github.event.workflow_run.conclusion == 'success')
+    runs-on: ubuntu-26.04
+    outputs:
+      ready: ${{ steps.builds.outputs.ready }}
+      pr: ${{ steps.builds.outputs.pr }}
+      sha: ${{ steps.builds.outputs.sha }}
+      amd64_run: ${{ steps.builds.outputs.amd64_run }}
+      arm64_run: ${{ steps.builds.outputs.arm64_run }}
+    steps:
+      - name: Verify current PR and successful builds for both architectures
+        id: builds
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const repo = context.repo;
+            const id = String(context.payload.workflow_run?.id || context.payload.inputs?.run_id || '');
+            if (!/^\d+$/.test(id)) throw new Error('Invalid build run ID');
+            const {data: source} = await github.rest.actions.getWorkflowRun({...repo, run_id: Number(id)});
+            const files = {amd64: 'docker-amd64.yml', arm64: 'docker-arm64v8.yml'};
+            if (source.event !== 'pull_request' || source.conclusion !== 'success' ||
+                !Object.values(files).some(file => source.path === `.github/workflows/${file}`)) {
+              throw new Error('Expected a successful PR Docker build in this repository');
+            }
+            // Fork runs can have an empty pull_requests array. Resolve the PR via the API.
+            const prs = await github.paginate(github.rest.pulls.list, {
+              ...repo, state: 'open', base: 'ros2',
+              head: `${source.head_repository.owner.login}:${source.head_branch}`, per_page: 100
+            });
+            const matches = prs.filter(pr => pr.head.sha === source.head_sha &&
+              pr.head.repo?.full_name === source.head_repository.full_name);
+            if (matches.length !== 1) {
+              core.notice('Build is no longer the current head of an open ros2 PR');
+              return;
+            }
+            const selected = {};
+            for (const [arch, workflow_id] of Object.entries(files)) {
+              const {data} = await github.rest.actions.listWorkflowRuns({
+                ...repo, workflow_id, event: 'pull_request', head_sha: source.head_sha,
+                status: 'success', per_page: 100
+              });
+              const run = data.workflow_runs.find(candidate =>
+                candidate.head_repository?.full_name === source.head_repository.full_name);
+              if (!run) {
+                core.notice(`Waiting for a successful ${arch} build of this revision`);
+                return;
+              }
+              const artifacts = await github.paginate(github.rest.actions.listWorkflowRunArtifacts, {
+                ...repo, run_id: run.id, per_page: 100
+              });
+              if (!artifacts.some(item => item.name === `dave-pr-image-${arch}` && !item.expired)) {
+                throw new Error(`Missing ${arch} image artifact in run ${run.id}`);
+              }
+              selected[arch] = run.id;
+            }
+            core.setOutput('pr', matches[0].number);
+            core.setOutput('sha', source.head_sha);
+            core.setOutput('amd64_run', selected.amd64);
+            core.setOutput('arm64_run', selected.arm64);
+            core.setOutput('ready', 'true');
+
+  publish:
+    needs: identify
+    if: needs.identify.outputs.ready == 'true'
+    runs-on: ubuntu-26.04
+    timeout-minutes: 120
+    env:
+      IMAGE_NAME: ioeslab/dave
+      PR_NUMBER: ${{ needs.identify.outputs.pr }}
+      SOURCE_SHA: ${{ needs.identify.outputs.sha }}
+    steps:
+      - name: Install image-copy tool
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends skopeo
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Download AMD64 image from its verified build
+        uses: actions/download-artifact@v4
+        with:
+          name: dave-pr-image-amd64
+          path: ${{ runner.temp }}/amd64
+          run-id: ${{ needs.identify.outputs.amd64_run }}
+          github-token: ${{ github.token }}
+
+      - name: Publish AMD64 image without running it
+        run: |
+          archive="$RUNNER_TEMP/amd64/pr-image.tar"
+          skopeo inspect --config "oci-archive:$archive" | \
+            jq -e '.os == "linux" and .architecture == "amd64"'
+          skopeo copy --all --authfile "$HOME/.docker/config.json" \
+            "oci-archive:$archive" "docker://$IMAGE_NAME:pr-$PR_NUMBER-amd64-$SOURCE_SHA"
+          rm -- "$archive"
+
+      - name: Download ARM64 image from its verified build
+        uses: actions/download-artifact@v4
+        with:
+          name: dave-pr-image-arm64
+          path: ${{ runner.temp }}/arm64
+          run-id: ${{ needs.identify.outputs.arm64_run }}
+          github-token: ${{ github.token }}
+
+      - name: Publish ARM64 image without running it
+        run: |
+          archive="$RUNNER_TEMP/arm64/pr-image.tar"
+          skopeo inspect --override-arch arm64 --config "oci-archive:$archive" | \
+            jq -e '.os == "linux" and .architecture == "arm64"'
+          skopeo copy --all --authfile "$HOME/.docker/config.json" \
+            "oci-archive:$archive" "docker://$IMAGE_NAME:pr-$PR_NUMBER-arm64-$SOURCE_SHA"
+          rm -- "$archive"
+
+      - name: Check that the PR still points to this revision
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const {data: pr} = await github.rest.pulls.get({
+              ...context.repo, pull_number: Number(process.env.PR_NUMBER)
+            });
+            if (pr.state !== 'open' || pr.base.ref !== 'ros2' || pr.head.sha !== process.env.SOURCE_SHA) {
+              throw new Error('PR changed during publishing; leaving its current tags unchanged');
+            }
+
+      - name: Publish PR-number tags and multi-platform manifest
+        run: |
+          docker buildx imagetools create --tag "$IMAGE_NAME:pr-$PR_NUMBER-amd64" \
+            "$IMAGE_NAME:pr-$PR_NUMBER-amd64-$SOURCE_SHA"
+          docker buildx imagetools create --tag "$IMAGE_NAME:pr-$PR_NUMBER-arm64" \
+            "$IMAGE_NAME:pr-$PR_NUMBER-arm64-$SOURCE_SHA"
+          docker buildx imagetools create --tag "$IMAGE_NAME:pr-$PR_NUMBER" \
+            "$IMAGE_NAME:pr-$PR_NUMBER-amd64-$SOURCE_SHA" \
+            "$IMAGE_NAME:pr-$PR_NUMBER-arm64-$SOURCE_SHA"
+          printf 'Published %s:pr-%s for %s (AMD64 + ARM64).\n' \
+            "$IMAGE_NAME" "$PR_NUMBER" "$SOURCE_SHA" >> "$GITHUB_STEP_SUMMARY"
