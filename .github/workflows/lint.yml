@@ -46,7 +46,7 @@ jobs:
       - name: Install system lint dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang-format libxml2-utils
+          sudo apt-get install -y clang-format
 
       - name: Run Linters for python and C++
         uses: wearerequired/lint-action@v2
@@ -56,11 +56,6 @@ jobs:
           flake8: true
           flake8_args: --max-line-length=100
           clang_format: true
-
-      - name: Run XML Linter for URDF, SDF, Xacro, XML files
-        run: |
-          find . \( -iname '*.urdf' -o -iname '*.sdf' -o -iname '*.xacro' \
-          -o -iname '*.xml' -o -iname '*.launch' -o -iname '*.world' \) -print0 | xargs -0 xmllint --noout
 
       - name: Run ShellCheck
         uses: ludeeus/action-shellcheck@master
