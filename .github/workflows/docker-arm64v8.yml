@@ -40,12 +40,31 @@ jobs:
       contents: read
       packages: write
     steps:
-      - name: Configure non-interactive Docker credentials
+      - name: Configure Docker connection and credentials
+        shell: bash
         run: |
-          docker_config="$RUNNER_TEMP/docker-config"
-          mkdir -p "$docker_config"
-          printf '{}\n' > "$docker_config/config.json"
-          echo "DOCKER_CONFIG=$docker_config" >> "$GITHUB_ENV"
+          set -euo pipefail
+
+          export DOCKER_CONFIG="$RUNNER_TEMP/docker-config"
+          export DOCKER_HOST="unix://$HOME/.docker/run/docker.sock"
+
+          mkdir -p "$DOCKER_CONFIG"
+          chmod 700 "$DOCKER_CONFIG"
+          printf '{}\n' > "$DOCKER_CONFIG/config.json"
+          chmod 600 "$DOCKER_CONFIG/config.json"
+
+          {
+            echo "DOCKER_CONFIG=$DOCKER_CONFIG"
+            echo "DOCKER_HOST=$DOCKER_HOST"
+          } >> "$GITHUB_ENV"
+
+          if [ ! -S "$HOME/.docker/run/docker.sock" ]; then
+            echo "::error::Docker Desktop socket not found. Start Docker Desktop as the runner user."
+            exit 1
+          fi
+
+          docker version
+          docker info
 
       - name: Checkout repository
         uses: actions/checkout@v7.0.1
