@@ -3,9 +3,11 @@
 
 #include <chrono>
 #include <complex>
+#include <condition_variable>
 #include <memory>
 #include <mutex>
 #include <optional>
+#include <thread>
 #include <unordered_map>
 #include <valarray>
 #include <vector>
@@ -24,6 +26,7 @@
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include "AcousticBeam.hh"
 #include "AxisAlignedPatch2.hh"
+#include "sonar_compute_backend.hh"
 
 namespace gz
 {
@@ -108,8 +111,16 @@ private:
     GZ_UTILS_WARN_IGNORE__DLL_INTERFACE_MISSING
     mutable std::mutex rayMutex;
     GZ_UTILS_WARN_RESUME__DLL_INTERFACE_MISSING
+
+    // Background sonar compute thread and synchronization
+    std::thread computeThread_;
+    std::condition_variable computeCV_;
+    std::mutex computeMutex_;
+    bool newFrameReady_{false};
+    bool stopThread_{false};
     // ROS node pointer
     std::shared_ptr<rclcpp::Node> ros_node_;
+    std::shared_ptr<rclcpp::executors::SingleThreadedExecutor> ros_executor_;
 
     // SDF sensor element
     sdf::ElementPtr sensorSdf;
@@ -169,6 +180,12 @@ private:
     bool constMu;
     double mu;
 
+    // Backend selection and determinism controls.
+    std::string requestedBackend{"auto"};
+    uint64_t sonarSeed{12345};
+    uint64_t frameCounter{0};
+    std::unique_ptr<ComputeBackend> computeBackend;
+
     // Beam corrector
     float beamCorrectorSum;
     float ** beamCorrector;
@@ -200,7 +217,7 @@ private:
       const std::string & /*_format*/);
     void ComputeSonarImage();
     cv::Mat ComputeNormalImage(cv::Mat & depth);
-    void ComputeCorrector();
+    void ComputeCorrector(int _snapshotWidth, int _nBeams);
 
     // Connections
     gz::common::ConnectionPtr rayConnection;

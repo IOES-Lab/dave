@@ -8,16 +8,16 @@
   <maintainer email="gaurav.og.9920@gmail.com">Gaurav kumar</maintainer>
   <maintainer email="kys50728@g.kmou.ac.kr">Ye-Seol Kwon</maintainer>
   <license>Apache 2.0</license>
-  <depend>ament_cmake</depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
   <depend>rclcpp</depend>
   <depend>sensor_msgs</depend>
   <depend>geometry_msgs</depend>
-  <depend>cv_bridge</depend>
   <depend>image_transport</depend>
   <depend>marine_acoustic_msgs</depend>
   <depend>pcl_conversions</depend>
   <depend>dave_interfaces</depend>
   <depend>protobuf</depend>
+  <depend>wgpu_vendor</depend>
   <test_depend>ament_lint_auto</test_depend>
   <export>
     <build_type>ament_cmake</build_type>

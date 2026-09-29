@@ -55,8 +55,10 @@ sudo apt update && sudo apt install -y jq
 # shellcheck disable=SC1091
 . /etc/os-release
 UBUNTU_CODENAME="${UBUNTU_CODENAME:-${VERSION_CODENAME}}"
-ROS_APT_SOURCE_VERSION=$(curl -s https://api.github.com/repos/ros-infrastructure/ros-apt-source/releases/latest | jq -r '.tag_name') && \
-    curl -L -o /tmp/ros2-apt-source.deb \
+# Use a known release instead of a rate-limited unauthenticated API lookup.
+ROS_APT_SOURCE_VERSION="${ROS_APT_SOURCE_VERSION:-1.3.0}"
+curl --fail --show-error --location --retry 5 --retry-delay 2 \
+    -o /tmp/ros2-apt-source.deb \
     "https://github.com/ros-infrastructure/ros-apt-source/releases/download/${ROS_APT_SOURCE_VERSION}/ros2-apt-source_${ROS_APT_SOURCE_VERSION}.${UBUNTU_CODENAME}_all.deb" && \
     sudo apt-get install -y /tmp/ros2-apt-source.deb && \
     rm -f /tmp/ros2-apt-source.deb
