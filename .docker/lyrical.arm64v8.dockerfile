@@ -141,9 +141,25 @@ USER root
 ARG ARDUSUB_COMMIT="30257f01185471ab4c1ac544e47d1b4437e44c98"
 ARG ARDUPILOT_GAZEBO_COMMIT="082a0fe231f6e63bc8d1598f1cba461d9e2ea7f5"
 WORKDIR /home/$USER
-RUN git clone --recurse-submodules https://github.com/ArduPilot/ardupilot.git && \
-    cd ardupilot && git fetch --tags && git checkout --detach "$ARDUSUB_COMMIT" && \
-    git submodule update --init --recursive
+# Fetch only the pinned revision before its submodules, avoiding a full-history
+# clone of the default branch. Retry interrupted transfers without changing pins.
+RUN set -eu; \
+    retry() { \
+      for attempt in 1 2 3; do \
+        if "$@"; then return 0; fi; \
+        if [ "$attempt" -lt 3 ]; then \
+          echo "Git transfer failed (attempt $attempt/3); retrying..." >&2; \
+          sleep "$((attempt * 5))"; \
+        fi; \
+      done; \
+      return 1; \
+    }; \
+    git init ardupilot; \
+    cd ardupilot; \
+    git remote add origin https://github.com/ArduPilot/ardupilot.git; \
+    retry git fetch --depth 1 --no-tags origin "$ARDUSUB_COMMIT"; \
+    git checkout --detach "$ARDUSUB_COMMIT"; \
+    retry git submodule update --init --recursive --depth 1
 
 RUN mkdir -p /home/$USER/imp_shim && \
     printf 'import types\ndef new_module(name):\n    return types.ModuleType(name)\n' > /home/$USER/imp_shim/imp.py && \
