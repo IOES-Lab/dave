@@ -35,21 +35,22 @@ jobs:
           set -euo pipefail
 
           export DOCKER_CONFIG="$RUNNER_TEMP/docker-config"
-          export DOCKER_HOST="unix://$HOME/.docker/run/docker.sock"
 
           mkdir -p "$DOCKER_CONFIG"
           chmod 700 "$DOCKER_CONFIG"
           printf '{}\n' > "$DOCKER_CONFIG/config.json"
           chmod 600 "$DOCKER_CONFIG/config.json"
 
-          {
-            echo "DOCKER_CONFIG=$DOCKER_CONFIG"
-            echo "DOCKER_HOST=$DOCKER_HOST"
-          } >> "$GITHUB_ENV"
+          echo "DOCKER_CONFIG=$DOCKER_CONFIG" >> "$GITHUB_ENV"
 
-          if [ ! -S "$HOME/.docker/run/docker.sock" ]; then
-            echo "::error::Docker Desktop socket not found. Start Docker Desktop as the runner user."
-            exit 1
+          # Hosted Linux PR runners use their existing Docker connection.
+          if [ "$RUNNER_OS" = "macOS" ]; then
+            export DOCKER_HOST="unix://$HOME/.docker/run/docker.sock"
+            echo "DOCKER_HOST=$DOCKER_HOST" >> "$GITHUB_ENV"
+            if [ ! -S "$HOME/.docker/run/docker.sock" ]; then
+              echo "::error::Docker Desktop socket not found. Start Docker Desktop as the runner user."
+              exit 1
+            fi
           fi
 
           docker version
@@ -115,7 +116,7 @@ jobs:
 
       - name: Upload PR image for trusted publishing
         if: github.event_name == 'pull_request'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: dave-pr-image-arm64
           path: ${{ runner.temp }}/pr-image.tar
